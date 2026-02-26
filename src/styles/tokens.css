@@ -1,0 +1,15 @@
+:root {
+  --color-background-primary: #FFF;
+  --color-background-base: rgba(17, 23, 43, 0.04);
+  --color-background-primary-inverse: rgba(255, 255, 255, 0.04);
+  --color-background-base-inverse: #11172B;
+  --color-background-brand-primary: #1ea7fd;
+  --color-line-light: rgba(17, 23, 43, 0.12);
+  --color-line-dark: rgba(255, 255, 255, 0.08);
+  --color-text-primary: #11172B;
+  --color-text-secondary: rgba(17, 23, 43, 0.80);
+  --color-text-disabled: rgba(17, 23, 43, 0.65);
+  --color-text-primary-inverse: #FFF;
+  --color-text-secondary-inverse: rgba(255, 255, 255, 0.75);
+  --color-text-disabled-inverse: rgba(255, 255, 255, 0.50);
+}
