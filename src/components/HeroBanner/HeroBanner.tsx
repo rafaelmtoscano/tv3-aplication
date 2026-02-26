@@ -57,7 +57,7 @@ export const HeroBanner = memo(
         intervalRef.current = setInterval(() => {
           setActiveIndex((i) => {
             const next = (i + 1) % slides.length;
-            onSlideChange?.(next);
+            setTimeout(() => onSlideChange?.(next), 0);
             return next;
           });
         }, autoPlayInterval);
@@ -90,7 +90,7 @@ export const HeroBanner = memo(
 
       const containerStyle: React.CSSProperties = {
         width: '100%',
-        height: '680px',
+        height: '100%',
         position: 'relative',
         overflow: 'hidden',
         background: colors.background.baseInverse,

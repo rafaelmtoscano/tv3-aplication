@@ -9,7 +9,7 @@ import { rails } from '../../data/rails';
 import { colors } from '../../styles/colors';
 import { HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from '../../icons';
 
-const HERO_HEIGHT = 540;
+const HERO_HEIGHT = 680;
 const RAIL_HEIGHT = 320;
 
 export default function Home() {
