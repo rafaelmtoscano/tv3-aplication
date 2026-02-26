@@ -1,23 +1,45 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import type { SidebarItem, SidebarSign } from '../../components/Sidebar';
+import { HeroBanner } from '../../components/HeroBanner';
+import type { HeroBannerSlide } from '../../components/HeroBanner';
 import { useFocusNavigation } from '../../hooks/useFocusNavigation';
 import { heroSlides } from '../../data/hero-slides';
 import { rails } from '../../data/rails';
 import { colors } from '../../styles/colors';
-import { typography } from '../../styles/typography';
 import { HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from '../../icons';
 
 const HERO_HEIGHT = 540;
 const RAIL_HEIGHT = 320;
 
 export default function Home() {
-  const { focusState, isSidebarExpanded } = useFocusNavigation({
+  const { focusState, isSidebarExpanded, setFocusState } = useFocusNavigation({
     heroLength: heroSlides.length,
     railLengths: rails.map((r) => r.cards.length),
   });
 
   const [mainScrollY, setMainScrollY] = useState(0);
+
+  const bannerSlides: HeroBannerSlide[] = useMemo(
+    () =>
+      heroSlides.map((slide) => ({
+        id: slide.id,
+        mediaType: 'image' as const,
+        mediaSrc: slide.backgroundImage,
+        title: slide.title,
+        description: slide.description,
+        buttonLabel: slide.ctaLabel,
+        isLive: slide.badge === 'AO VIVO',
+      })),
+    []
+  );
+
+  const handleSlideChange = useCallback(
+    (index: number) => {
+      setFocusState({ zone: 'hero', itemIndex: index });
+    },
+    [setFocusState]
+  );
 
   useEffect(() => {
     switch (focusState.zone) {
@@ -83,13 +105,6 @@ export default function Home() {
     transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   };
 
-  const placeholderSectionStyle: React.CSSProperties = {
-    height: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
-
   return (
     <div style={rootStyle}>
       <Sidebar
@@ -106,17 +121,12 @@ export default function Home() {
 
       <main style={mainAreaStyle}>
         <div style={scrollTrackStyle}>
-          {/* Main Content Placeholder */}
-          <div style={placeholderSectionStyle}>
-            <span style={{ 
-              fontFamily: typography.display.medium.fontFamily,
-              fontWeight: typography.display.medium.fontWeight,
-              fontSize: typography.display.medium.fontSize,
-              lineHeight: typography.display.medium.lineHeight,
-              color: colors.text.primaryInverse 
-            }}>
-              Home
-            </span>
+          {/* Hero Banner Section */}
+          <div style={{ height: HERO_HEIGHT, overflow: 'hidden' }}>
+            <HeroBanner
+              slides={bannerSlides}
+              onSlideChange={handleSlideChange}
+            />
           </div>
 
           {/* Just to enable scrolling visual test, we could add more height */}
