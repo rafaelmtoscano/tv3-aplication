@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Sidebar, SidebarItem, SidebarSign } from '../../components/Sidebar';
+import { Sidebar } from '../../components/Sidebar';
+import type { SidebarItem, SidebarSign } from '../../components/Sidebar';
 import { useFocusNavigation } from '../../hooks/useFocusNavigation';
 import { heroSlides } from '../../data/hero-slides';
 import { rails } from '../../data/rails';
