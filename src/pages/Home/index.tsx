@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import type { SidebarItem, SidebarSign } from '../../components/Sidebar';
 import { HeroBanner } from '../../components/HeroBanner';
@@ -13,9 +13,19 @@ const HERO_HEIGHT = 680;
 const RAIL_HEIGHT = 320;
 
 export default function Home() {
-  const { focusState, isSidebarExpanded, setFocusState } = useFocusNavigation({
+  const sidebarItems: SidebarItem[] = useMemo(() => [
+    { id: 'home', icon: <HomeIcon />, label: 'Início' },
+    { id: 'live', icon: <LiveIcon />, label: 'Ao vivo' },
+    { id: 'my-channels', icon: <GridIcon />, label: 'Meus canais' },
+    { id: 'apps', icon: <AppsIcon />, label: 'Aplicativos' },
+    { id: 'settings', icon: <SettingsIcon />, label: 'Configurações' },
+    { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
+  ], []);
+
+  const { focusState, isSidebarExpanded, isInSidebar, mainZone, mainItemIndex, sidebarIndex } = useFocusNavigation({
     heroLength: heroSlides.length,
     railLengths: rails.map((r) => r.cards.length),
+    sidebarLength: sidebarItems.length,
   });
 
   const [mainScrollY, setMainScrollY] = useState(0);
@@ -34,15 +44,8 @@ export default function Home() {
     []
   );
 
-  const handleSlideChange = useCallback(
-    (index: number) => {
-      setFocusState({ zone: 'hero', itemIndex: index });
-    },
-    [setFocusState]
-  );
-
   useEffect(() => {
-    switch (focusState.zone) {
+    switch (mainZone) {
       case 'hero':
         setMainScrollY(0);
         break;
@@ -55,20 +58,8 @@ export default function Home() {
       case 'my-space':
         setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 2);
         break;
-      default:
-        // Keep current scroll if in sidebar
-        break;
     }
-  }, [focusState.zone]);
-
-  const sidebarItems: SidebarItem[] = useMemo(() => [
-    { id: 'home', icon: <HomeIcon />, label: 'Início' },
-    { id: 'live', icon: <LiveIcon />, label: 'Ao vivo' },
-    { id: 'my-channels', icon: <GridIcon />, label: 'Meus canais' },
-    { id: 'apps', icon: <AppsIcon />, label: 'Aplicativos' },
-    { id: 'settings', icon: <SettingsIcon />, label: 'Configurações' },
-    { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
-  ], []);
+  }, [mainZone]);
 
   const sidebarSign: SidebarSign = useMemo(() => ({
     variant: 'icon',
@@ -113,7 +104,7 @@ export default function Home() {
         items={sidebarItems}
         sign={sidebarSign}
         expanded={isSidebarExpanded}
-        activeItemId="home"
+        activeItemId={sidebarItems[sidebarIndex]?.id ?? 'home'}
       />
       
       {/* Spacer to prevent content from going under the fixed sidebar collapsed strip */}
@@ -125,7 +116,6 @@ export default function Home() {
           <div style={{ height: HERO_HEIGHT, overflow: 'hidden' }}>
             <HeroBanner
               slides={bannerSlides}
-              onSlideChange={handleSlideChange}
             />
           </div>
 
