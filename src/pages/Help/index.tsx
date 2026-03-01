@@ -5,7 +5,11 @@ import { ContentRail } from '../../components/ContentRail';
 import { rails } from '../../data/rails';
 import { SimplePageProps } from '../SimplePageProps';
 
-export default function Help({ isActive, mainItemIndex }: SimplePageProps) {
+interface Props extends SimplePageProps {
+  mainItemIndex: number;
+}
+
+export default function Help({ isActive, mainItemIndex }: Props) {
   const containerStyle: React.CSSProperties = {
     height: '100vh',
     display: 'flex',
