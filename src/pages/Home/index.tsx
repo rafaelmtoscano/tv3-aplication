@@ -22,10 +22,26 @@ export default function Home() {
     { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
   ], []);
 
-  const { focusState, isSidebarExpanded, isInSidebar, mainZone, mainItemIndex, sidebarIndex } = useFocusNavigation({
+  const {
+    focusState,
+    isSidebarExpanded,
+    isInSidebar,
+    mainZone,
+    mainItemIndex,
+    sidebarIndex,
+    activeHeroSlide,
+  } = useFocusNavigation({
     heroLength: heroSlides.length,
     railLengths: rails.map((r) => r.cards.length),
-    sidebarLength: sidebarItems.length,
+    sidebarItemIds: sidebarItems.map((i) => i.id),
+    sidebarLength: sidebarItems.length + 1,
+    activeSidebarId: 'home',
+    onEnter: (state) => {
+      console.log('Enter pressed in state:', state);
+    },
+    onSidebarSelect: (id) => {
+      console.log('Sidebar item selected:', id);
+    },
   });
 
   const [mainScrollY, setMainScrollY] = useState(0);
@@ -104,7 +120,7 @@ export default function Home() {
         items={sidebarItems}
         sign={sidebarSign}
         expanded={isSidebarExpanded}
-        activeItemId={sidebarItems[sidebarIndex]?.id ?? 'home'}
+        activeItemId={sidebarIndex === 0 ? 'avatar' : (sidebarItems[sidebarIndex - 1]?.id ?? 'home')}
       />
       
       {/* Spacer to prevent content from going under the fixed sidebar collapsed strip */}

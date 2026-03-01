@@ -1,14 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-export type SidebarFocusIndex = number; // índice do item ativo na sidebar
-
 export type MainZone = 'hero' | 'rail-0' | 'rail-1' | 'my-space';
 
 export interface FocusState {
   region: 'sidebar' | 'main';
-  // Estado da sidebar
   sidebarIndex: number;
-  // Estado da main
   mainZone: MainZone;
   mainItemIndex: number;
 }
@@ -16,23 +12,31 @@ export interface FocusState {
 export interface UseFocusNavigationOptions {
   heroLength: number;
   railLengths: number[];
-  sidebarLength: number;
+  sidebarItemIds: string[];   // ids dos itens do menu, SEM o avatar
+  sidebarLength: number;      // sidebarItemIds.length + 1 (inclui o avatar)
+  activeSidebarId: string;    // id do item correspondente à página atual, ex: 'home'
+  onEnter?: (state: FocusState) => void;
+  onSidebarSelect?: (id: string) => void;
 }
 
 export interface UseFocusNavigationReturn {
   focusState: FocusState;
   isSidebarExpanded: boolean;
-  // helpers derivados para facilitar uso nos componentes
   isInSidebar: boolean;
   mainZone: MainZone;
   mainItemIndex: number;
   sidebarIndex: number;
+  activeHeroSlide: number;
 }
 
 export const useFocusNavigation = ({
   heroLength,
   railLengths,
+  sidebarItemIds,
   sidebarLength,
+  activeSidebarId,
+  onEnter,
+  onSidebarSelect,
 }: UseFocusNavigationOptions): UseFocusNavigationReturn => {
   const [focusState, setFocusState] = useState<FocusState>({
     region: 'main',
@@ -41,7 +45,6 @@ export const useFocusNavigation = ({
     mainItemIndex: 0,
   });
 
-  // Usar useRef para acessar os valores atuais de focusState dentro do listener sem re-criar o efeito
   const focusStateRef = useRef<FocusState>(focusState);
   useEffect(() => {
     focusStateRef.current = focusState;
@@ -52,7 +55,8 @@ export const useFocusNavigation = ({
       const { region, sidebarIndex, mainZone, mainItemIndex } = focusStateRef.current;
 
       // Impedir scroll padrão do browser para teclas de navegação
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      const navKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape'];
+      if (navKeys.includes(event.key)) {
         event.preventDefault();
       }
 
@@ -62,7 +66,14 @@ export const useFocusNavigation = ({
             if (mainItemIndex > 0) {
               setFocusState((prev) => ({ ...prev, mainItemIndex: mainItemIndex - 1 }));
             } else if (mainItemIndex === 0) {
-              setFocusState((prev) => ({ ...prev, region: 'sidebar' }));
+              // Entrar na sidebar: calcular sidebarIndex buscando activeSidebarId
+              const activeIdx = sidebarItemIds.indexOf(activeSidebarId);
+              const targetSidebarIndex = activeIdx !== -1 ? activeIdx + 1 : 1;
+              setFocusState((prev) => ({
+                ...prev,
+                region: 'sidebar',
+                sidebarIndex: targetSidebarIndex,
+              }));
             }
             break;
 
@@ -105,38 +116,43 @@ export const useFocusNavigation = ({
             }
             break;
 
-          default:
+          case 'Enter':
+            onEnter?.(focusStateRef.current);
             break;
         }
       } else if (region === 'sidebar') {
         switch (event.key) {
           case 'ArrowUp':
-            if (sidebarIndex > 0) {
-              setFocusState((prev) => ({ ...prev, sidebarIndex: sidebarIndex - 1 }));
-            }
+            // Cycle completa
+            setFocusState((prev) => ({
+              ...prev,
+              sidebarIndex: (prev.sidebarIndex - 1 + sidebarLength) % sidebarLength,
+            }));
             break;
 
           case 'ArrowDown':
-            if (sidebarIndex < sidebarLength - 1) {
-              setFocusState((prev) => ({ ...prev, sidebarIndex: sidebarIndex + 1 }));
-            }
+            // Cycle completa
+            setFocusState((prev) => ({
+              ...prev,
+              sidebarIndex: (prev.sidebarIndex + 1) % sidebarLength,
+            }));
             break;
 
           case 'ArrowRight':
           case 'Escape':
+            // Voltar para main restaurando mainZone e mainItemIndex (memória preservada)
             setFocusState((prev) => ({ ...prev, region: 'main' }));
             break;
 
-          case 'Enter':
-            // Confirmação (será implementada depois)
+          case 'Enter': {
+            const id = sidebarIndex === 0 ? 'avatar' : sidebarItemIds[sidebarIndex - 1];
+            onSidebarSelect?.(id);
             break;
-
-          default:
-            break;
+          }
         }
       }
     },
-    [heroLength, railLengths, sidebarLength]
+    [heroLength, railLengths, sidebarItemIds, sidebarLength, activeSidebarId, onEnter, onSidebarSelect]
   );
 
   useEffect(() => {
@@ -155,5 +171,6 @@ export const useFocusNavigation = ({
     mainZone: focusState.mainZone,
     mainItemIndex: focusState.mainItemIndex,
     sidebarIndex: focusState.sidebarIndex,
+    activeHeroSlide: focusState.mainZone === 'hero' ? focusState.mainItemIndex : 0,
   };
 };
