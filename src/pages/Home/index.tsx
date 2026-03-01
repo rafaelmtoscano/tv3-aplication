@@ -1,49 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Sidebar } from '../../components/Sidebar';
-import type { SidebarItem, SidebarSign } from '../../components/Sidebar';
 import { HeroBanner } from '../../components/HeroBanner';
 import type { HeroBannerSlide } from '../../components/HeroBanner';
-import { useFocusNavigation } from '../../hooks/useFocusNavigation';
+import type { MainZone } from '../../hooks/useFocusNavigation';
 import { heroSlides } from '../../data/hero-slides';
-import { rails } from '../../data/rails';
 import { colors } from '../../styles/colors';
-import { HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from '../../icons';
 
 const HERO_HEIGHT = 680;
 const RAIL_HEIGHT = 320;
 
-export default function Home() {
-  const sidebarItems: SidebarItem[] = useMemo(() => [
-    { id: 'home', icon: <HomeIcon />, label: 'Início' },
-    { id: 'live', icon: <LiveIcon />, label: 'Ao vivo' },
-    { id: 'my-channels', icon: <GridIcon />, label: 'Meus canais' },
-    { id: 'apps', icon: <AppsIcon />, label: 'Aplicativos' },
-    { id: 'settings', icon: <SettingsIcon />, label: 'Configurações' },
-    { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
-  ], []);
+export interface HomeProps {
+  mainZone: MainZone;
+  mainItemIndex: number;
+  isActive: boolean;
+}
 
-  const {
-    focusState,
-    isSidebarExpanded,
-    isInSidebar,
-    mainZone,
-    mainItemIndex,
-    sidebarIndex,
-    activeHeroSlide,
-  } = useFocusNavigation({
-    heroLength: heroSlides.length,
-    railLengths: rails.map((r) => r.cards.length),
-    sidebarItemIds: sidebarItems.map((i) => i.id),
-    sidebarLength: sidebarItems.length + 1,
-    activeSidebarId: 'home',
-    onEnter: (state) => {
-      console.log('Enter pressed in state:', state);
-    },
-    onSidebarSelect: (id) => {
-      console.log('Sidebar item selected:', id);
-    },
-  });
-
+export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
   const [mainScrollY, setMainScrollY] = useState(0);
 
   const bannerSlides: HeroBannerSlide[] = useMemo(
@@ -61,6 +32,8 @@ export default function Home() {
   );
 
   useEffect(() => {
+    if (!isActive) return;
+
     switch (mainZone) {
       case 'hero':
         setMainScrollY(0);
@@ -75,32 +48,14 @@ export default function Home() {
         setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 2);
         break;
     }
-  }, [mainZone]);
-
-  const sidebarSign: SidebarSign = useMemo(() => ({
-    variant: 'icon',
-    icon: <PersonIcon size={28} />,
-  }), []);
-
-  const rootStyle: React.CSSProperties = {
-    position: 'fixed',
-    inset: 0,
-    display: 'flex',
-    flexDirection: 'row',
-    background: colors.background.baseInverse,
-    overflow: 'hidden',
-  };
-
-  const sidebarSpacerStyle: React.CSSProperties = {
-    flexShrink: 0,
-    width: '88px',
-    transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  };
+  }, [mainZone, isActive]);
 
   const mainAreaStyle: React.CSSProperties = {
     flex: 1,
     overflow: 'hidden',
     position: 'relative',
+    height: '100vh',
+    background: colors.background.baseInverse,
   };
 
   const scrollTrackStyle: React.CSSProperties = {
@@ -113,32 +68,18 @@ export default function Home() {
   };
 
   return (
-    <div style={rootStyle}>
-      <Sidebar
-        logoName="Plataforma"
-        logoSubtitle="Comum"
-        items={sidebarItems}
-        sign={sidebarSign}
-        expanded={isSidebarExpanded}
-        activeItemId={sidebarIndex === 0 ? 'avatar' : (sidebarItems[sidebarIndex - 1]?.id ?? 'home')}
-      />
-      
-      {/* Spacer to prevent content from going under the fixed sidebar collapsed strip */}
-      <div style={sidebarSpacerStyle} />
-
-      <main style={mainAreaStyle}>
-        <div style={scrollTrackStyle}>
-          {/* Hero Banner Section */}
-          <div style={{ height: HERO_HEIGHT, overflow: 'hidden' }}>
-            <HeroBanner
-              slides={bannerSlides}
-            />
-          </div>
-
-          {/* Just to enable scrolling visual test, we could add more height */}
-          <div style={{ height: '200vh' }} />
+    <main style={mainAreaStyle}>
+      <div style={scrollTrackStyle}>
+        {/* Hero Banner Section */}
+        <div style={{ height: HERO_HEIGHT, overflow: 'hidden' }}>
+          <HeroBanner
+            slides={bannerSlides}
+          />
         </div>
-      </main>
-    </div>
+
+        {/* Just to enable scrolling visual test, we could add more height */}
+        <div style={{ height: '200vh' }} />
+      </div>
+    </main>
   );
 }
