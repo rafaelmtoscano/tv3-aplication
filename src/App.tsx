@@ -111,7 +111,7 @@ export default function App() {
         sign={sidebarSign}
         expanded={isSidebarExpanded}
         activeItemId={currentPage}
-        focusedItemId={sidebarIndex === 0 ? 'avatar' : sidebarItems[sidebarIndex - 1]?.id}
+        focusedItemId={isSidebarExpanded ? (sidebarIndex === 0 ? 'avatar' : sidebarItems[sidebarIndex - 1]?.id) : undefined}
         onItemClick={(id) => setCurrentPage(id)}
       />
       
