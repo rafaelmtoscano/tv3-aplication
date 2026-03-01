@@ -3,9 +3,8 @@ import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { ContentRail } from '../../components/ContentRail';
 import { rails } from '../../data/rails';
-import { SimplePageProps } from '../SimplePageProps';
-
-interface Props extends SimplePageProps {
+interface Props {
+  isActive: boolean;
   mainItemIndex: number;
 }
 
