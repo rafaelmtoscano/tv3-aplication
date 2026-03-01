@@ -75,8 +75,6 @@ export default function App() {
 
   const renderPage = () => {
     const pageProps = {
-      isActive: true, // Will be overridden or set below
-      mainZone,
       mainItemIndex,
     };
 
