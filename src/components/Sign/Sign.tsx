@@ -46,7 +46,7 @@ export const Sign = memo(
         }
         if (isFocused) {
           return {
-            background: colors.background.brandPrimary,
+            background: colors.background.primary,
           };
         }
         if (isSelected) {

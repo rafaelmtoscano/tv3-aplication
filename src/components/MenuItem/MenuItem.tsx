@@ -80,7 +80,7 @@ export const MenuItem = memo(
         containerBg = 'transparent';
         contentColor = colors.text.primaryInverse;
       } else if (isFocused) {
-        containerBg = colors.background.brandPrimary;
+        containerBg = colors.background.primary;
         contentColor = colors.text.primary;
       } else if (isSelected) {
         containerBg = colors.line.dark;
