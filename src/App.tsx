@@ -74,25 +74,31 @@ export default function App() {
   };
 
   const renderPage = () => {
+    const pageProps = {
+      isActive: true, // Will be overridden or set below
+      mainZone,
+      mainItemIndex,
+    };
+
     switch (currentPage) {
       case 'home':
         return (
-          <Home 
-            mainZone={mainZone} 
-            mainItemIndex={mainItemIndex} 
-            isActive={currentPage === 'home'} 
+          <Home
+            mainZone={mainZone}
+            mainItemIndex={mainItemIndex}
+            isActive={currentPage === 'home'}
           />
         );
       case 'live':
-        return <Live />;
+        return <Live {...pageProps} isActive={currentPage === 'live'} />;
       case 'my-channels':
-        return <MyChannels />;
+        return <MyChannels {...pageProps} isActive={currentPage === 'my-channels'} />;
       case 'apps':
-        return <Apps />;
+        return <Apps {...pageProps} isActive={currentPage === 'apps'} />;
       case 'settings':
-        return <Settings />;
+        return <Settings {...pageProps} isActive={currentPage === 'settings'} />;
       case 'help':
-        return <Help />;
+        return <Help {...pageProps} isActive={currentPage === 'help'} />;
       default:
         return <Home mainZone={mainZone} mainItemIndex={mainItemIndex} isActive={currentPage === 'home'} />;
     }
@@ -106,7 +112,9 @@ export default function App() {
         items={sidebarItems}
         sign={sidebarSign}
         expanded={isSidebarExpanded}
-        activeItemId={sidebarIndex === 0 ? 'avatar' : (sidebarItems[sidebarIndex - 1]?.id ?? currentPage)}
+        activeItemId={currentPage}
+        focusedItemId={sidebarIndex === 0 ? 'avatar' : sidebarItems[sidebarIndex - 1]?.id}
+        onItemClick={(id) => setCurrentPage(id)}
       />
       
       {/* Spacer to prevent content from going under the fixed sidebar collapsed strip */}

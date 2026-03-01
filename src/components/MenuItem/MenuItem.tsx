@@ -20,6 +20,10 @@ export interface MenuItemProps {
    */
   expanded?: boolean;
   /**
+   * External focus state override
+   */
+  isFocused?: boolean;
+  /**
    * Click handler
    */
   onClick?: () => void;
@@ -53,6 +57,7 @@ export const MenuItem = memo(
         label,
         state = 'idle',
         expanded = false,
+        isFocused: isFocusedProp,
         onClick,
         onFocus,
         onBlur,
@@ -62,17 +67,7 @@ export const MenuItem = memo(
       },
       ref
     ) => {
-      const [isFocused, setIsFocused] = useState(false);
-
-      const handleFocus = useCallback(() => {
-        setIsFocused(true);
-        onFocus?.();
-      }, [onFocus]);
-
-      const handleBlur = useCallback(() => {
-        setIsFocused(false);
-        onBlur?.();
-      }, [onBlur]);
+      const isFocused = isFocusedProp ?? false;
 
       const isDisabled = state === 'disabled';
       const isSelected = state === 'selected';
@@ -85,7 +80,7 @@ export const MenuItem = memo(
         containerBg = 'transparent';
         contentColor = colors.text.primaryInverse;
       } else if (isFocused) {
-        containerBg = colors.background.primary;
+        containerBg = colors.background.brandPrimary;
         contentColor = colors.text.primary;
       } else if (isSelected) {
         containerBg = colors.line.dark;
@@ -164,8 +159,8 @@ export const MenuItem = memo(
           style={containerStyle}
           className={className}
           onClick={isDisabled ? undefined : onClick}
-          onFocus={isDisabled ? undefined : handleFocus}
-          onBlur={isDisabled ? undefined : handleBlur}
+          onFocus={onFocus}
+          onBlur={onBlur}
           disabled={isDisabled}
           tabIndex={isDisabled ? -1 : tabIndex}
           aria-label={ariaLabel || label}

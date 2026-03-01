@@ -6,6 +6,7 @@ export interface SignProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   icon?: React.ReactNode;
   image?: string;
   alt?: string;
+  isFocused: boolean;
   state?: 'idle' | 'selected' | 'disabled';
   className?: string;
 }
@@ -18,6 +19,7 @@ export const Sign = memo(
         icon,
         image,
         alt,
+        isFocused,
         state = 'idle',
         onClick,
         onFocus,
@@ -31,20 +33,8 @@ export const Sign = memo(
       },
       ref
     ) => {
-      const [isFocused, setIsFocused] = useState(false);
-
       const isDisabled = state === 'disabled' || externalDisabled;
       const isSelected = state === 'selected';
-
-      const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
-        setIsFocused(true);
-        onFocus?.(e);
-      };
-
-      const handleBlur = (e: React.FocusEvent<HTMLButtonElement>) => {
-        setIsFocused(false);
-        onBlur?.(e);
-      };
 
       const getBaseStyles = (): React.CSSProperties => {
         if (isDisabled) {
@@ -56,7 +46,7 @@ export const Sign = memo(
         }
         if (isFocused) {
           return {
-            background: colors.background.primary,
+            background: colors.background.brandPrimary,
           };
         }
         if (isSelected) {
@@ -118,8 +108,8 @@ export const Sign = memo(
           style={containerStyle}
           className={className}
           onClick={onClick}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
+          onFocus={onFocus}
+          onBlur={onBlur}
           disabled={isDisabled}
           tabIndex={isDisabled ? -1 : tabIndex}
           aria-label={ariaLabel || alt}
