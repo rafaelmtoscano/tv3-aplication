@@ -19,7 +19,7 @@ export const heroSlides: HeroSlide[] = [
     backgroundImage: 'https://picsum.photos/seed/hero1/1920/1080',
     badge: 'AO VIVO',
     ctaLabel: 'Assistir Agora',
-    streamUrl: 'https://placeholder-hls-stream.m3u8'
+    streamUrl: 'https://canalgov-stream.ebc.com.br/GOV-avc1_1800000=10000.m3u8'
   },
   {
     id: 'slide-2',
