@@ -82,6 +82,9 @@ export const LivePlayer = React.memo(
             break;
           case 'Escape':
           case 'Backspace':
+            e.preventDefault();
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
             onExit?.();
             break;
           default:

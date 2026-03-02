@@ -116,6 +116,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
     switch (e.key) {
       case 'Escape':
       case 'Backspace':
+        e.nativeEvent.stopImmediatePropagation();
         onExit();
         break;
 
