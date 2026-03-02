@@ -9,6 +9,7 @@ export interface LiveChannel {
   id: string;
   name: string;
   logo?: string;
+  logoFull?: string;
   streamUrl: string;
 }
 
@@ -219,7 +220,7 @@ export const LivePlayer = React.memo(
                   >
                     <TileButton
                       variant="image"
-                      image={channel.logo || PLACEHOLDER_LOGO}
+                      image={channel.logoFull || channel.logo || PLACEHOLDER_LOGO}
                       label={channel.name}
                       alt={channel.name}
                       isFocused={focusedIndex === i + 1}

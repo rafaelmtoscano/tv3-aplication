@@ -15,6 +15,7 @@ const liveChannels = channels
     id: ch.id,
     name: ch.name,
     logo: ch.logo,
+    logoFull: ch.logoFull,
     streamUrl: ch.streamUrl!,
   }));
 

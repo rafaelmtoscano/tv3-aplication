@@ -14,6 +14,7 @@ export interface Channel {
   id: string;
   name: string;
   logo: string;
+  logoFull: string;
   backgroundColor: string;
   streamUrl?: string;
   programs?: Program[];
@@ -25,6 +26,7 @@ export const channels: Channel[] = [
     id: 'tv-mec',
     name: 'TV MEC',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F9e0a62eeec2a4e2aaa1fe8ab565197bc?format=webp&width=480&height=192',
+    logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F9e0a62eeec2a4e2aaa1fe8ab565197bc?format=webp&width=480&height=192',
     backgroundColor: '#1A5276',
     streamUrl: '',
     programs: [
@@ -42,6 +44,7 @@ export const channels: Channel[] = [
     id: 'tv-camara',
     name: 'TV Câmara',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F42f9421675e545838eedabcd6fe2da8b?format=webp&width=480&height=192',
+    logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F64a9563fa6b74e149a27e7d4b91da1c1?format=webp&width=800&height=450',
     backgroundColor: '#F8F8F8',
     streamUrl: 'https://stream3.camara.gov.br/tv1/manifest.m3u8',
     programs: [
@@ -61,6 +64,7 @@ export const channels: Channel[] = [
     id: 'tv-brasil',
     name: 'TV Brasil',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F40e646594c6c430a94ef7b5ff7f589c0?format=webp&width=480&height=192',
+    logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F5c8223094974421f98bc81f062e7b025?format=webp&width=800&height=450',
     backgroundColor: '#F5C400',
     streamUrl: 'https://tvbrasil-stream.ebc.com.br/EBC_HD-avc1_3000000=10004.m3u8',
     programs: [
@@ -80,6 +84,7 @@ export const channels: Channel[] = [
     id: 'canal-gov',
     name: 'Canal Gov',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F655d4a3ff4a041e490aa5ba1378906bd?format=webp&width=480&height=192',
+    logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F655d4a3ff4a041e490aa5ba1378906bd?format=webp&width=480&height=192',
     backgroundColor: '#007A33',
     streamUrl: 'https://canalgov-stream.ebc.com.br/GOV-avc1_1800000=10000.m3u8',
     programs: [
@@ -99,6 +104,7 @@ export const channels: Channel[] = [
     id: 'tv-justica',
     name: 'TV Justiça',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Ff721c15dcde24ceeba9ee7e1152d9921?format=webp&width=480&height=192',
+    logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F8c6042eefaa9409593860cbbde83aad5?format=webp&width=800&height=450',
     backgroundColor: '#003DA5',
     streamUrl: 'https://www.youtube.com/watch?v=Loa9DFv2dpA',
     programs: [
@@ -118,6 +124,7 @@ export const channels: Channel[] = [
     id: 'tv-senado',
     name: 'TV Senado',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Fefb11e9bb9114a46b23813f61e4f1df8?format=webp&width=480&height=192',
+    logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F71bea8998b7d494ea2da48d509a33111?format=webp&width=800&height=450',
     backgroundColor: '#1A1A2E',
     streamUrl: '',
     programs: [

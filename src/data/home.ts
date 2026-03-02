@@ -148,7 +148,7 @@ const liveRail: Rail = {
       channelName: ch.name,
       logo: ch.logo,
       backgroundColor: ch.backgroundColor,
-      image: ch.logo,        // card só-imagem: exibe logo sobre cor do canal
+      image: ch.logoFull,        // card só-imagem: exibe logoFull sobre cor do canal
       isLive: true,
       streamUrl: ch.streamUrl,
       videoUrl: ch.streamUrl,
