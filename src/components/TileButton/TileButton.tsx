@@ -57,6 +57,10 @@ export interface TileButtonProps {
    * @default 'cover'
    */
   imageObjectFit?: 'cover' | 'contain';
+  /**
+   * Background color for the button.
+   */
+  backgroundColor?: string;
 }
 
 export const TileButton = React.memo(
@@ -76,6 +80,7 @@ export const TileButton = React.memo(
         tabIndex,
         isFocused: forcedFocused,
         imageObjectFit = 'cover',
+        backgroundColor,
       },
       ref
     ) => {
@@ -114,7 +119,7 @@ export const TileButton = React.memo(
           ? {
               width: '312px',
               height: '312px',
-              background: colors.background.primary,
+              background: backgroundColor || colors.background.primary,
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
               color: colors.text.primary,
               zIndex: 10,
@@ -122,7 +127,7 @@ export const TileButton = React.memo(
           : {
               width: '248px',
               height: '248px',
-              background: colors.line.dark,
+              background: backgroundColor || colors.line.dark,
               boxShadow: 'none',
               color: colors.text.primaryInverse,
               zIndex: 1,
