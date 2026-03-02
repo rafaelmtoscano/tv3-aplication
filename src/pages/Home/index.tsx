@@ -9,7 +9,7 @@ import type { Rail } from '../../data/home';
 import { colors } from '../../styles/colors';
 
 const HERO_HEIGHT = 680;
-const RAIL_HEIGHT = 320;
+const RAIL_HEIGHT = 408;
 const RAIL_SCROLL_OFFSET = 160;
 
 export interface HomeProps {

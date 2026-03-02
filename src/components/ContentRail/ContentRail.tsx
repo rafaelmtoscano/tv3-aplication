@@ -133,6 +133,7 @@ export const ContentRail = memo(
         width: '100%',
         height: hasFocus ? `${CARD_FOCUSED_HEIGHT}px` : `${CARD_IDLE_HEIGHT}px`,
         transition: 'height 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
+        overflow: 'visible',
       };
 
       // Inner div: horizontal scroll only.
@@ -140,6 +141,8 @@ export const ContentRail = memo(
       // overflow-y: visible at the same time (browser collapses
       // overflow-y to auto/hidden). The two-div split solves this.
       const scrollContainerStyle: React.CSSProperties = {
+        position: 'absolute',
+        inset: 0,
         display: 'flex',
         gap: '48px',
         overflowX: 'auto',
@@ -149,7 +152,6 @@ export const ContentRail = memo(
         msOverflowStyle: 'none',
         scrollBehavior: 'smooth',
         alignItems: 'center',
-        width: '100%',
         boxSizing: 'border-box',
       };
 
