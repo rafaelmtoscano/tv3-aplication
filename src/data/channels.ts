@@ -1,8 +1,10 @@
 // TODO: substituir por chamada à API
+
 export interface Program {
   id: string;
   title: string;
   thumbnail: string;
+  videoUrl: string;
   duration?: string;
   category?: string;
   description?: string;
@@ -17,77 +19,117 @@ export interface Channel {
   programs?: Program[];
 }
 
+// TODO: substituir por chamada à API
 export const channels: Channel[] = [
+  {
+    id: 'tv-mec',
+    name: 'TV MEC',
+    logo: '',
+    backgroundColor: '#1A5276',
+    streamUrl: '', // TODO: adicionar stream ao vivo
+    programs: [
+      { id: 'tv-mec-1', title: 'Programa TV MEC 1', thumbnail: 'https://i.ytimg.com/vi/sPnSXbh7Fwc/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=sPnSXbh7Fwc', category: 'Educação' },
+      { id: 'tv-mec-2', title: 'Programa TV MEC 2', thumbnail: 'https://i.ytimg.com/vi/qbsWB133gXs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=qbsWB133gXs', category: 'Educação' },
+      { id: 'tv-mec-3', title: 'Programa TV MEC 3', thumbnail: 'https://i.ytimg.com/vi/SZ_N2QBnaGc/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=SZ_N2QBnaGc', category: 'Educação' },
+      { id: 'tv-mec-4', title: 'Programa TV MEC 4', thumbnail: 'https://i.ytimg.com/vi/pZqmvnMzQ-U/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=pZqmvnMzQ-U', category: 'Educação' },
+      { id: 'tv-mec-5', title: 'Programa TV MEC 5', thumbnail: 'https://i.ytimg.com/vi/X_c4BXOCTm4/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=X_c4BXOCTm4', category: 'Educação' },
+      { id: 'tv-mec-6', title: 'Programa TV MEC 6', thumbnail: 'https://i.ytimg.com/vi/UQ-NHhipRXU/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=UQ-NHhipRXU', category: 'Educação' },
+      { id: 'tv-mec-7', title: 'Programa TV MEC 7', thumbnail: 'https://i.ytimg.com/vi/DvlfkXkPDbg/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=DvlfkXkPDbg', category: 'Educação' },
+      { id: 'tv-mec-8', title: 'Programa TV MEC 8', thumbnail: 'https://i.ytimg.com/vi/fjiwwei3tmI/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=fjiwwei3tmI', category: 'Educação' },
+    ],
+  },
   {
     id: 'tv-camara',
     name: 'TV Câmara',
     logo: '',
     backgroundColor: '#F8F8F8',
-    streamUrl: 'https://placeholder-hls-stream.m3u8',
+    streamUrl: 'https://stream3.camara.gov.br/tv1/manifest.m3u8',
     programs: [
-      { id: 'camara-1', title: 'A Voz do Brasil', thumbnail: 'https://picsum.photos/seed/tv-camara-1/640/360', duration: '60 min', category: 'Noticiário' },
-      { id: 'camara-2', title: 'Sessão Plenária', thumbnail: 'https://picsum.photos/seed/tv-camara-2/640/360', duration: '120 min', category: 'Política' },
-      { id: 'camara-3', title: 'Câmara Debate', thumbnail: 'https://picsum.photos/seed/tv-camara-3/640/360', duration: '30 min', category: 'Debate' },
-    ]
+      { id: 'tv-camara-1', title: 'Programa TV Câmara 1', thumbnail: 'https://i.ytimg.com/vi/b7QbtVgLheQ/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=b7QbtVgLheQ', category: 'Política' },
+      { id: 'tv-camara-2', title: 'Programa TV Câmara 2', thumbnail: 'https://i.ytimg.com/vi/gQH2OODFdJQ/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=gQH2OODFdJQ', category: 'Política' },
+      { id: 'tv-camara-3', title: 'Programa TV Câmara 3', thumbnail: 'https://i.ytimg.com/vi/v3BOh7Rmkds/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=v3BOh7Rmkds', category: 'Política' },
+      { id: 'tv-camara-4', title: 'Programa TV Câmara 4', thumbnail: 'https://i.ytimg.com/vi/89CDuEpszNU/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=89CDuEpszNU', category: 'Política' },
+      { id: 'tv-camara-5', title: 'Programa TV Câmara 5', thumbnail: 'https://i.ytimg.com/vi/_w0aev5Td0Y/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=_w0aev5Td0Y', category: 'Política' },
+      { id: 'tv-camara-6', title: 'Programa TV Câmara 6', thumbnail: 'https://i.ytimg.com/vi/zviXmCNTFDA/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=zviXmCNTFDA', category: 'Política' },
+      { id: 'tv-camara-7', title: 'Programa TV Câmara 7', thumbnail: 'https://i.ytimg.com/vi/CYTAeHUTopE/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=CYTAeHUTopE', category: 'Política' },
+      { id: 'tv-camara-8', title: 'Programa TV Câmara 8', thumbnail: 'https://i.ytimg.com/vi/mwotgXrURus/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=mwotgXrURus', category: 'Política' },
+      { id: 'tv-camara-9', title: 'Programa TV Câmara 9', thumbnail: 'https://i.ytimg.com/vi/Aaq1NTccS98/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=Aaq1NTccS98', category: 'Política' },
+      { id: 'tv-camara-10', title: 'Programa TV Câmara 10', thumbnail: 'https://i.ytimg.com/vi/pfJ_8Hea6uk/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=pfJ_8Hea6uk', category: 'Política' },
+    ],
   },
   {
     id: 'tv-brasil',
     name: 'TV Brasil',
     logo: '',
     backgroundColor: '#F5C400',
-    streamUrl: 'https://placeholder-hls-stream.m3u8',
+    streamUrl: 'https://tvbrasil-stream.ebc.com.br/EBC_HD-avc1_3000000=10004.m3u8',
     programs: [
-      { id: 'brasil-1', title: 'Brasil Notícias', thumbnail: 'https://picsum.photos/seed/tv-brasil-1/640/360', duration: '45 min', category: 'Jornalismo' },
-      { id: 'brasil-2', title: 'Cine Nacional', thumbnail: 'https://picsum.photos/seed/tv-brasil-2/640/360', duration: '90 min', category: 'Filmes' },
-      { id: 'brasil-3', title: 'Samba na Gamboa', thumbnail: 'https://picsum.photos/seed/tv-brasil-3/640/360', duration: '60 min', category: 'Musical' },
-    ]
-  },
-  {
-    id: 'tv-justica',
-    name: 'TV Justiça',
-    logo: '',
-    backgroundColor: '#003DA5',
-    streamUrl: 'https://placeholder-hls-stream.m3u8',
-    programs: [
-      { id: 'justica-1', title: 'Sessão STF', thumbnail: 'https://picsum.photos/seed/tv-justica-1/640/360', duration: '180 min', category: 'Judiciário' },
-      { id: 'justica-2', title: 'Direito em Debate', thumbnail: 'https://picsum.photos/seed/tv-justica-2/640/360', duration: '45 min', category: 'Educação' },
-      { id: 'justica-3', title: 'Iluminar', thumbnail: 'https://picsum.photos/seed/tv-justica-3/640/360', duration: '30 min', category: 'Documentário' },
-    ]
-  },
-  {
-    id: 'tv-senado',
-    name: 'TV Senado',
-    logo: '',
-    backgroundColor: '#1A1A2E',
-    streamUrl: 'https://placeholder-hls-stream.m3u8',
-    programs: [
-      { id: 'senado-1', title: 'Jornal do Senado', thumbnail: 'https://picsum.photos/seed/tv-senado-1/640/360', duration: '30 min', category: 'Jornalismo' },
-      { id: 'senado-2', title: 'Sessão Solene', thumbnail: 'https://picsum.photos/seed/tv-senado-2/640/360', duration: '120 min', category: 'Política' },
-      { id: 'senado-3', title: 'Argumento', thumbnail: 'https://picsum.photos/seed/tv-senado-3/640/360', duration: '45 min', category: 'Entrevista' },
-    ]
+      { id: 'tv-brasil-1', title: 'Programa TV Brasil 1', thumbnail: 'https://i.ytimg.com/vi/tu0fMZNKQQs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=tu0fMZNKQQs', category: 'Jornalismo' },
+      { id: 'tv-brasil-2', title: 'Programa TV Brasil 2', thumbnail: 'https://i.ytimg.com/vi/dcyFeAErXdg/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=dcyFeAErXdg', category: 'Jornalismo' },
+      { id: 'tv-brasil-3', title: 'Programa TV Brasil 3', thumbnail: 'https://i.ytimg.com/vi/9rzXNAO8UJs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=9rzXNAO8UJs', category: 'Jornalismo' },
+      { id: 'tv-brasil-4', title: 'Programa TV Brasil 4', thumbnail: 'https://i.ytimg.com/vi/EA8UNjRfFXg/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=EA8UNjRfFXg', category: 'Jornalismo' },
+      { id: 'tv-brasil-5', title: 'Programa TV Brasil 5', thumbnail: 'https://i.ytimg.com/vi/obAlpll5VzY/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=obAlpll5VzY', category: 'Jornalismo' },
+      { id: 'tv-brasil-6', title: 'Programa TV Brasil 6', thumbnail: 'https://i.ytimg.com/vi/-FpmgoHgsqI/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=-FpmgoHgsqI', category: 'Jornalismo' },
+      { id: 'tv-brasil-7', title: 'Programa TV Brasil 7', thumbnail: 'https://i.ytimg.com/vi/Z2iDSTaGMYg/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=Z2iDSTaGMYg', category: 'Jornalismo' },
+      { id: 'tv-brasil-8', title: 'Programa TV Brasil 8', thumbnail: 'https://i.ytimg.com/vi/J00rb9EctZE/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=J00rb9EctZE', category: 'Jornalismo' },
+      { id: 'tv-brasil-9', title: 'Programa TV Brasil 9', thumbnail: 'https://i.ytimg.com/vi/Jx603TFQdqM/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=Jx603TFQdqM', category: 'Jornalismo' },
+      { id: 'tv-brasil-10', title: 'Programa TV Brasil 10', thumbnail: 'https://i.ytimg.com/vi/ok5jksQ-Kr8/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=ok5jksQ-Kr8', category: 'Jornalismo' },
+    ],
   },
   {
     id: 'canal-gov',
     name: 'Canal Gov',
     logo: '',
     backgroundColor: '#007A33',
-    streamUrl: 'https://placeholder-hls-stream.m3u8',
+    streamUrl: 'https://canalgov-stream.ebc.com.br/GOV-avc1_1800000=10000.m3u8',
     programs: [
-      { id: 'gov-1', title: 'Bom Dia Ministro', thumbnail: 'https://picsum.photos/seed/canal-gov-1/640/360', duration: '60 min', category: 'Governo' },
-      { id: 'gov-2', title: 'Brasil Hoje', thumbnail: 'https://picsum.photos/seed/canal-gov-2/640/360', duration: '30 min', category: 'Informativo' },
-      { id: 'gov-3', title: 'Agenda do Presidente', thumbnail: 'https://picsum.photos/seed/canal-gov-3/640/360', duration: '15 min', category: 'Institucional' },
-    ]
+      { id: 'canal-gov-1', title: 'Programa Canal Gov 1', thumbnail: 'https://i.ytimg.com/vi/mu7heQQ3ekU/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=mu7heQQ3ekU', category: 'Governo' },
+      { id: 'canal-gov-2', title: 'Programa Canal Gov 2', thumbnail: 'https://i.ytimg.com/vi/-igsD2VQZkE/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=-igsD2VQZkE', category: 'Governo' },
+      { id: 'canal-gov-3', title: 'Programa Canal Gov 3', thumbnail: 'https://i.ytimg.com/vi/zBCIThuYt50/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=zBCIThuYt50', category: 'Governo' },
+      { id: 'canal-gov-4', title: 'Programa Canal Gov 4', thumbnail: 'https://i.ytimg.com/vi/sZZWHuMZNac/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=sZZWHuMZNac', category: 'Governo' },
+      { id: 'canal-gov-5', title: 'Programa Canal Gov 5', thumbnail: 'https://i.ytimg.com/vi/ricnqTWC7xU/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=ricnqTWC7xU', category: 'Governo' },
+      { id: 'canal-gov-6', title: 'Programa Canal Gov 6', thumbnail: 'https://i.ytimg.com/vi/X5yCbNURbYM/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=X5yCbNURbYM', category: 'Governo' },
+      { id: 'canal-gov-7', title: 'Programa Canal Gov 7', thumbnail: 'https://i.ytimg.com/vi/xye1jN9LcM8/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=xye1jN9LcM8', category: 'Governo' },
+      { id: 'canal-gov-8', title: 'Programa Canal Gov 8', thumbnail: 'https://i.ytimg.com/vi/mJLhPLdy454/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=mJLhPLdy454', category: 'Governo' },
+      { id: 'canal-gov-9', title: 'Programa Canal Gov 9', thumbnail: 'https://i.ytimg.com/vi/I1RSF4YgAX0/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=I1RSF4YgAX0', category: 'Governo' },
+      { id: 'canal-gov-10', title: 'Programa Canal Gov 10', thumbnail: 'https://i.ytimg.com/vi/OSwyDZTzJXg/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=OSwyDZTzJXg', category: 'Governo' },
+    ],
   },
   {
-    id: 'nbr',
-    name: 'NBR',
+    id: 'tv-justica',
+    name: 'TV Justiça',
     logo: '',
-    backgroundColor: '#003366',
-    streamUrl: 'https://placeholder-hls-stream.m3u8',
+    backgroundColor: '#003DA5',
+    streamUrl: 'https://www.youtube.com/watch?v=Loa9DFv2dpA',
     programs: [
-      { id: 'nbr-1', title: 'Informe NBR', thumbnail: 'https://picsum.photos/seed/nbr-1/640/360', duration: '15 min', category: 'Notícias' },
-      { id: 'nbr-2', title: 'Educação Brasileira', thumbnail: 'https://picsum.photos/seed/nbr-2/640/360', duration: '45 min', category: 'Educação' },
-      { id: 'nbr-3', title: 'NBR Entrevista', thumbnail: 'https://picsum.photos/seed/nbr-3/640/360', duration: '30 min', category: 'Entrevista' },
-    ]
-  }
+      { id: 'tv-justica-1', title: 'Programa TV Justiça 1', thumbnail: 'https://i.ytimg.com/vi/g1HEMB-9fXM/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=g1HEMB-9fXM', category: 'Direito' },
+      { id: 'tv-justica-2', title: 'Programa TV Justiça 2', thumbnail: 'https://i.ytimg.com/vi/6SJXwIgk9mM/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=6SJXwIgk9mM', category: 'Direito' },
+      { id: 'tv-justica-3', title: 'Programa TV Justiça 3', thumbnail: 'https://i.ytimg.com/vi/RHPYpH_q3Cs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=RHPYpH_q3Cs', category: 'Direito' },
+      { id: 'tv-justica-4', title: 'Programa TV Justiça 4', thumbnail: 'https://i.ytimg.com/vi/idrRfcqm_Zk/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=idrRfcqm_Zk', category: 'Direito' },
+      { id: 'tv-justica-5', title: 'Programa TV Justiça 5', thumbnail: 'https://i.ytimg.com/vi/l36FAGFmQ2E/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=l36FAGFmQ2E', category: 'Direito' },
+      { id: 'tv-justica-6', title: 'Programa TV Justiça 6', thumbnail: 'https://i.ytimg.com/vi/TyJoEHRJNBA/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=TyJoEHRJNBA', category: 'Direito' },
+      { id: 'tv-justica-7', title: 'Programa TV Justiça 7', thumbnail: 'https://i.ytimg.com/vi/D9U70oCtvj4/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=D9U70oCtvj4', category: 'Direito' },
+      { id: 'tv-justica-8', title: 'Programa TV Justiça 8', thumbnail: 'https://i.ytimg.com/vi/jSxUmZFtuec/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=jSxUmZFtuec', category: 'Direito' },
+      { id: 'tv-justica-9', title: 'Programa TV Justiça 9', thumbnail: 'https://i.ytimg.com/vi/8d1PJ-GphJ0/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=8d1PJ-GphJ0', category: 'Direito' },
+      { id: 'tv-justica-10', title: 'Programa TV Justiça 10', thumbnail: 'https://i.ytimg.com/vi/z7sl02rSJBU/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=z7sl02rSJBU', category: 'Direito' },
+    ],
+  },
+  {
+    id: 'tv-senado',
+    name: 'TV Senado',
+    logo: '',
+    backgroundColor: '#1A1A2E',
+    streamUrl: '', // TODO: adicionar stream ao vivo
+    programs: [
+      { id: 'tv-senado-1', title: 'Programa TV Senado 1', thumbnail: 'https://i.ytimg.com/vi/C2m7YOXnA4o/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=C2m7YOXnA4o', category: 'Política' },
+      { id: 'tv-senado-2', title: 'Programa TV Senado 2', thumbnail: 'https://i.ytimg.com/vi/iSouHkfOypE/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=iSouHkfOypE', category: 'Política' },
+      { id: 'tv-senado-3', title: 'Programa TV Senado 3', thumbnail: 'https://i.ytimg.com/vi/_xXFu4k3WRU/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=_xXFu4k3WRU', category: 'Política' },
+      { id: 'tv-senado-4', title: 'Programa TV Senado 4', thumbnail: 'https://i.ytimg.com/vi/SCmQlxfIRLc/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=SCmQlxfIRLc', category: 'Política' },
+      { id: 'tv-senado-5', title: 'Programa TV Senado 5', thumbnail: 'https://i.ytimg.com/vi/UUn05qqJdQg/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=UUn05qqJdQg', category: 'Política' },
+      { id: 'tv-senado-6', title: 'Programa TV Senado 6', thumbnail: 'https://i.ytimg.com/vi/aShqP_MDagw/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=aShqP_MDagw', category: 'Política' },
+      { id: 'tv-senado-7', title: 'Programa TV Senado 7', thumbnail: 'https://i.ytimg.com/vi/3po6QyN0f9A/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=3po6QyN0f9A', category: 'Política' },
+      { id: 'tv-senado-8', title: 'Programa TV Senado 8', thumbnail: 'https://i.ytimg.com/vi/_xNNCQQR4Tk/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=_xNNCQQR4Tk', category: 'Política' },
+      { id: 'tv-senado-9', title: 'Programa TV Senado 9', thumbnail: 'https://i.ytimg.com/vi/bJSeZt-qLkA/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=bJSeZt-qLkA', category: 'Política' },
+    ],
+  },
 ];
