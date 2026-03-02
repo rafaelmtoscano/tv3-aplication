@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import Home from './pages/Home/index';
 import Live from './pages/Live/index';
+import WatchPage from './pages/Watch/index';
 import MyChannels from './pages/MyChannels/index';
 import Apps from './pages/Apps/index';
 import Settings from './pages/Settings/index';
@@ -15,6 +16,7 @@ import { HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonI
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [livePage, setLivePage] = useState<{ channelId: string } | null>(null);
+  const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
 
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
@@ -42,6 +44,8 @@ export default function App() {
           const slide = homeData.hero[state.mainItemIndex];
           if (slide?.isLive && slide?.videoUrl) {
             setLivePage({ channelId: slide.channelId });
+          } else if (slide?.videoUrl) {
+            setWatchPage({ videoUrl: slide.videoUrl, title: slide.title, logo: slide.logo, channelName: slide.channelId });
           }
         }
         if (state.mainZone === 'rail-0') {
@@ -49,6 +53,17 @@ export default function App() {
           const card = homeData.rails[0].cards[state.mainItemIndex];
           if (card?.streamUrl) {
             setLivePage({ channelId: card.channelId });
+          }
+        }
+        // Video rails (rail-1, rail-2, rail-3, etc.)
+        const zoneMatch = state.mainZone.match(/^rail-(\d+)$/);
+        if (zoneMatch) {
+          const railIndex = parseInt(zoneMatch[1]);
+          if (railIndex >= 1) {
+            const card = homeData.rails[railIndex]?.cards[state.mainItemIndex];
+            if (card?.videoUrl) {
+              setWatchPage({ videoUrl: card.videoUrl, title: card.title, logo: card.logo, channelName: card.channelName });
+            }
           }
         }
       }
@@ -64,6 +79,15 @@ export default function App() {
     variant: 'icon',
     icon: <PersonIcon size={28} />,
   }), []);
+
+  if (watchPage) {
+    return (
+      <WatchPage
+        {...watchPage}
+        onExit={() => setWatchPage(null)}
+      />
+    );
+  }
 
   if (livePage) {
     return (

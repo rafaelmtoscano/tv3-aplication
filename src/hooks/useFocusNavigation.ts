@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-export type MainZone = 'hero' | 'rail-0' | 'rail-1' | 'my-space';
+export type MainZone = 'hero' | `rail-${number}` | 'my-space';
 
 export interface FocusState {
   region: 'sidebar' | 'main';
@@ -79,10 +79,17 @@ export const useFocusNavigation = ({
 
           case 'ArrowRight': {
             let limit = 0;
-            if (mainZone === 'hero') limit = heroLength - 1;
-            else if (mainZone === 'rail-0') limit = (railLengths[0] || 0) - 1;
-            else if (mainZone === 'rail-1') limit = (railLengths[1] || 0) - 1;
-            else if (mainZone === 'my-space') limit = 0;
+            if (mainZone === 'hero') {
+              limit = heroLength - 1;
+            } else if (mainZone === 'my-space') {
+              limit = 0;
+            } else {
+              const railMatch = mainZone.match(/^rail-(\d+)$/);
+              if (railMatch) {
+                const railIdx = parseInt(railMatch[1]);
+                limit = (railLengths[railIdx] || 0) - 1;
+              }
+            }
 
             if (mainItemIndex < limit) {
               setFocusState((prev) => ({ ...prev, mainItemIndex: mainItemIndex + 1 }));
@@ -90,25 +97,39 @@ export const useFocusNavigation = ({
             break;
           }
 
-          case 'ArrowDown':
+          case 'ArrowDown': {
             if (mainZone === 'hero') {
               setFocusState((prev) => ({ ...prev, mainZone: 'rail-0', mainItemIndex: 0 }));
-            } else if (mainZone === 'rail-0') {
-              setFocusState((prev) => ({ ...prev, mainZone: 'rail-1', mainItemIndex: 0 }));
-            } else if (mainZone === 'rail-1') {
-              setFocusState((prev) => ({ ...prev, mainZone: 'my-space', mainItemIndex: 0 }));
+            } else if (mainZone !== 'my-space') {
+              const railMatch = mainZone.match(/^rail-(\d+)$/);
+              if (railMatch) {
+                const railIdx = parseInt(railMatch[1]);
+                if (railIdx < railLengths.length - 1) {
+                  setFocusState((prev) => ({ ...prev, mainZone: `rail-${railIdx + 1}` as MainZone, mainItemIndex: 0 }));
+                } else {
+                  setFocusState((prev) => ({ ...prev, mainZone: 'my-space', mainItemIndex: 0 }));
+                }
+              }
             }
             break;
+          }
 
-          case 'ArrowUp':
-            if (mainZone === 'rail-0') {
-              setFocusState((prev) => ({ ...prev, mainZone: 'hero', mainItemIndex: 0 }));
-            } else if (mainZone === 'rail-1') {
-              setFocusState((prev) => ({ ...prev, mainZone: 'rail-0', mainItemIndex: 0 }));
-            } else if (mainZone === 'my-space') {
-              setFocusState((prev) => ({ ...prev, mainZone: 'rail-1', mainItemIndex: 0 }));
+          case 'ArrowUp': {
+            if (mainZone === 'my-space') {
+              setFocusState((prev) => ({ ...prev, mainZone: `rail-${railLengths.length - 1}` as MainZone, mainItemIndex: 0 }));
+            } else if (mainZone !== 'hero') {
+              const railMatch = mainZone.match(/^rail-(\d+)$/);
+              if (railMatch) {
+                const railIdx = parseInt(railMatch[1]);
+                if (railIdx > 0) {
+                  setFocusState((prev) => ({ ...prev, mainZone: `rail-${railIdx - 1}` as MainZone, mainItemIndex: 0 }));
+                } else {
+                  setFocusState((prev) => ({ ...prev, mainZone: 'hero', mainItemIndex: 0 }));
+                }
+              }
             }
             break;
+          }
 
           case 'Escape':
             if (mainZone !== 'hero') {
