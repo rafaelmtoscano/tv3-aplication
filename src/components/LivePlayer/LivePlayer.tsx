@@ -10,6 +10,7 @@ export interface LiveChannel {
   name: string;
   logo?: string;
   logoFull?: string;
+  backgroundColor?: string;
   streamUrl: string;
 }
 
@@ -211,11 +212,13 @@ export const LivePlayer = React.memo(
                     key={channel.id}
                     style={{
                       borderRadius: '16px',
+                      background: channel.backgroundColor,
                       outline: activeChannelId === channel.id && focusedIndex !== i + 1
                         ? '3px solid rgba(255,255,255,0.4)'
                         : 'none',
                       transition: 'outline 0.2s ease',
                       flexShrink: 0,
+                      overflow: 'hidden',
                     }}
                   >
                     <TileButton
@@ -225,6 +228,7 @@ export const LivePlayer = React.memo(
                       alt={channel.name}
                       isFocused={focusedIndex === i + 1}
                       onClick={() => setActiveChannelId(channel.id)}
+                      imageObjectFit="contain"
                     />
                   </div>
                 ))}

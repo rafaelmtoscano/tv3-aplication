@@ -27,7 +27,7 @@ export const channels: Channel[] = [
     name: 'TV MEC',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F9e0a62eeec2a4e2aaa1fe8ab565197bc?format=webp&width=480&height=192',
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F9e0a62eeec2a4e2aaa1fe8ab565197bc?format=webp&width=480&height=192',
-    backgroundColor: '#1A5276',
+    backgroundColor: '#3A2452',
     streamUrl: '',
     programs: [
       { id: 'tv-mec-1', title: 'Programa tv-mec-1', thumbnail: 'https://i.ytimg.com/vi/sPnSXbh7Fwc/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=sPnSXbh7Fwc', category: 'Educação' },
@@ -45,7 +45,7 @@ export const channels: Channel[] = [
     name: 'TV Câmara',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F42f9421675e545838eedabcd6fe2da8b?format=webp&width=480&height=192',
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F64a9563fa6b74e149a27e7d4b91da1c1?format=webp&width=800&height=450',
-    backgroundColor: '#F8F8F8',
+    backgroundColor: '#FFFFFF',
     streamUrl: 'https://stream3.camara.gov.br/tv1/manifest.m3u8',
     programs: [
       { id: 'tv-camara-1', title: 'Programa tv-camara-1', thumbnail: 'https://i.ytimg.com/vi/b7QbtVgLheQ/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=b7QbtVgLheQ', category: 'Política' },
@@ -65,7 +65,7 @@ export const channels: Channel[] = [
     name: 'TV Brasil',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F40e646594c6c430a94ef7b5ff7f589c0?format=webp&width=480&height=192',
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F5c8223094974421f98bc81f062e7b025?format=webp&width=800&height=450',
-    backgroundColor: '#F5C400',
+    backgroundColor: '#EEBE08',
     streamUrl: 'https://tvbrasil-stream.ebc.com.br/EBC_HD-avc1_3000000=10004.m3u8',
     programs: [
       { id: 'tv-brasil-1', title: 'Programa tv-brasil-1', thumbnail: 'https://i.ytimg.com/vi/tu0fMZNKQQs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=tu0fMZNKQQs', category: 'Jornalismo' },
@@ -85,7 +85,7 @@ export const channels: Channel[] = [
     name: 'Canal Gov',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F655d4a3ff4a041e490aa5ba1378906bd?format=webp&width=480&height=192',
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Fa6eaef1fb7db406593cd2e64dfafb0a5?format=webp&width=800&height=450',
-    backgroundColor: '#007A33',
+    backgroundColor: '#0D448C',
     streamUrl: 'https://canalgov-stream.ebc.com.br/GOV-avc1_1800000=10000.m3u8',
     programs: [
       { id: 'canal-gov-1', title: 'Programa canal-gov-1', thumbnail: 'https://i.ytimg.com/vi/mu7heQQ3ekU/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=mu7heQQ3ekU', category: 'Governo' },
@@ -105,7 +105,7 @@ export const channels: Channel[] = [
     name: 'TV Justiça',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Ff721c15dcde24ceeba9ee7e1152d9921?format=webp&width=480&height=192',
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F8c6042eefaa9409593860cbbde83aad5?format=webp&width=800&height=450',
-    backgroundColor: '#003DA5',
+    backgroundColor: '#084987',
     streamUrl: 'https://www.youtube.com/watch?v=Loa9DFv2dpA',
     programs: [
       { id: 'tv-justica-1', title: 'Programa tv-justica-1', thumbnail: 'https://i.ytimg.com/vi/g1HEMB-9fXM/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=g1HEMB-9fXM', category: 'Direito' },
@@ -125,7 +125,7 @@ export const channels: Channel[] = [
     name: 'TV Senado',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Fefb11e9bb9114a46b23813f61e4f1df8?format=webp&width=480&height=192',
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F71bea8998b7d494ea2da48d509a33111?format=webp&width=800&height=450',
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#FFFFFF',
     streamUrl: '',
     programs: [
       { id: 'tv-senado-1', title: 'Programa tv-senado-1', thumbnail: 'https://i.ytimg.com/vi/C2m7YOXnA4o/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=C2m7YOXnA4o', category: 'Política' },

@@ -52,6 +52,11 @@ export interface TileButtonProps {
    * Manual override for focus state (mostly for Storybook/demonstration).
    */
   isFocused?: boolean;
+  /**
+   * Object fit for the image variant.
+   * @default 'cover'
+   */
+  imageObjectFit?: 'cover' | 'contain';
 }
 
 export const TileButton = React.memo(
@@ -70,6 +75,7 @@ export const TileButton = React.memo(
         'aria-label': ariaLabel,
         tabIndex,
         isFocused: forcedFocused,
+        imageObjectFit = 'cover',
       },
       ref
     ) => {
@@ -145,7 +151,7 @@ export const TileButton = React.memo(
       const imageStyle: React.CSSProperties = {
         width: '100%',
         height: '100%',
-        objectFit: 'cover',
+        objectFit: imageObjectFit,
         position: 'absolute',
         top: 0,
         left: 0,
