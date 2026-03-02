@@ -8,8 +8,7 @@ import Help from './pages/Help/index';
 import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
-import { heroSlides } from './data/hero-slides';
-import { rails } from './data/rails';
+import { homeData } from './data/home';
 import { colors } from './styles/colors';
 import { HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
 
@@ -31,8 +30,8 @@ export default function App() {
     mainItemIndex,
     sidebarIndex,
   } = useFocusNavigation({
-    heroLength: heroSlides.length,
-    railLengths: rails.map((r) => r.cards.length),
+    heroLength: homeData.hero.length,
+    railLengths: homeData.rails.map((r) => r.cards.length),
     sidebarItemIds: sidebarItems.map((i) => i.id),
     sidebarLength: sidebarItems.length + 1,
     activeSidebarId: currentPage,

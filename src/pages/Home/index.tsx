@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HeroBanner } from '../../components/HeroBanner';
 import type { HeroBannerSlide } from '../../components/HeroBanner';
+import { ContentRail } from '../../components/ContentRail';
+import type { ContentRailItem } from '../../components/ContentRail';
 import type { MainZone } from '../../hooks/useFocusNavigation';
-import { heroSlides } from '../../data/hero-slides';
+import { homeData } from '../../data/home';
+import type { Rail } from '../../data/home';
 import { colors } from '../../styles/colors';
 
 const HERO_HEIGHT = 680;
@@ -19,17 +22,30 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
 
   const bannerSlides: HeroBannerSlide[] = useMemo(
     () =>
-      heroSlides.map((slide) => ({
+      homeData.hero.map((slide) => ({
         id: slide.id,
-        mediaType: 'image' as const,
-        mediaSrc: slide.backgroundImage,
+        mediaType: slide.mediaType,
+        mediaSrc: slide.mediaSrc,
+        logo: slide.logo,
+        isLive: slide.isLive,
+        classification: slide.classification,
+        signal: slide.signal,
         title: slide.title,
         description: slide.description,
-        buttonLabel: slide.ctaLabel,
-        isLive: slide.badge === 'AO VIVO',
+        buttonLabel: slide.buttonLabel,
       })),
     []
   );
+
+  const railItems = (cards: Rail['cards']): ContentRailItem[] =>
+    cards.map(({ id, image, logo, title, label, isLive }) => ({
+      id,
+      image,
+      logo,
+      title,
+      label,
+      isLive,
+    }));
 
   useEffect(() => {
     if (!isActive) return;
@@ -44,8 +60,14 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
       case 'rail-1':
         setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT);
         break;
-      case 'my-space':
+      case 'rail-2':
         setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 2);
+        break;
+      case 'rail-3':
+        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 3);
+        break;
+      case 'my-space':
+        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 4);
         break;
     }
   }, [mainZone, isActive]);
@@ -77,8 +99,22 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
           />
         </div>
 
-        {/* Just to enable scrolling visual test, we could add more height */}
-        <div style={{ height: '200vh' }} />
+        {/* Content Rails */}
+        {homeData.rails.map((rail, railIndex) => (
+          <ContentRail
+            key={rail.id}
+            title={rail.title}
+            variant={rail.variant}
+            items={railItems(rail.cards)}
+            focusedIndex={mainZone === `rail-${railIndex}` ? mainItemIndex : -1}
+            onFocusedIndexChange={() => {}}
+            onNavigateUp={() => {}}
+            onNavigateDown={() => {}}
+          />
+        ))}
+
+        {/* Space for My Space */}
+        <div style={{ height: RAIL_HEIGHT }} />
       </div>
     </main>
   );
