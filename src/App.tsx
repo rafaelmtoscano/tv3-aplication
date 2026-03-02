@@ -33,6 +33,7 @@ export default function App() {
     mainZone,
     mainItemIndex,
     sidebarIndex,
+    resetToMain,
   } = useFocusNavigation({
     heroLength: homeData.hero.length,
     railLengths: homeData.rails.map((r) => r.cards.length),
@@ -89,7 +90,10 @@ export default function App() {
     return (
       <WatchPage
         {...watchPage}
-        onExit={() => setWatchPage(null)}
+        onExit={() => {
+          setWatchPage(null);
+          resetToMain();
+        }}
       />
     );
   }
@@ -98,7 +102,10 @@ export default function App() {
     return (
       <Live
         initialChannelId={livePage.channelId}
-        onExit={() => setLivePage(null)}
+        onExit={() => {
+          setLivePage(null);
+          resetToMain();
+        }}
       />
     );
   }

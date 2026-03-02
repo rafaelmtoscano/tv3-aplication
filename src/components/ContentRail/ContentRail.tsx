@@ -122,14 +122,17 @@ export const ContentRail = memo(
         overflowY: 'visible',
       };
 
+      const hasFocus = focusedIndex !== undefined && focusedIndex >= 0;
+      const CARD_IDLE_HEIGHT = 248;
+      const CARD_FOCUSED_HEIGHT = 312;
+
       // Outer div: reserves vertical breathing room so focused cards
-      // (which grow upward/downward) are never clipped. The negative
-      // marginBlock compensates so sibling elements don't shift.
+      // (which grow upward/downward) are never clipped.
       const outerSpaceStyle: React.CSSProperties = {
         position: 'relative',
         width: '100%',
-        paddingBlock: '64px',
-        marginBlock: '-64px',
+        height: hasFocus ? `${CARD_FOCUSED_HEIGHT}px` : `${CARD_IDLE_HEIGHT}px`,
+        transition: 'height 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
       };
 
       // Inner div: horizontal scroll only.

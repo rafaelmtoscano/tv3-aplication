@@ -10,6 +10,7 @@ import { colors } from '../../styles/colors';
 
 const HERO_HEIGHT = 680;
 const RAIL_HEIGHT = 320;
+const RAIL_SCROLL_OFFSET = 160;
 
 export interface HomeProps {
   mainZone: MainZone;
@@ -55,19 +56,19 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
         setMainScrollY(0);
         break;
       case 'rail-0':
-        setMainScrollY(HERO_HEIGHT);
+        setMainScrollY(HERO_HEIGHT - RAIL_SCROLL_OFFSET);
         break;
       case 'rail-1':
-        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT);
+        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT - RAIL_SCROLL_OFFSET);
         break;
       case 'rail-2':
-        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 2);
+        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 2 - RAIL_SCROLL_OFFSET);
         break;
       case 'rail-3':
-        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 3);
+        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 3 - RAIL_SCROLL_OFFSET);
         break;
       case 'my-space':
-        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 4);
+        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 4 - RAIL_SCROLL_OFFSET);
         break;
     }
   }, [mainZone, isActive]);
