@@ -10,6 +10,7 @@ import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
 import { homeData } from './data/home';
+import { channels } from './data/channels';
 import { colors } from './styles/colors';
 import { HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
 
@@ -69,9 +70,13 @@ export default function App() {
       }
     },
     onSidebarSelect: (id) => {
-      if (id !== 'avatar') {
-        setCurrentPage(id);
+      if (id === 'avatar') return;
+      if (id === 'live') {
+        const firstLiveChannel = channels.find(ch => ch.streamUrl && ch.streamUrl.length > 0);
+        if (firstLiveChannel) setLivePage({ channelId: firstLiveChannel.id });
+        return;
       }
+      setCurrentPage(id);
     },
   });
 
@@ -130,8 +135,6 @@ export default function App() {
             isActive={currentPage === 'home'}
           />
         );
-      case 'live':
-        return <Live mainItemIndex={mainItemIndex} isActive={currentPage === 'live'} />;
       case 'my-channels':
         return <MyChannels mainItemIndex={mainItemIndex} isActive={currentPage === 'my-channels'} />;
       case 'apps':

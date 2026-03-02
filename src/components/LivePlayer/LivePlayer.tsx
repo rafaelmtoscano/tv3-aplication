@@ -78,6 +78,10 @@ export const LivePlayer = React.memo(
               setActiveChannelId(channels[focusedIndex - 1].id);
             }
             break;
+          case 'Escape':
+          case 'Backspace':
+            onExit?.();
+            break;
           default:
             break;
         }
