@@ -84,7 +84,7 @@ export const channels: Channel[] = [
     id: 'canal-gov',
     name: 'Canal Gov',
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F655d4a3ff4a041e490aa5ba1378906bd?format=webp&width=480&height=192',
-    logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F655d4a3ff4a041e490aa5ba1378906bd?format=webp&width=480&height=192',
+    logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Fa6eaef1fb7db406593cd2e64dfafb0a5?format=webp&width=800&height=450',
     backgroundColor: '#007A33',
     streamUrl: 'https://canalgov-stream.ebc.com.br/GOV-avc1_1800000=10000.m3u8',
     programs: [
