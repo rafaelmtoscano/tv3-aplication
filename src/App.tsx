@@ -14,6 +14,7 @@ import { HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonI
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
+  const [livePage, setLivePage] = useState<{ channelId: string } | null>(null);
 
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
@@ -36,7 +37,21 @@ export default function App() {
     sidebarLength: sidebarItems.length + 1,
     activeSidebarId: currentPage,
     onEnter: (state) => {
-      console.log('Enter pressed in state:', state);
+      if (currentPage === 'home') {
+        if (state.mainZone === 'hero') {
+          const slide = homeData.hero[state.mainItemIndex];
+          if (slide?.isLive && slide?.videoUrl) {
+            setLivePage({ channelId: slide.channelId });
+          }
+        }
+        if (state.mainZone === 'rail-0') {
+          // rail-0 = TV ao vivo
+          const card = homeData.rails[0].cards[state.mainItemIndex];
+          if (card?.streamUrl) {
+            setLivePage({ channelId: card.channelId });
+          }
+        }
+      }
     },
     onSidebarSelect: (id) => {
       if (id !== 'avatar') {
@@ -49,6 +64,15 @@ export default function App() {
     variant: 'icon',
     icon: <PersonIcon size={28} />,
   }), []);
+
+  if (livePage) {
+    return (
+      <Live
+        initialChannelId={livePage.channelId}
+        onExit={() => setLivePage(null)}
+      />
+    );
+  }
 
   const rootStyle: React.CSSProperties = {
     position: 'fixed',

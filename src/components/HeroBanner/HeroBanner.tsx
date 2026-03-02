@@ -1,4 +1,5 @@
 import React, { forwardRef, memo, useCallback, useEffect, useRef, useState } from 'react';
+import Hls from 'hls.js';
 import { ActionButton } from '../ActionButton';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
@@ -34,6 +35,35 @@ const getClassificationStyle = (classification: string | undefined) => {
     '18': { background: '#0A0A0A', color: '#FFF', border: '1px solid rgba(255,255,255,0.3)' },
   };
   return styles[classification || ''] || null;
+};
+
+const HlsVideo = ({ src }: { src: string }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (Hls.isSupported()) {
+      const hls = new Hls({ autoStartLoad: true });
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      return () => hls.destroy();
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari suporta HLS nativo
+      video.src = src;
+    }
+  }, [src]);
+
+  return (
+    <video
+      ref={videoRef}
+      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      autoPlay
+      muted
+      loop
+      playsInline
+    />
+  );
 };
 
 export const HeroBanner = memo(
@@ -218,14 +248,7 @@ export const HeroBanner = memo(
               }}
             >
               {s.mediaType === 'video' ? (
-                <video
-                  src={s.mediaSrc}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                />
+                <HlsVideo src={s.mediaSrc} />
               ) : (
                 <img
                   src={s.mediaSrc}

@@ -1,50 +1,29 @@
 import React from 'react';
-import { colors } from '../../styles/colors';
-import { typography } from '../../styles/typography';
-import { ContentRail } from '../../components/ContentRail';
-import { rails } from '../../data/rails';
-interface Props {
-  isActive: boolean;
-  mainItemIndex: number;
+import { LivePlayer } from '../../components/LivePlayer';
+import { channels } from '../../data/channels';
+
+interface LivePageProps {
+  isActive?: boolean;
+  mainItemIndex?: number;
+  initialChannelId?: string;
+  onExit?: () => void;
 }
 
-export default function Live({ isActive, mainItemIndex }: Props) {
-  const containerStyle: React.CSSProperties = {
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: colors.background.baseInverse,
-    gap: '40px',
-  };
-
-  const textStyle: React.CSSProperties = {
-    ...typography.display.medium,
-    color: colors.text.primaryInverse,
-  };
-
-  const railItems = rails[0].cards.map(card => ({
-    id: card.id,
-    image: card.image,
-    title: card.title,
-    isLive: card.isLive,
-    logo: card.logo,
-    label: card.label,
-    timestamp: card.timestamp,
+const liveChannels = channels
+  .filter(ch => ch.streamUrl && ch.streamUrl.length > 0)
+  .map(ch => ({
+    id: ch.id,
+    name: ch.name,
+    logo: ch.logo,
+    streamUrl: ch.streamUrl!,
   }));
 
+export default function LivePage({ initialChannelId, onExit }: LivePageProps) {
   return (
-    <div style={containerStyle}>
-      <span style={textStyle}>Ao vivo</span>
-      <div style={{ width: '100%' }}>
-        <ContentRail
-          title={rails[0].title}
-          variant={rails[0].cardVariant}
-          items={railItems}
-          focusedIndex={isActive ? mainItemIndex : -1}
-        />
-      </div>
-    </div>
+    <LivePlayer
+      channels={liveChannels}
+      initialChannelId={initialChannelId}
+      onExit={onExit}
+    />
   );
 }

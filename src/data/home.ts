@@ -61,8 +61,8 @@ const heroSlides: HeroSlide[] = [
     const ch = getChannel('canal-gov');
     return {
       id: 'hero-live-canal-gov',
-      mediaType: 'image' as const,
-      mediaSrc: ch.programs![0].thumbnail,
+      mediaType: 'video' as const,
+      mediaSrc: ch.streamUrl!,
       logo: ch.logo,
       isLive: true,
       signal: 'HD' as const,
