@@ -96,6 +96,7 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
         <div style={{ height: HERO_HEIGHT, overflow: 'hidden' }}>
           <HeroBanner
             slides={bannerSlides}
+            activeIndex={mainZone === 'hero' ? mainItemIndex : undefined}
           />
         </div>
 

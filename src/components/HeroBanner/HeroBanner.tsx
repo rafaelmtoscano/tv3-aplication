@@ -23,6 +23,7 @@ export interface HeroBannerProps {
   autoPlayInterval?: number;
   onSlideChange?: (index: number) => void;
   className?: string;
+  activeIndex?: number;
 }
 
 const getClassificationStyle = (classification: string | undefined) => {
@@ -68,24 +69,28 @@ const HlsVideo = ({ src }: { src: string }) => {
 
 export const HeroBanner = memo(
   forwardRef<HTMLDivElement, HeroBannerProps>(
-    ({ slides, autoPlayInterval = 15000, onSlideChange, className }, ref) => {
-      const [activeIndex, setActiveIndex] = useState(0);
+    ({ slides, autoPlayInterval = 15000, onSlideChange, className, activeIndex: controlledIndex }, ref) => {
+      const isControlled = controlledIndex !== undefined;
+      const [internalIndex, setInternalIndex] = useState(0);
+      const activeIndex = isControlled ? controlledIndex : internalIndex;
       const [isPaused, setIsPaused] = useState(true);
       const containerRef = useRef<HTMLDivElement>(null);
       const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
       const goToSlide = useCallback(
         (index: number) => {
-          setActiveIndex(index);
+          if (!isControlled) {
+            setInternalIndex(index);
+          }
           onSlideChange?.(index);
         },
-        [onSlideChange]
+        [onSlideChange, isControlled]
       );
 
       useEffect(() => {
-        if (isPaused || slides.length <= 1) return;
+        if (isPaused || slides.length <= 1 || isControlled) return;
         intervalRef.current = setInterval(() => {
-          setActiveIndex((i) => {
+          setInternalIndex((i) => {
             const next = (i + 1) % slides.length;
             setTimeout(() => onSlideChange?.(next), 0);
             return next;
@@ -94,29 +99,7 @@ export const HeroBanner = memo(
         return () => {
           if (intervalRef.current) clearInterval(intervalRef.current);
         };
-      }, [isPaused, slides.length, autoPlayInterval, onSlideChange]);
-
-      const handleFocus = () => setIsPaused(true);
-
-      const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
-        const related = e.relatedTarget as Node | null;
-        if (!containerRef.current?.contains(related)) {
-          setIsPaused(false);
-        }
-      };
-
-      const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          if (activeIndex > 0) goToSlide(activeIndex - 1);
-        } else if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          if (activeIndex < slides.length - 1) goToSlide(activeIndex + 1);
-        } else if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          slides[activeIndex]?.onButtonClick?.();
-        }
-      };
+      }, [isPaused, slides.length, autoPlayInterval, onSlideChange, isControlled]);
 
       const containerStyle: React.CSSProperties = {
         width: '100%',
@@ -230,10 +213,6 @@ export const HeroBanner = memo(
           }}
           style={containerStyle}
           className={className}
-          tabIndex={0}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
           aria-label={`Hero banner: ${slide?.title}`}
           role="region"
         >

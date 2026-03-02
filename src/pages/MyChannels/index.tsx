@@ -2,7 +2,8 @@ import React from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { ContentRail } from '../../components/ContentRail';
-import { rails } from '../../data/rails';
+import { channels } from '../../data/channels';
+
 interface Props {
   isActive: boolean;
   mainItemIndex: number;
@@ -17,30 +18,30 @@ export default function MyChannels({ isActive, mainItemIndex }: Props) {
     justifyContent: 'center',
     background: colors.background.baseInverse,
     gap: '40px',
+    padding: '0 64px',
   };
 
-  const textStyle: React.CSSProperties = {
-    ...typography.display.medium,
+  const titleStyle: React.CSSProperties = {
+    ...typography.headline.large,
     color: colors.text.primaryInverse,
+    alignSelf: 'flex-start',
   };
 
-  const railItems = rails[0].cards.map(card => ({
-    id: card.id,
-    image: card.image,
-    title: card.title,
-    isLive: card.isLive,
-    logo: card.logo,
-    label: card.label,
-    timestamp: card.timestamp,
+  const railItems = channels.map(ch => ({
+    id: ch.id,
+    image: ch.logo,
+    logo: ch.logo,
+    label: ch.name,
+    isLive: !!(ch.streamUrl && ch.streamUrl.length > 0),
   }));
 
   return (
     <div style={containerStyle}>
-      <span style={textStyle}>Meus canais</span>
+      <h2 style={titleStyle}>Meus canais</h2>
       <div style={{ width: '100%' }}>
         <ContentRail
-          title={rails[0].title}
-          variant={rails[0].cardVariant}
+          title="Todos os canais"
+          variant="image"
           items={railItems}
           focusedIndex={isActive ? mainItemIndex : -1}
         />

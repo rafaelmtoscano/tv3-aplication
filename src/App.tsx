@@ -121,10 +121,6 @@ export default function App() {
   };
 
   const renderPage = () => {
-    const pageProps = {
-      mainItemIndex,
-    };
-
     switch (currentPage) {
       case 'home':
         return (
@@ -135,15 +131,15 @@ export default function App() {
           />
         );
       case 'live':
-        return <Live {...pageProps} isActive={currentPage === 'live'} />;
+        return <Live mainItemIndex={mainItemIndex} isActive={currentPage === 'live'} />;
       case 'my-channels':
-        return <MyChannels {...pageProps} isActive={currentPage === 'my-channels'} />;
+        return <MyChannels mainItemIndex={mainItemIndex} isActive={currentPage === 'my-channels'} />;
       case 'apps':
-        return <Apps {...pageProps} isActive={currentPage === 'apps'} />;
+        return <Apps isActive={currentPage === 'apps'} />;
       case 'settings':
-        return <Settings {...pageProps} isActive={currentPage === 'settings'} />;
+        return <Settings isActive={currentPage === 'settings'} />;
       case 'help':
-        return <Help {...pageProps} isActive={currentPage === 'help'} />;
+        return <Help isActive={currentPage === 'help'} />;
       default:
         return <Home mainZone={mainZone} mainItemIndex={mainItemIndex} isActive={currentPage === 'home'} />;
     }

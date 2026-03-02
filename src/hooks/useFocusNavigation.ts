@@ -183,6 +183,15 @@ export const useFocusNavigation = ({
     };
   }, [handleKeyDown]);
 
+  useEffect(() => {
+    setFocusState((prev) => ({
+      ...prev,
+      mainZone: 'hero',
+      mainItemIndex: 0,
+      region: 'main', // Ensure we switch back to main region when navigating to a new page
+    }));
+  }, [activeSidebarId]);
+
   const isInSidebar = focusState.region === 'sidebar';
 
   return {
