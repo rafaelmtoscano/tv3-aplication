@@ -47,6 +47,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
 
   const onReady = useCallback((event: YouTubeEvent) => {
     playerRef.current = event.target;
+    event.target.playVideo();
     const dur = event.target.getDuration();
     if (dur) setDuration(dur);
     showControls();
