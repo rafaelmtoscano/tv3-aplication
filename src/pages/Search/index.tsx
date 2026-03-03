@@ -87,15 +87,15 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
   // Build active rails
   const activeRails = useMemo(() => {
     const rails: RailData[] = [];
-    if (results.matchedChannels.length > 0) {
+    if (results.matchedChannels.length > 0 && query.trim().length > 0) {
       rails.push({
         id: 'channels',
-        title: query ? 'Canais' : 'Todos os canais',
+        title: 'Canais',
         items: results.matchedChannels,
         type: 'channels',
       });
     }
-    if (results.matchedContent.length > 0 && query) {
+    if (results.matchedContent.length > 0 && query.trim().length > 0) {
       rails.push({
         id: 'content',
         title: 'Conteúdos',
@@ -103,7 +103,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
         type: 'content',
       });
     }
-    if (results.matchedSchedule.length > 0) {
+    if (results.matchedSchedule.length > 0 && query.trim().length > 0) {
       rails.push({
         id: 'schedule',
         title: 'Programação',
@@ -331,7 +331,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
   };
 
   const keyboardColumnStyle: React.CSSProperties = {
-    width: '520px',
+    width: '600px',
     flexShrink: 0,
     paddingLeft: '136px',
     paddingRight: '24px',
@@ -364,7 +364,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
 
   const renderKeyboard = () => {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {KEYBOARD_ROWS.map((row, rowIdx) => (
           <div key={rowIdx} style={{ display: 'flex', gap: '6px', flexWrap: 'nowrap' }}>
             {row.map((key, colIdx) => {
@@ -375,13 +375,13 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
                   type="button"
                   tabIndex={-1}
                   style={{
-                    width: '30px',
-                    height: '42px',
+                    width: '38px',
+                    height: '52px',
                     flexShrink: 0,
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     background: isFocused ? colors.background.brandPrimary : 'rgba(255,255,255,0.08)',
                     color: colors.text.primaryInverse,
-                    ...typography.body.small,
+                    ...typography.body.medium,
                     border: 'none',
                     cursor: 'pointer',
                     outline: 'none',
@@ -405,14 +405,14 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
             type="button"
             tabIndex={-1}
             style={{
-              height: '42px',
+              height: '52px',
               flex: 1,
-              borderRadius: '6px',
+              borderRadius: '8px',
               background: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 0
                 ? colors.background.brandPrimary
                 : 'rgba(255,255,255,0.08)',
               color: colors.text.primaryInverse,
-              ...typography.body.small,
+              ...typography.body.medium,
               border: 'none',
               cursor: 'pointer',
               outline: 'none',
@@ -426,14 +426,14 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
             type="button"
             tabIndex={-1}
             style={{
-              height: '42px',
-              width: '72px',
-              borderRadius: '6px',
+              height: '52px',
+              width: '88px',
+              borderRadius: '8px',
               background: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 1
                 ? colors.background.brandPrimary
                 : 'rgba(255,255,255,0.08)',
               color: colors.text.primaryInverse,
-              ...typography.body.small,
+              ...typography.body.medium,
               border: 'none',
               cursor: 'pointer',
               outline: 'none',
@@ -460,7 +460,20 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
   };
 
   const renderRails = () => {
-    if (query.length > 0 && activeRails.length === 0) {
+    if (query.length === 0) {
+      return (
+        <div style={{ paddingTop: '48px' }}>
+          <span style={{ ...typography.headline.large, color: colors.text.primaryInverse }}>
+            Canais, programas e muito mais
+          </span>
+          <p style={{ ...typography.body.large, color: colors.text.secondaryInverse, marginTop: '16px' }}>
+            Use o teclado para buscar conteúdo
+          </p>
+        </div>
+      );
+    }
+
+    if (activeRails.length === 0) {
       return (
         <div style={{
           display: 'flex',
