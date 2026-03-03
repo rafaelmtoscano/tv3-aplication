@@ -46,7 +46,7 @@ export default function App() {
       if (currentPage === 'home') {
         if (state.mainZone === 'hero') {
           const slide = homeData.hero[state.mainItemIndex];
-          if (slide?.isLive && slide?.videoUrl) {
+          if (slide?.isLive) {
             setLivePage({ channelId: slide.channelId });
           } else if (slide?.videoUrl) {
             setWatchPage({ videoUrl: slide.videoUrl, title: slide.title, logo: slide.logo, channelName: slide.channelId });

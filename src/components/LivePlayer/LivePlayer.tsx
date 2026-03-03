@@ -3,7 +3,6 @@ import { VideoPlayer } from '../VideoPlayer';
 import { TileButton } from '../TileButton';
 import { ActionButton } from '../ActionButton';
 import { EPGRail } from '../EPGRail';
-import { HomeIcon } from '../../icons';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { allSchedules, getUpcomingPrograms } from '../../data/schedule';
@@ -327,8 +326,7 @@ export const LivePlayer = React.memo(
                   <div style={railWrapperStyle}>
                     <TileButton
                       variant="icon-label"
-                      icon={<HomeIcon size={32} />}
-                      label="Tela de início"
+                      label="Sair"
                       isFocused={focusedIndex === 0}
                       onClick={() => onExit?.()}
                     />
