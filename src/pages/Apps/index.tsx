@@ -41,9 +41,9 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
         // Let it bubble to sidebar if focusedIndex is 0
         break;
       case 'ArrowRight':
-        e.preventDefault();
-        e.stopPropagation();
         if (focusedIndex < services.length - 1) {
+          e.preventDefault();
+          e.stopPropagation();
           setFocusedIndex((i) => i + 1);
         }
         break;
@@ -59,8 +59,7 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
         break;
       case 'ArrowUp':
       case 'ArrowDown':
-        e.preventDefault();
-        e.stopPropagation();
+        // Do not preventDefault or stopPropagation — let bubble to global hook for sidebar nav
         break;
       case 'Escape':
         e.preventDefault();
