@@ -194,7 +194,8 @@ export const HeroBanner = memo(
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
-        gap: '12px',
+        gap: '32px',
+        marginLeft: '-8px',
       };
 
       const paginationStyle: React.CSSProperties = {
