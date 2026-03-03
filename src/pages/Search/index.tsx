@@ -331,9 +331,10 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
   };
 
   const keyboardColumnStyle: React.CSSProperties = {
-    width: '380px',
+    width: '520px',
     flexShrink: 0,
     paddingLeft: '136px',
+    paddingRight: '24px',
     paddingTop: '24px',
     overflow: 'hidden',
   };
@@ -341,7 +342,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
   const resultsColumnStyle: React.CSSProperties = {
     flex: 1,
     overflow: 'hidden',
-    paddingLeft: '48px',
+    paddingLeft: '32px',
     paddingRight: '64px',
     paddingTop: 0,
     position: 'relative',
@@ -374,13 +375,13 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
                   type="button"
                   tabIndex={-1}
                   style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '30px',
+                    height: '42px',
                     flexShrink: 0,
-                    borderRadius: '8px',
+                    borderRadius: '6px',
                     background: isFocused ? colors.background.brandPrimary : 'rgba(255,255,255,0.08)',
                     color: colors.text.primaryInverse,
-                    ...typography.body.medium,
+                    ...typography.body.small,
                     border: 'none',
                     cursor: 'pointer',
                     outline: 'none',
@@ -404,14 +405,14 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
             type="button"
             tabIndex={-1}
             style={{
-              height: '40px',
+              height: '42px',
               flex: 1,
-              borderRadius: '8px',
+              borderRadius: '6px',
               background: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 0
                 ? colors.background.brandPrimary
                 : 'rgba(255,255,255,0.08)',
               color: colors.text.primaryInverse,
-              ...typography.body.medium,
+              ...typography.body.small,
               border: 'none',
               cursor: 'pointer',
               outline: 'none',
@@ -425,14 +426,14 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
             type="button"
             tabIndex={-1}
             style={{
-              height: '40px',
-              width: '80px',
-              borderRadius: '8px',
+              height: '42px',
+              width: '72px',
+              borderRadius: '6px',
               background: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 1
                 ? colors.background.brandPrimary
                 : 'rgba(255,255,255,0.08)',
               color: colors.text.primaryInverse,
-              ...typography.body.medium,
+              ...typography.body.small,
               border: 'none',
               cursor: 'pointer',
               outline: 'none',
@@ -496,7 +497,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
                 overflowX: 'hidden',
                 overflowY: 'visible',
                 position: 'relative',
-                height: rail.type === 'channels' ? '120px' : rail.type === 'schedule' ? '196px' : '260px',
+                height: rail.type === 'channels' ? '110px' : rail.type === 'schedule' ? '196px' : '260px',
                 alignItems: 'center',
               }}
             >
@@ -507,8 +508,8 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
                     key={ch.id}
                     ref={(el) => setCardRef(rail.id, cardIdx, el)}
                     style={{
-                      width: '180px',
-                      height: '100px',
+                      width: '160px',
+                      height: '90px',
                       flexShrink: 0,
                       borderRadius: '12px',
                       background: ch.backgroundColor || 'rgba(255,255,255,0.08)',
@@ -527,8 +528,8 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
                       src={ch.logo}
                       alt={ch.name}
                       style={{
-                        maxWidth: '140px',
-                        maxHeight: '72px',
+                        maxWidth: '120px',
+                        maxHeight: '60px',
                         objectFit: 'contain',
                       }}
                     />
@@ -603,7 +604,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
       <div style={inputBarStyle}>
         <SearchIcon size={32} color={colors.text.secondaryInverse} />
         <div style={{
-          ...typography.display.small,
+          ...typography.headline.large,
           color: query ? colors.text.primaryInverse : colors.text.disabledInverse,
           display: 'flex',
           alignItems: 'center',
