@@ -327,20 +327,23 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
     display: 'flex',
     flexDirection: 'row',
     overflow: 'hidden',
+    minHeight: 0,
   };
 
   const keyboardColumnStyle: React.CSSProperties = {
-    width: '420px',
+    width: '380px',
     flexShrink: 0,
     paddingLeft: '136px',
     paddingTop: '24px',
+    overflow: 'hidden',
   };
 
   const resultsColumnStyle: React.CSSProperties = {
     flex: 1,
     overflow: 'hidden',
+    paddingLeft: '48px',
     paddingRight: '64px',
-    paddingTop: '24px',
+    paddingTop: 0,
     position: 'relative',
   };
 
@@ -352,13 +355,17 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
   const resultsContentStyle: React.CSSProperties = {
     transform: `translateY(-${scrollY}px)`,
     transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '32px',
+    paddingTop: '8px',
   };
 
   const renderKeyboard = () => {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         {KEYBOARD_ROWS.map((row, rowIdx) => (
-          <div key={rowIdx} style={{ display: 'flex', gap: '8px' }}>
+          <div key={rowIdx} style={{ display: 'flex', gap: '6px', flexWrap: 'nowrap' }}>
             {row.map((key, colIdx) => {
               const isFocused = zone === 'keyboard' && keyboardRow === rowIdx && keyboardCol === colIdx;
               return (
@@ -367,9 +374,9 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
                   type="button"
                   tabIndex={-1}
                   style={{
+                    width: '40px',
                     height: '40px',
-                    minWidth: '40px',
-                    padding: '0 12px',
+                    flexShrink: 0,
                     borderRadius: '8px',
                     background: isFocused ? colors.background.brandPrimary : 'rgba(255,255,255,0.08)',
                     color: colors.text.primaryInverse,
@@ -378,6 +385,10 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
                     cursor: 'pointer',
                     outline: 'none',
                     transition: 'background 0.2s ease',
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                   onClick={() => executeKey(key)}
                 >
@@ -388,7 +399,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           </div>
         ))}
         {/* Last row: ESPAÇO + 🔍 */}
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '6px' }}>
           <button
             type="button"
             tabIndex={-1}
@@ -415,7 +426,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
             tabIndex={-1}
             style={{
               height: '40px',
-              width: '88px',
+              width: '80px',
               borderRadius: '8px',
               background: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 1
                 ? colors.background.brandPrimary
@@ -469,11 +480,11 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
     return (
       <div style={resultsContentStyle}>
         {activeRails.map((rail, railIdx) => (
-          <div key={rail.id} style={{ marginBottom: '32px' }}>
+          <div key={rail.id}>
             <div style={{
               ...typography.headline.small,
               color: colors.text.secondaryInverse,
-              marginBottom: '8px',
+              marginBottom: '12px',
             }}>
               {rail.title}
             </div>
@@ -485,7 +496,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
                 overflowX: 'hidden',
                 overflowY: 'visible',
                 position: 'relative',
-                height: rail.type === 'schedule' ? '196px' : '260px',
+                height: rail.type === 'channels' ? '120px' : rail.type === 'schedule' ? '196px' : '260px',
                 alignItems: 'center',
               }}
             >
@@ -495,15 +506,30 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
                   <div
                     key={ch.id}
                     ref={(el) => setCardRef(rail.id, cardIdx, el)}
-                    style={{ flexShrink: 0 }}
+                    style={{
+                      width: '180px',
+                      height: '100px',
+                      flexShrink: 0,
+                      borderRadius: '12px',
+                      background: ch.backgroundColor || 'rgba(255,255,255,0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: isFocused ? `3px solid ${colors.background.brandPrimary}` : '3px solid transparent',
+                      transition: 'border 0.2s ease',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      if (ch.streamUrl && onLiveChannel) onLiveChannel(ch.id);
+                    }}
                   >
-                    <ContentCard
-                      variant="image"
-                      image={ch.logo}
-                      isFocused={isFocused}
-                      tabIndex={-1}
-                      onClick={() => {
-                        if (ch.streamUrl && onLiveChannel) onLiveChannel(ch.id);
+                    <img
+                      src={ch.logo}
+                      alt={ch.name}
+                      style={{
+                        maxWidth: '140px',
+                        maxHeight: '72px',
+                        objectFit: 'contain',
                       }}
                     />
                   </div>
