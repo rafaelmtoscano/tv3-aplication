@@ -148,7 +148,13 @@ export default function App() {
       case 'search':
         return <Search mainItemIndex={mainItemIndex} isActive={currentPage === 'search'} />;
       case 'schedule':
-        return <Schedule mainItemIndex={mainItemIndex} isActive={currentPage === 'schedule'} />;
+        return (
+          <Schedule
+            mainItemIndex={mainItemIndex}
+            isActive={currentPage === 'schedule'}
+            onLiveChannel={(channelId) => setLivePage({ channelId })}
+          />
+        );
       case 'apps':
         return <Apps isActive={currentPage === 'apps'} />;
       case 'settings':

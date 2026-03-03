@@ -8,6 +8,7 @@ import { channels } from '../../data/channels';
 interface ScheduleProps {
   isActive: boolean;
   mainItemIndex: number;
+  onLiveChannel?: (channelId: string) => void;
 }
 
 const HEADER_HEIGHT = 120;
@@ -30,16 +31,25 @@ const formatDate = (): string => {
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 };
 
-export default function Schedule({ isActive }: ScheduleProps) {
+export default function Schedule({ isActive, onLiveChannel }: ScheduleProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeRailIndex, setActiveRailIndex] = useState(0);
   const [railFocusedIndex, setRailFocusedIndex] = useState(0);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
 
   useEffect(() => {
     if (isActive) {
       containerRef.current?.focus();
     }
   }, [isActive]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const brasiliaTime = new Date(currentTime.getTime() + (currentTime.getTimezoneOffset() + (-3 * 60)) * 60000);
+  const timeString = brasiliaTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -70,11 +80,21 @@ export default function Schedule({ isActive }: ScheduleProps) {
             setRailFocusedIndex(i => i + 1);
           }
           break;
+        case 'Enter': {
+          e.preventDefault();
+          const channel = scheduledChannels[activeRailIndex];
+          if (!channel) break;
+          // railFocusedIndex 0 = 'now' card -> open LivePlayer
+          if (railFocusedIndex === 0 && onLiveChannel) {
+            onLiveChannel(channel.id);
+          }
+          break;
+        }
         default:
           break;
       }
     },
-    [activeRailIndex, railFocusedIndex]
+    [activeRailIndex, railFocusedIndex, onLiveChannel]
   );
 
   const scrollY =
@@ -105,6 +125,16 @@ export default function Schedule({ isActive }: ScheduleProps) {
     justifyContent: 'center',
     gap: 4,
     marginBottom: 24,
+    position: 'relative',
+  };
+
+  const clockStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 48,
+    right: 64,
+    ...typography.display.medium,
+    color: colors.text.primaryInverse,
+    margin: 0,
   };
 
   const titleStyle: React.CSSProperties = {
@@ -141,6 +171,7 @@ export default function Schedule({ isActive }: ScheduleProps) {
         <div style={headerStyle}>
           <h1 style={titleStyle}>Programação</h1>
           <p style={subtitleStyle}>{formatDate()}</p>
+          <div style={clockStyle}>{timeString}</div>
         </div>
 
         {scheduledChannels.map((channel, i) => (
