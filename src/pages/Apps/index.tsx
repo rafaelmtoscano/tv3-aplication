@@ -120,7 +120,9 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
     gap: '24px',
     paddingLeft: '136px',
     paddingTop: '40px',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    flex: 1,
+    paddingBottom: '120px', // visual balance — header is 120px so this centers the rail
   };
 
   const toastStyle: React.CSSProperties = {
