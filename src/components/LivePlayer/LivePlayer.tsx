@@ -123,6 +123,9 @@ export const LivePlayer = React.memo(
               if (entry) setReminderEntry(entry);
             } else {
               if (focusedIndex === 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
               } else if (channels[focusedIndex - 1]) {
                 setActiveChannelId(channels[focusedIndex - 1].id);
@@ -133,6 +136,9 @@ export const LivePlayer = React.memo(
           case ' ':
             if (!showEPG) {
               if (focusedIndex === 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
               } else if (channels[focusedIndex - 1]) {
                 setActiveChannelId(channels[focusedIndex - 1].id);
@@ -295,6 +301,7 @@ export const LivePlayer = React.memo(
           style={containerStyle}
           tabIndex={0}
           onKeyDown={handleKeyDown}
+          onBlur={() => containerRef.current?.focus()}
           className={className}
         >
           {/* Video Layer */}
