@@ -216,6 +216,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
     if (reminderEntry !== null) {
       if (e.key === 'Escape' || e.key === 'Backspace') {
         e.preventDefault();
+        e.stopPropagation();
         setReminderEntry(null);
       }
       return;
@@ -224,12 +225,14 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
     // Physical keyboard shortcuts (always active)
     if (e.key === 'Backspace') {
       e.preventDefault();
+      e.stopPropagation();
       setQuery(q => q.slice(0, -1));
       return;
     }
 
     if (e.key === 'Escape') {
       e.preventDefault();
+      e.stopPropagation();
       if (query) {
         setQuery('');
       }
@@ -240,6 +243,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
     if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey &&
         !['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' '].includes(e.key)) {
       e.preventDefault();
+      e.stopPropagation();
       setQuery(q => (q + e.key.toLowerCase()).slice(0, 40));
       setZone('keyboard');
       return;
@@ -249,6 +253,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
+          e.stopPropagation();
           if (keyboardRow > 0) {
             const newRow = keyboardRow - 1;
             setKeyboardRow(newRow);
@@ -257,6 +262,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           break;
         case 'ArrowDown':
           e.preventDefault();
+          e.stopPropagation();
           if (keyboardRow < 3) {
             const newRow = keyboardRow + 1;
             setKeyboardRow(newRow);
@@ -269,12 +275,14 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           break;
         case 'ArrowLeft':
           e.preventDefault();
+          e.stopPropagation();
           if (keyboardCol > 0) {
             setKeyboardCol(c => c - 1);
           }
           break;
         case 'ArrowRight':
           e.preventDefault();
+          e.stopPropagation();
           if (keyboardCol < getRowLength(keyboardRow) - 1) {
             setKeyboardCol(c => c + 1);
           } else if (activeRails.length > 0) {
@@ -285,6 +293,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           break;
         case 'Enter':
           e.preventDefault();
+          e.stopPropagation();
           executeKey(getKeyAt(keyboardRow, keyboardCol));
           break;
         default:
@@ -295,6 +304,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
+          e.stopPropagation();
           if (activeRailIndex > 0) {
             setActiveRailIndex(r => r - 1);
             setRailFocusedIndex(0);
@@ -304,6 +314,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           break;
         case 'ArrowDown':
           e.preventDefault();
+          e.stopPropagation();
           if (activeRailIndex < activeRails.length - 1) {
             setActiveRailIndex(r => r + 1);
             setRailFocusedIndex(0);
@@ -311,6 +322,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           break;
         case 'ArrowLeft':
           e.preventDefault();
+          e.stopPropagation();
           if (railFocusedIndex > 0) {
             setRailFocusedIndex(i => i - 1);
           } else {
@@ -319,6 +331,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           break;
         case 'ArrowRight':
           e.preventDefault();
+          e.stopPropagation();
           {
             const rail = activeRails[activeRailIndex];
             if (rail && railFocusedIndex < Math.min(rail.items.length - 1, 9)) {
@@ -328,6 +341,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           break;
         case 'Enter':
           e.preventDefault();
+          e.stopPropagation();
           executeResultEnter();
           break;
         default:

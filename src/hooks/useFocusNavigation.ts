@@ -53,6 +53,7 @@ export const useFocusNavigation = ({
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      if (activeSidebarId === 'search') return;
       const { region, sidebarIndex, mainZone, mainItemIndex } = focusStateRef.current;
 
       // Impedir scroll padrão do browser para teclas de navegação
