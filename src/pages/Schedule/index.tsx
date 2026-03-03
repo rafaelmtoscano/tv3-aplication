@@ -93,7 +93,7 @@ export default function Schedule({ isActive }: ScheduleProps) {
   const scrollWrapperStyle: React.CSSProperties = {
     transform: `translateY(-${scrollY}px)`,
     transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-    paddingLeft: 88,
+    paddingLeft: 48,
     paddingRight: 64,
     paddingTop: 48,
   };
