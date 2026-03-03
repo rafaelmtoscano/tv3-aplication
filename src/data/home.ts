@@ -71,7 +71,6 @@ const heroSlides: HeroSlide[] = [
       description: 'Acompanhe ao vivo a programação do Canal Gov com as principais notícias e ações do Governo Federal.',
       buttonLabel: 'Assistir ao vivo',
       channelId: ch.id,
-      videoUrl: ch.streamUrl,
     };
   })(),
 
@@ -151,7 +150,6 @@ const liveRail: Rail = {
       image: ch.logoFull,        // card só-imagem: exibe logoFull sobre cor do canal
       isLive: true,
       streamUrl: ch.streamUrl,
-      videoUrl: ch.streamUrl,
     })),
 };
 
