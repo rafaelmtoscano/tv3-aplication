@@ -69,10 +69,6 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
     }
   };
 
-  const handleBlur = () => {
-    setTimeout(() => containerRef.current?.focus(), 50);
-  };
-
   const formatDate = (): string => {
     const formatter = new Intl.DateTimeFormat('pt-BR', {
       weekday: 'long',
@@ -146,7 +142,6 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
       tabIndex={0}
       style={containerStyle}
       onKeyDown={handleKeyDown}
-      onBlur={handleBlur}
     >
       <div style={headerStyle}>
         <h1 style={titleStyle}>Serviços</h1>
