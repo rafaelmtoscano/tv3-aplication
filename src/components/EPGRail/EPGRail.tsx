@@ -1,6 +1,7 @@
 import React, { useState, forwardRef, memo, useRef, useEffect, useMemo } from 'react';
 import { EPGCard } from '../EPGCard/EPGCard';
-import { allSchedules, getUpcomingPrograms, EPGEntry } from '../../data/schedule';
+import { allSchedules, getUpcomingPrograms } from '../../data/schedule';
+import type { EPGEntry } from '../../data/schedule';
 
 export interface EPGRailProps {
   channelId: string;
