@@ -149,6 +149,7 @@ export default function App() {
         return (
           <Search
             isActive={currentPage === 'search'}
+            isSidebarExpanded={isSidebarExpanded}
             onLiveChannel={(channelId) => setLivePage({ channelId })}
             onWatchVideo={(videoUrl, title, logo, channelName) => setWatchPage({ videoUrl, title, logo, channelName })}
           />
@@ -158,11 +159,12 @@ export default function App() {
           <Schedule
             mainItemIndex={mainItemIndex}
             isActive={currentPage === 'schedule'}
+            isSidebarExpanded={isSidebarExpanded}
             onLiveChannel={(channelId) => setLivePage({ channelId })}
           />
         );
       case 'apps':
-        return <Apps isActive={currentPage === 'apps'} />;
+        return <Apps isActive={currentPage === 'apps'} isSidebarExpanded={isSidebarExpanded} />;
       case 'settings':
         return <Settings isActive={currentPage === 'settings'} />;
       case 'help':

@@ -7,6 +7,7 @@ import { channels } from '../../data/channels';
 
 interface ScheduleProps {
   isActive: boolean;
+  isSidebarExpanded?: boolean;
   mainItemIndex: number;
   onLiveChannel?: (channelId: string) => void;
 }
@@ -31,7 +32,7 @@ const formatDate = (): string => {
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 };
 
-export default function Schedule({ isActive, onLiveChannel }: ScheduleProps) {
+export default function Schedule({ isActive, isSidebarExpanded, onLiveChannel }: ScheduleProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeRailIndex, setActiveRailIndex] = useState(0);
   const [railFocusedIndex, setRailFocusedIndex] = useState(0);
@@ -53,6 +54,7 @@ export default function Schedule({ isActive, onLiveChannel }: ScheduleProps) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      if (isSidebarExpanded) return; // Let global hook handle all keys
       switch (e.key) {
         case 'ArrowDown':
           if (activeRailIndex < scheduledChannels.length - 1) {
@@ -94,7 +96,7 @@ export default function Schedule({ isActive, onLiveChannel }: ScheduleProps) {
           break;
       }
     },
-    [activeRailIndex, railFocusedIndex, onLiveChannel]
+    [activeRailIndex, railFocusedIndex, onLiveChannel, isSidebarExpanded]
   );
 
   const scrollY =

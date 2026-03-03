@@ -6,10 +6,11 @@ import { services } from '../../data/services';
 
 interface AppsProps {
   isActive: boolean;
+  isSidebarExpanded?: boolean;
   onServiceSelect?: (serviceId: string) => void;
 }
 
-export default function Apps({ isActive, onServiceSelect }: AppsProps) {
+export default function Apps({ isActive, isSidebarExpanded, onServiceSelect }: AppsProps) {
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,6 +32,7 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
   }, [toastMessage]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isSidebarExpanded) return; // Let global hook handle all keys
     switch (e.key) {
       case 'ArrowLeft':
         if (focusedIndex > 0) {

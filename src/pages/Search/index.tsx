@@ -11,6 +11,7 @@ import type { EPGEntry } from '../../data/schedule';
 
 interface SearchProps {
   isActive: boolean;
+  isSidebarExpanded?: boolean;
   onLiveChannel?: (channelId: string) => void;
   onWatchVideo?: (videoUrl: string, title?: string, logo?: string, channelName?: string) => void;
 }
@@ -38,7 +39,7 @@ interface RailData {
   type: 'channels' | 'content' | 'schedule';
 }
 
-export default function Search({ isActive, onLiveChannel, onWatchVideo }: SearchProps) {
+export default function Search({ isActive, isSidebarExpanded, onLiveChannel, onWatchVideo }: SearchProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [query, setQuery] = useState('');
@@ -212,6 +213,8 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
   }, [activeRails, activeRailIndex, railFocusedIndex, results, onLiveChannel, onWatchVideo]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (isSidebarExpanded) return; // Let global hook handle all keys
+
     // Reminder modal priority
     if (reminderEntry !== null) {
       if (e.key === 'Escape' || e.key === 'Backspace') {
@@ -348,7 +351,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           break;
       }
     }
-  }, [zone, keyboardRow, keyboardCol, activeRails, activeRailIndex, railFocusedIndex, query, getRowLength, getKeyAt, executeKey, executeResultEnter]);
+  }, [zone, keyboardRow, keyboardCol, activeRails, activeRailIndex, railFocusedIndex, query, getRowLength, getKeyAt, executeKey, executeResultEnter, isSidebarExpanded]);
 
   // Styles
   const rootStyle: React.CSSProperties = {
