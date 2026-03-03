@@ -274,9 +274,9 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           }
           break;
         case 'ArrowLeft':
-          e.preventDefault();
-          e.stopPropagation();
           if (keyboardCol > 0) {
+            e.preventDefault();
+            e.stopPropagation();
             setKeyboardCol(c => c - 1);
           }
           break;
