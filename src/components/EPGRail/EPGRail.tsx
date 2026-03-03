@@ -13,6 +13,7 @@ export interface EPGRailProps {
   onNavigateDown?: () => void;
   onItemClick?: (entry: EPGEntry) => void;
   className?: string;
+  cardBackground?: string;
 }
 
 const DAY_ABBR: Record<number, string> = {
@@ -48,6 +49,7 @@ export const EPGRail = memo(
         onNavigateDown,
         onItemClick,
         className,
+        cardBackground,
       },
       ref
     ) => {
@@ -196,6 +198,7 @@ export const EPGRail = memo(
                     onFocus={() => handleCardFocus(index)}
                     onBlur={() => !isControlled && setInternalFocusedIndex(-1)}
                     onClick={() => onItemClick?.(entry)}
+                    backgroundOverride={cardBackground}
                   />
                 </div>
               ))}

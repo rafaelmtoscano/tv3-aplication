@@ -6,6 +6,7 @@ import { EPGRail } from '../EPGRail';
 import { HomeIcon } from '../../icons';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
+import { allSchedules, getUpcomingPrograms } from '../../data/schedule';
 import type { EPGEntry } from '../../data/schedule';
 
 export interface LiveChannel {
@@ -116,6 +117,20 @@ export const LivePlayer = React.memo(
             break;
 
           case 'Enter':
+            if (showEPG) {
+              e.preventDefault();
+              const epgEntries = getUpcomingPrograms(allSchedules[activeChannel.id], 8);
+              const entry = epgEntries[epgFocusedIndex];
+              if (entry) setReminderEntry(entry);
+            } else {
+              if (focusedIndex === 0) {
+                onExit?.();
+              } else if (channels[focusedIndex - 1]) {
+                setActiveChannelId(channels[focusedIndex - 1].id);
+              }
+            }
+            break;
+
           case ' ':
             if (!showEPG) {
               if (focusedIndex === 0) {
@@ -208,14 +223,12 @@ export const LivePlayer = React.memo(
         color: colors.text.primaryInverse,
         ...typography.body.large,
         marginBottom: 0,
-        marginLeft: 64,
       };
 
       const toggleLabelStyle: React.CSSProperties = {
         ...typography.body.medium,
         color: colors.text.secondaryInverse,
         marginBottom: 8,
-        marginLeft: 64,
       };
 
       const railContainerStyle: React.CSSProperties = {
@@ -353,6 +366,7 @@ export const LivePlayer = React.memo(
                     onFocusedIndexChange={setEpgFocusedIndex}
                     onNavigateUp={() => setShowEPG(false)}
                     onItemClick={(entry) => setReminderEntry(entry)}
+                    cardBackground={colors.background.baseInverse}
                   />
                 )}
               </div>
@@ -369,17 +383,17 @@ export const LivePlayer = React.memo(
                 </span>
                 <div style={reminderActionsStyle}>
                   <ActionButton
+                    label="Cancelar"
+                    state="idle"
+                    onClick={() => setReminderEntry(null)}
+                  />
+                  <ActionButton
                     label="Adicionar lembrete"
-                    state="selected"
+                    state="focus"
                     onClick={() => {
                       // TODO: implementar notificação
                       setReminderEntry(null);
                     }}
-                  />
-                  <ActionButton
-                    label="Cancelar"
-                    state="idle"
-                    onClick={() => setReminderEntry(null)}
                   />
                 </div>
               </div>

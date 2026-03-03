@@ -31,6 +31,8 @@ export interface EPGCardProps {
   tabIndex?: number;
   /** External CSS class */
   className?: string;
+  /** Override the background color for the 'next' variant */
+  backgroundOverride?: string;
 }
 
 /**
@@ -54,6 +56,7 @@ export const EPGCard = memo(
         onBlur,
         tabIndex = 0,
         className,
+        backgroundOverride,
       },
       ref
     ) => {
@@ -84,7 +87,7 @@ export const EPGCard = memo(
         height,
         padding: '24px',
         borderRadius: '16px',
-        background: variant === 'now' ? colors.background.primary : 'rgba(255, 255, 255, 0.06)',
+        background: variant === 'now' ? colors.background.primary : (backgroundOverride ?? 'rgba(255, 255, 255, 0.06)'),
         color: variant === 'now' ? colors.text.primary : colors.text.primaryInverse,
         border: isFocused ? `3px solid ${colors.background.brandPrimary}` : '3px solid transparent',
         boxShadow: isFocused ? '0 16px 48px rgba(0, 0, 0, 0.6)' : 'none',
