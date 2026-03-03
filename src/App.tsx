@@ -17,7 +17,7 @@ import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpI
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
-  const [livePage, setLivePage] = useState<{ channelId: string } | null>(null);
+  const [livePage, setLivePage] = useState<{ channelId: string; singleChannel?: boolean } | null>(null);
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
 
   const sidebarItems: SidebarItem[] = useMemo(() => [
@@ -47,7 +47,7 @@ export default function App() {
         if (state.mainZone === 'hero') {
           const slide = homeData.hero[state.mainItemIndex];
           if (slide?.isLive) {
-            setLivePage({ channelId: slide.channelId });
+            setLivePage({ channelId: slide.channelId, singleChannel: true });
           } else if (slide?.videoUrl) {
             setWatchPage({ videoUrl: slide.videoUrl, title: slide.title, logo: slide.logo, channelName: slide.channelId });
           }
@@ -104,6 +104,7 @@ export default function App() {
     return (
       <Live
         initialChannelId={livePage.channelId}
+        singleChannel={livePage.singleChannel}
         onExit={() => {
           setLivePage(null);
           resetToMain();

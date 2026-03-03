@@ -6,7 +6,8 @@ export interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButton
   variant?: 'text' | 'icon-text';
   label: string;
   icon?: React.ReactNode;
-  state?: 'idle' | 'selected' | 'disabled';
+  state?: 'idle' | 'selected' | 'disabled' | 'focus';
+  isFocused?: boolean;
   className?: string;
 }
 
@@ -18,6 +19,7 @@ export const ActionButton = memo(
         label,
         icon,
         state = 'idle',
+        isFocused: externalFocused,
         onClick,
         onFocus,
         onBlur,
@@ -31,8 +33,10 @@ export const ActionButton = memo(
     ) => {
       const [isFocused, setIsFocused] = useState(false);
 
+      const effectiveIsFocused = externalFocused !== undefined ? externalFocused : isFocused;
       const isDisabled = state === 'disabled' || externalDisabled;
       const isSelected = state === 'selected';
+      const isFocusState = state === 'focus';
 
       const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
         setIsFocused(true);
@@ -55,7 +59,7 @@ export const ActionButton = memo(
             cursor: 'not-allowed',
           };
         }
-        if (isFocused) {
+        if (effectiveIsFocused || isFocusState) {
           return {
             background: colors.background.primary,
             border: `4px solid ${colors.background.primary}`,

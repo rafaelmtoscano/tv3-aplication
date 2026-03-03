@@ -6,6 +6,7 @@ interface LivePageProps {
   isActive?: boolean;
   mainItemIndex?: number;
   initialChannelId?: string;
+  singleChannel?: boolean;
   onExit?: () => void;
 }
 
@@ -20,11 +21,12 @@ const liveChannels = channels
     streamUrl: ch.streamUrl!,
   }));
 
-export default function LivePage({ initialChannelId, onExit }: LivePageProps) {
+export default function LivePage({ initialChannelId, singleChannel, onExit }: LivePageProps) {
   return (
     <LivePlayer
       channels={liveChannels}
       initialChannelId={initialChannelId}
+      singleChannel={singleChannel}
       onExit={onExit}
     />
   );

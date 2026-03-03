@@ -20,6 +20,7 @@ export interface LiveChannel {
 export interface LivePlayerProps {
   channels: LiveChannel[];
   initialChannelId?: string;
+  singleChannel?: boolean;
   onExit?: () => void;
   className?: string;
 }
@@ -28,11 +29,12 @@ const PLACEHOLDER_LOGO = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/
 
 export const LivePlayer = React.memo(
   forwardRef<HTMLDivElement, LivePlayerProps>(
-    ({ channels = [], initialChannelId, onExit, className }, ref) => {
+    ({ channels = [], initialChannelId, singleChannel = false, onExit, className }, ref) => {
       const [activeChannelId, setActiveChannelId] = useState(
         initialChannelId || channels[0]?.id
       );
       const [focusedIndex, setFocusedIndex] = useState(channels.length > 0 ? 1 : 0);
+      const [sairFocused, setSairFocused] = useState(singleChannel);
       const [controlsVisible, setControlsVisible] = useState(true);
       const [showEPG, setShowEPG] = useState(false);
       const [epgFocusedIndex, setEpgFocusedIndex] = useState(0);
@@ -87,6 +89,7 @@ export const LivePlayer = React.memo(
               e.preventDefault();
               setShowEPG(true);
               setEpgFocusedIndex(0);
+              if (singleChannel) setSairFocused(false);
             }
             break;
 
@@ -94,6 +97,7 @@ export const LivePlayer = React.memo(
             if (showEPG) {
               e.preventDefault();
               setShowEPG(false);
+              if (singleChannel) setSairFocused(true);
             }
             break;
 
@@ -101,7 +105,7 @@ export const LivePlayer = React.memo(
             if (showEPG) {
               e.preventDefault();
               setEpgFocusedIndex((i) => Math.min(i + 1, 7));
-            } else {
+            } else if (!singleChannel) {
               setFocusedIndex((i) => Math.min(i + 1, channels.length));
             }
             break;
@@ -110,7 +114,7 @@ export const LivePlayer = React.memo(
             if (showEPG) {
               e.preventDefault();
               setEpgFocusedIndex((i) => Math.max(i - 1, 0));
-            } else {
+            } else if (!singleChannel) {
               setFocusedIndex((i) => Math.max(i - 1, 0));
             }
             break;
@@ -121,6 +125,13 @@ export const LivePlayer = React.memo(
               const epgEntries = getUpcomingPrograms(allSchedules[activeChannel.id], 8);
               const entry = epgEntries[epgFocusedIndex];
               if (entry) setReminderEntry(entry);
+            } else if (singleChannel) {
+              if (sairFocused) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
+                onExit?.();
+              }
             } else {
               if (focusedIndex === 0) {
                 e.preventDefault();
@@ -135,7 +146,14 @@ export const LivePlayer = React.memo(
 
           case ' ':
             if (!showEPG) {
-              if (focusedIndex === 0) {
+              if (singleChannel) {
+                if (sairFocused) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.nativeEvent.stopImmediatePropagation();
+                  onExit?.();
+                }
+              } else if (focusedIndex === 0) {
                 e.preventDefault();
                 e.stopPropagation();
                 e.nativeEvent.stopImmediatePropagation();
@@ -330,38 +348,49 @@ export const LivePlayer = React.memo(
 
               <div style={railContainerStyle}>
                 {!showEPG ? (
-                  <div style={railWrapperStyle}>
-                    <TileButton
-                      variant="icon-label"
-                      label="Sair"
-                      isFocused={focusedIndex === 0}
-                      onClick={() => onExit?.()}
-                    />
+                  singleChannel ? (
+                    <div style={{ height: '312px', display: 'flex', alignItems: 'center' }}>
+                      <ActionButton
+                        label="Sair"
+                        state={sairFocused ? 'focus' : 'idle'}
+                        isFocused={sairFocused}
+                        onClick={() => onExit?.()}
+                      />
+                    </div>
+                  ) : (
+                    <div style={railWrapperStyle}>
+                      <TileButton
+                        variant="icon-label"
+                        label="Sair"
+                        isFocused={focusedIndex === 0}
+                        onClick={() => onExit?.()}
+                      />
 
-                    {channels.map((channel, i) => (
-                      <div
-                        key={channel.id}
-                        style={{
-                          outline: activeChannelId === channel.id && focusedIndex !== i + 1
-                            ? '3px solid rgba(255,255,255,0.4)'
-                            : 'none',
-                          transition: 'outline 0.2s ease',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <TileButton
-                          variant="image"
-                          image={channel.logoFull || channel.logo || PLACEHOLDER_LOGO}
-                          label={channel.name}
-                          alt={channel.name}
-                          isFocused={focusedIndex === i + 1}
-                          onClick={() => setActiveChannelId(channel.id)}
-                          imageObjectFit="contain"
-                          backgroundColor={channel.backgroundColor}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                      {channels.map((channel, i) => (
+                        <div
+                          key={channel.id}
+                          style={{
+                            outline: activeChannelId === channel.id && focusedIndex !== i + 1
+                              ? '3px solid rgba(255,255,255,0.4)'
+                              : 'none',
+                            transition: 'outline 0.2s ease',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <TileButton
+                            variant="image"
+                            image={channel.logoFull || channel.logo || PLACEHOLDER_LOGO}
+                            label={channel.name}
+                            alt={channel.name}
+                            isFocused={focusedIndex === i + 1}
+                            onClick={() => setActiveChannelId(channel.id)}
+                            imageObjectFit="contain"
+                            backgroundColor={channel.backgroundColor}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )
                 ) : (
                   <EPGRail
                     channelId={activeChannel.id}
