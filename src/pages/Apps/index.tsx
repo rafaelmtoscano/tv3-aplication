@@ -59,11 +59,29 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
         break;
       case 'ArrowUp':
       case 'ArrowDown':
-      case 'Escape':
         e.preventDefault();
         e.stopPropagation();
         break;
+      case 'Escape':
+        e.preventDefault();
+        // DO NOT stopPropagation — let Escape bubble to useFocusNavigation to close sidebar
+        break;
     }
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => containerRef.current?.focus(), 50);
+  };
+
+  const formatDate = (): string => {
+    const formatter = new Intl.DateTimeFormat('pt-BR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    const formatted = formatter.format(new Date());
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   };
 
   const containerStyle: React.CSSProperties = {
@@ -77,7 +95,7 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
   };
 
   const headerStyle: React.CSSProperties = {
-    height: '120px',
+    height: '140px',
     paddingLeft: '136px',
     paddingTop: '48px',
     flexShrink: 0,
@@ -87,6 +105,13 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
     ...typography.display.medium,
     color: colors.text.primaryInverse,
     margin: 0,
+    lineHeight: 1,
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    ...typography.body.large,
+    color: colors.text.secondaryInverse,
+    margin: '4px 0 0 0',
   };
 
   const railStyle: React.CSSProperties = {
@@ -95,8 +120,7 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
     gap: '24px',
     paddingLeft: '136px',
     paddingTop: '40px',
-    alignItems: 'center',
-    flex: 1,
+    alignItems: 'flex-start',
   };
 
   const toastStyle: React.CSSProperties = {
@@ -120,9 +144,11 @@ export default function Apps({ isActive, onServiceSelect }: AppsProps) {
       tabIndex={0}
       style={containerStyle}
       onKeyDown={handleKeyDown}
+      onBlur={handleBlur}
     >
       <div style={headerStyle}>
         <h1 style={titleStyle}>Serviços</h1>
+        <p style={subtitleStyle}>{formatDate()}</p>
       </div>
 
       <div style={railStyle}>
