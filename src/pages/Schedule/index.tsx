@@ -165,7 +165,6 @@ export default function Schedule({ isActive, onLiveChannel }: ScheduleProps) {
       style={pageStyle}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      onBlur={() => containerRef.current?.focus()}
     >
       <div style={scrollWrapperStyle}>
         <div style={headerStyle}>
