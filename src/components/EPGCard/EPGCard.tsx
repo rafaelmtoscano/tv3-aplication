@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, memo } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, memo } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 
@@ -63,6 +63,27 @@ export const EPGCard = memo(
       const [isInternalFocused, setIsInternalFocused] = useState(false);
       const isFocused = isFocusedProp ?? isInternalFocused;
 
+      const titleRef = useRef<HTMLSpanElement>(null);
+      const [shouldScroll, setShouldScroll] = useState(false);
+      const [scrollDistance, setScrollDistance] = useState(0);
+
+      useEffect(() => {
+        if (isFocused && titleRef.current) {
+          const el = titleRef.current;
+          const overflow = el.scrollWidth - el.clientWidth;
+          if (overflow > 0) {
+            setScrollDistance(overflow);
+            setShouldScroll(true);
+          } else {
+            setShouldScroll(false);
+            setScrollDistance(0);
+          }
+        } else {
+          setShouldScroll(false);
+          setScrollDistance(0);
+        }
+      }, [isFocused]);
+
       const handleFocus = () => {
         setIsInternalFocused(true);
         onFocus?.();
@@ -121,16 +142,28 @@ export const EPGCard = memo(
 
       const timestampText = `${day ? day + ' ' : ''}${startTime} – ${endTime}`;
 
-      const titleStyle: React.CSSProperties = {
-        ...typography.headline.medium,
+      // Title container adapts to focused state for marquee measurement
+      const titleContainerStyle: React.CSSProperties = isFocused
+        ? {
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            display: 'block',
+            margin: '8px 0',
+            flexGrow: 1,
+          }
+        : {
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            margin: '8px 0',
+            flexGrow: 1,
+          };
+
+      const titleSpanBaseStyle: React.CSSProperties = {
+        ...typography.headline.small,
         color: 'inherit',
-        display: '-webkit-box',
-        WebkitLineClamp: 2,
-        WebkitBoxOrient: 'vertical',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        margin: '8px 0',
-        flexGrow: 1,
+        display: 'inline-block',
       };
 
       const progressTrackStyle: React.CSSProperties = {
@@ -162,6 +195,12 @@ export const EPGCard = memo(
           className={className}
           aria-label={`${title} on ${channelName || 'channel'} from ${startTime} to ${endTime}`}
         >
+          <style>{`
+            @keyframes epg-title-scroll {
+              from { transform: translateX(0); }
+              to   { transform: translateX(var(--scroll-distance)); }
+            }
+          `}</style>
           {variant === 'now' && channelLogo && (
             <img 
               src={channelLogo} 
@@ -184,7 +223,20 @@ export const EPGCard = memo(
                 </span>
               )}
             </div>
-            <span style={titleStyle}>{title}</span>
+            <div style={titleContainerStyle}>
+              <span
+                ref={titleRef}
+                style={{
+                  ...titleSpanBaseStyle,
+                  ...(isFocused && shouldScroll
+                    ? { animation: 'epg-title-scroll 4s linear 1s forwards' }
+                    : {}),
+                  '--scroll-distance': `-${scrollDistance}px`,
+                } as React.CSSProperties}
+              >
+                {title}
+              </span>
+            </div>
             {variant === 'now' && (
               <div style={progressTrackStyle}>
                 <div style={progressFillStyle} />

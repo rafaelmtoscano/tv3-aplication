@@ -161,7 +161,7 @@ export const EPGRail = memo(
         gap: '16px',
         overflowX: 'auto',
         overflowY: 'visible',
-        padding: '0 64px',
+        padding: 0,
         scrollbarWidth: 'none',
         msOverflowStyle: 'none',
         scrollBehavior: 'smooth',
