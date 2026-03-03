@@ -4,6 +4,7 @@ import { typography } from '../../styles/typography';
 import { SearchIcon } from '../../icons';
 import { ContentCard } from '../../components/ContentCard/ContentCard';
 import { EPGCard } from '../../components/EPGCard/EPGCard';
+import { ActionButton } from '../../components/ActionButton';
 import { channels } from '../../data/channels';
 import { allSchedules, getUpcomingPrograms } from '../../data/schedule';
 import type { EPGEntry } from '../../data/schedule';
@@ -20,7 +21,13 @@ const KEYBOARD_ROWS = [
   ['Z','X','C','V','B','N','M','.','-','_'],
 ];
 
-// Last row handled separately: ESPAÇO + 🔍
+const NUMBER_ROWS = [
+  ['1','2','3','4','5','6','7','8','9','0'],
+  ['@','#','$','%','&','*','(',')','+','='],
+  ['/','\\','-','_',':',';','"',"'",'!','?'],
+];
+
+// Last row handled separately: MODE_TOGGLE + LIMPAR + ESPAÇO + 🔍
 
 const RAIL_HEIGHT = 280;
 
@@ -35,11 +42,13 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [query, setQuery] = useState('');
+  const [keyboardMode, setKeyboardMode] = useState<'abc' | '123'>('abc');
   const [keyboardRow, setKeyboardRow] = useState(0);
   const [keyboardCol, setKeyboardCol] = useState(0);
   const [zone, setZone] = useState<'keyboard' | 'results'>('keyboard');
   const [activeRailIndex, setActiveRailIndex] = useState(0);
   const [railFocusedIndex, setRailFocusedIndex] = useState(0);
+  const [reminderEntry, setReminderEntry] = useState<(EPGEntry & { channelId: string; channelName?: string }) | null>(null);
 
   // Refs for scrollIntoView on result cards
   const cardRefsMap = useRef<Map<string, (HTMLDivElement | null)[]>>(new Map());
@@ -139,20 +148,33 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
 
   // Get row length for keyboard navigation
   const getRowLength = useCallback((row: number) => {
-    if (row < 3) return KEYBOARD_ROWS[row].length;
-    return 2; // ESPAÇO (0) and 🔍 (1)
-  }, []);
+    if (row < 3) {
+      return keyboardMode === 'abc' ? KEYBOARD_ROWS[row].length : NUMBER_ROWS[row].length;
+    }
+    return 4; // MODE_TOGGLE (0), LIMPAR (1), ESPAÇO (2) and 🔍 (3)
+  }, [keyboardMode]);
 
   // Get key label at row,col
   const getKeyAt = useCallback((row: number, col: number): string => {
-    if (row < 3) return KEYBOARD_ROWS[row][col] || '';
-    return col === 0 ? 'ESPAÇO' : '🔍';
-  }, []);
+    if (row < 3) {
+      return keyboardMode === 'abc' ? KEYBOARD_ROWS[row][col] : NUMBER_ROWS[row][col];
+    }
+    if (col === 0) return 'MODE_TOGGLE';
+    if (col === 1) return 'LIMPAR';
+    if (col === 2) return 'ESPAÇO';
+    return '🔍';
+  }, [keyboardMode]);
 
   // Execute key action
   const executeKey = useCallback((key: string) => {
     if (key === '⌫') {
       setQuery(q => q.slice(0, -1));
+    } else if (key === 'MODE_TOGGLE') {
+      setKeyboardMode(m => m === 'abc' ? '123' : 'abc');
+      setKeyboardRow(0);
+      setKeyboardCol(0);
+    } else if (key === 'LIMPAR') {
+      setQuery('');
     } else if (key === 'ESPAÇO') {
       setQuery(q => (q + ' ').slice(0, 40));
     } else if (key === '🔍') {
@@ -181,11 +203,24 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
       if (prog?.videoUrl && onWatchVideo) {
         onWatchVideo(prog.videoUrl, prog.title, prog.logo, prog.channelName);
       }
+    } else if (rail.type === 'schedule') {
+      const entry = results.matchedSchedule[railFocusedIndex];
+      if (entry) {
+        setReminderEntry(entry);
+      }
     }
-    // schedule: no action yet
   }, [activeRails, activeRailIndex, railFocusedIndex, results, onLiveChannel, onWatchVideo]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Reminder modal priority
+    if (reminderEntry !== null) {
+      if (e.key === 'Escape' || e.key === 'Backspace') {
+        e.preventDefault();
+        setReminderEntry(null);
+      }
+      return;
+    }
+
     // Physical keyboard shortcuts (always active)
     if (e.key === 'Backspace') {
       e.preventDefault();
@@ -341,7 +376,8 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
 
   const resultsColumnStyle: React.CSSProperties = {
     flex: 1,
-    overflow: 'hidden',
+    overflowX: 'hidden',
+    overflowY: 'visible',
     paddingLeft: '32px',
     paddingRight: '64px',
     paddingTop: 0,
@@ -360,12 +396,15 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
     flexDirection: 'column',
     gap: '32px',
     paddingTop: '8px',
+    overflowX: 'hidden',
+    overflowY: 'visible',
   };
 
   const renderKeyboard = () => {
+    const rows = keyboardMode === 'abc' ? KEYBOARD_ROWS : NUMBER_ROWS;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {KEYBOARD_ROWS.map((row, rowIdx) => (
+        {rows.map((row, rowIdx) => (
           <div key={rowIdx} style={{ display: 'flex', gap: '6px', flexWrap: 'nowrap' }}>
             {row.map((key, colIdx) => {
               const isFocused = zone === 'keyboard' && keyboardRow === rowIdx && keyboardCol === colIdx;
@@ -399,8 +438,30 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
             })}
           </div>
         ))}
-        {/* Last row: ESPAÇO + 🔍 */}
+        {/* Last row: MODE_TOGGLE + LIMPAR + ESPAÇO + 🔍 */}
         <div style={{ display: 'flex', gap: '6px' }}>
+          <button
+            type="button"
+            tabIndex={-1}
+            style={{
+              height: '52px',
+              width: '72px',
+              borderRadius: '8px',
+              background: 'rgba(255,255,255,0.08)',
+              color: colors.text.primaryInverse,
+              ...typography.body.medium,
+              border: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 0
+                ? `2px solid ${colors.background.brandPrimary}`
+                : 'none',
+              cursor: 'pointer',
+              outline: 'none',
+              transition: 'all 0.2s ease',
+              padding: 0,
+            }}
+            onClick={() => executeKey('MODE_TOGGLE')}
+          >
+            {keyboardMode === 'abc' ? '123' : 'ABC'}
+          </button>
           <button
             type="button"
             tabIndex={-1}
@@ -408,7 +469,28 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
               height: '52px',
               flex: 1,
               borderRadius: '8px',
-              background: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 0
+              background: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 1
+                ? colors.background.brandPrimary
+                : 'rgba(255,255,255,0.08)',
+              color: colors.text.primaryInverse,
+              ...typography.body.medium,
+              border: 'none',
+              cursor: 'pointer',
+              outline: 'none',
+              transition: 'background 0.2s ease',
+            }}
+            onClick={() => executeKey('LIMPAR')}
+          >
+            Limpar
+          </button>
+          <button
+            type="button"
+            tabIndex={-1}
+            style={{
+              height: '52px',
+              flex: 1,
+              borderRadius: '8px',
+              background: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 2
                 ? colors.background.brandPrimary
                 : 'rgba(255,255,255,0.08)',
               color: colors.text.primaryInverse,
@@ -420,16 +502,16 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
             }}
             onClick={() => executeKey('ESPAÇO')}
           >
-            ESPAÇO
+            Espaço
           </button>
           <button
             type="button"
             tabIndex={-1}
             style={{
               height: '52px',
-              width: '88px',
+              width: '72px',
               borderRadius: '8px',
-              background: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 1
+              background: zone === 'keyboard' && keyboardRow === 3 && keyboardCol === 3
                 ? colors.background.brandPrimary
                 : 'rgba(255,255,255,0.08)',
               color: colors.text.primaryInverse,
@@ -510,7 +592,7 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
                 overflowX: 'hidden',
                 overflowY: 'visible',
                 position: 'relative',
-                height: rail.type === 'channels' ? '110px' : rail.type === 'schedule' ? '196px' : '260px',
+                height: rail.type === 'channels' ? '110px' : rail.type === 'schedule' ? '204px' : '328px',
                 alignItems: 'center',
               }}
             >
@@ -649,6 +731,53 @@ export default function Search({ isActive, onLiveChannel, onWatchVideo }: Search
           {renderRails()}
         </div>
       </div>
+
+      {/* Reminder Modal */}
+      {reminderEntry && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.7)',
+          zIndex: 200,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            background: colors.background.baseInverse,
+            borderRadius: '24px',
+            padding: '48px',
+            maxWidth: '600px',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+            boxSizing: 'border-box',
+          }}>
+            <span style={{ ...typography.headline.large, color: colors.text.primaryInverse, margin: 0 }}>
+              {reminderEntry.title}
+            </span>
+            <span style={{ ...typography.body.medium, color: colors.text.secondaryInverse, margin: 0 }}>
+              {reminderEntry.time} – {reminderEntry.endTime}
+              {reminderEntry.channelName ? ` · ${reminderEntry.channelName}` : ''}
+            </span>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <ActionButton
+                label="Cancelar"
+                state="idle"
+                onClick={() => setReminderEntry(null)}
+              />
+              <ActionButton
+                label="Adicionar lembrete"
+                state="focus"
+                onClick={() => {
+                  setReminderEntry(null);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
