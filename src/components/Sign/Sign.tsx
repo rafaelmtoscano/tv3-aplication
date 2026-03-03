@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, memo } from 'react';
+import React, { forwardRef, memo } from 'react';
 import { colors } from '../../styles/colors';
 
 export interface SignProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

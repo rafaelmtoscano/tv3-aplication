@@ -7,7 +7,7 @@ interface Props {
   mainItemIndex: number;
 }
 
-export default function Search({ isActive }: Props) {
+export default function Search({ isActive: _isActive }: Props) {
   const containerStyle: React.CSSProperties = {
     height: '100vh',
     display: 'flex',

@@ -7,7 +7,7 @@ interface Props {
   mainItemIndex: number;
 }
 
-export default function Schedule({ isActive }: Props) {
+export default function Schedule({ isActive: _isActive }: Props) {
   const containerStyle: React.CSSProperties = {
     height: '100vh',
     display: 'flex',

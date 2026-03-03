@@ -61,12 +61,12 @@ export const ContentCard = memo(
       const [isInternalFocused, setIsInternalFocused] = useState(false);
       const isFocused = isFocusedProp ?? isInternalFocused;
 
-      const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
+      const handleFocus = (_e: React.FocusEvent<HTMLButtonElement>) => {
         setIsInternalFocused(true);
         onFocus?.();
       };
 
-      const handleBlur = (e: React.FocusEvent<HTMLButtonElement>) => {
+      const handleBlur = (_e: React.FocusEvent<HTMLButtonElement>) => {
         setIsInternalFocused(false);
         onBlur?.();
       };

@@ -73,7 +73,7 @@ export const HeroBanner = memo(
       const isControlled = controlledIndex !== undefined;
       const [internalIndex, setInternalIndex] = useState(0);
       const activeIndex = isControlled ? controlledIndex : internalIndex;
-      const [isPaused, setIsPaused] = useState(true);
+      const [_isPaused, _setIsPaused] = useState(true);
       const containerRef = useRef<HTMLDivElement>(null);
       const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -88,7 +88,7 @@ export const HeroBanner = memo(
       );
 
       useEffect(() => {
-        if (isPaused || slides.length <= 1 || isControlled) return;
+        if (_isPaused || slides.length <= 1 || isControlled) return;
         intervalRef.current = setInterval(() => {
           setInternalIndex((i) => {
             const next = (i + 1) % slides.length;
@@ -99,7 +99,7 @@ export const HeroBanner = memo(
         return () => {
           if (intervalRef.current) clearInterval(intervalRef.current);
         };
-      }, [isPaused, slides.length, autoPlayInterval, onSlideChange, isControlled]);
+      }, [_isPaused, slides.length, autoPlayInterval, onSlideChange, isControlled]);
 
       const containerStyle: React.CSSProperties = {
         width: '100%',
@@ -139,6 +139,7 @@ export const HeroBanner = memo(
         boxSizing: 'border-box',
       };
 
+/*
       const topRowStyle: React.CSSProperties = {
         display: 'flex',
         alignItems: 'center',
@@ -154,6 +155,7 @@ export const HeroBanner = memo(
         alignItems: 'center',
         ...typography.body.large,
       };
+*/
 
       const mainContentStyle: React.CSSProperties = {
         position: 'absolute',

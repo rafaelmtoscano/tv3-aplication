@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, memo, useCallback } from 'react';
+import React, { forwardRef, memo } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 

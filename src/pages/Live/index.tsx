@@ -1,4 +1,3 @@
-import React from 'react';
 import { LivePlayer } from '../../components/LivePlayer';
 import { channels } from '../../data/channels';
 

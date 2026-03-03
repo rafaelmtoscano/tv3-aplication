@@ -6,7 +6,7 @@ interface Props {
   isActive: boolean;
 }
 
-export default function Settings({ isActive }: Props) {
+export default function Settings({ isActive: _isActive }: Props) {
   const containerStyle: React.CSSProperties = {
     height: '100vh',
     display: 'flex',

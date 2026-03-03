@@ -49,12 +49,12 @@ export const CircleButton = memo(
       const [internalFocused, setInternalFocused] = useState(false);
       const isFocused = isFocusedProp !== undefined ? isFocusedProp : internalFocused;
 
-      const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
+      const handleFocus = (_e: React.FocusEvent<HTMLButtonElement>) => {
         setInternalFocused(true);
         onFocus?.();
       };
 
-      const handleBlur = (e: React.FocusEvent<HTMLButtonElement>) => {
+      const handleBlur = (_e: React.FocusEvent<HTMLButtonElement>) => {
         setInternalFocused(false);
         onBlur?.();
       };
