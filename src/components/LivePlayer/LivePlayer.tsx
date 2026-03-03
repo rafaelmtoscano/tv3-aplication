@@ -6,6 +6,7 @@ import { EPGRail } from '../EPGRail';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { allSchedules, getUpcomingPrograms } from '../../data/schedule';
+import { CloseIcon } from '../../icons';
 import type { EPGEntry } from '../../data/schedule';
 
 export interface LiveChannel {
@@ -360,11 +361,12 @@ export const LivePlayer = React.memo(
                   ) : (
                     <div style={railWrapperStyle}>
                       <TileButton
-                        variant="icon-label"
-                        label="Sair"
-                        isFocused={focusedIndex === 0}
-                        onClick={() => onExit?.()}
-                      />
+                      variant="icon-label"
+                      label="Sair"
+                      icon={<CloseIcon size={32} />}
+                      isFocused={focusedIndex === 0}
+                      onClick={() => onExit?.()}
+                    />
 
                       {channels.map((channel, i) => (
                         <div
