@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import Home from './pages/Home/index';
 import Live from './pages/Live/index';
 import WatchPage from './pages/Watch/index';
-import MyChannels from './pages/MyChannels/index';
+import Search from './pages/Search/index';
+import Schedule from './pages/Schedule/index';
 import Apps from './pages/Apps/index';
 import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
@@ -12,7 +13,7 @@ import { useFocusNavigation } from './hooks/useFocusNavigation';
 import { homeData } from './data/home';
 import { channels } from './data/channels';
 import { colors } from './styles/colors';
-import { HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
+import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -20,9 +21,10 @@ export default function App() {
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
 
   const sidebarItems: SidebarItem[] = useMemo(() => [
+    { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
     { id: 'live', icon: <LiveIcon />, label: 'Ao vivo' },
-    { id: 'my-channels', icon: <GridIcon />, label: 'Meus canais' },
+    { id: 'schedule', icon: <GridIcon />, label: 'Programação' },
     { id: 'apps', icon: <AppsIcon />, label: 'Aplicativos' },
     { id: 'settings', icon: <SettingsIcon />, label: 'Configurações' },
     { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
@@ -142,8 +144,10 @@ export default function App() {
             isActive={currentPage === 'home'}
           />
         );
-      case 'my-channels':
-        return <MyChannels mainItemIndex={mainItemIndex} isActive={currentPage === 'my-channels'} />;
+      case 'search':
+        return <Search mainItemIndex={mainItemIndex} isActive={currentPage === 'search'} />;
+      case 'schedule':
+        return <Schedule mainItemIndex={mainItemIndex} isActive={currentPage === 'schedule'} />;
       case 'apps':
         return <Apps isActive={currentPage === 'apps'} />;
       case 'settings':
