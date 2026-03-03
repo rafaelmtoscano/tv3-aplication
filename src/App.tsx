@@ -146,7 +146,13 @@ export default function App() {
           />
         );
       case 'search':
-        return <Search mainItemIndex={mainItemIndex} isActive={currentPage === 'search'} />;
+        return (
+          <Search
+            isActive={currentPage === 'search'}
+            onLiveChannel={(channelId) => setLivePage({ channelId })}
+            onWatchVideo={(videoUrl, title, logo, channelName) => setWatchPage({ videoUrl, title, logo, channelName })}
+          />
+        );
       case 'schedule':
         return (
           <Schedule
