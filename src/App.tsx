@@ -25,7 +25,7 @@ export default function App() {
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
     { id: 'live', icon: <LiveIcon />, label: 'Ao vivo' },
     { id: 'schedule', icon: <GridIcon />, label: 'Programação' },
-    { id: 'apps', icon: <AppsIcon />, label: 'Aplicativos' },
+    { id: 'apps', icon: <AppsIcon />, label: 'Serviços' },
     { id: 'settings', icon: <SettingsIcon />, label: 'Configurações' },
     { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
   ], []);
