@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
-import { 
-  deputies as staticDeputies, 
-  fetchDeputies, 
-  fetchDeputyDetail, 
-  fetchDeputyProposals, 
-  fetchDeputySpeeches, 
-  fetchDeputyAgenda, 
-  mapAPIToDeputy, 
+import {
+  deputies as staticDeputies,
+  fetchDeputies,
+  fetchDeputyDetail,
+  fetchDeputyProposals,
+  fetchDeputySpeeches,
+  fetchDeputyAgenda,
+  mapAPIToDeputy,
   getDeputyById,
-  Deputy,
-  DeputyAPI
 } from '../data/deputies';
+import type { Deputy, DeputyAPI } from '../data/deputies';
 
 /**
  * Hook to manage Câmara dos Deputados API data.
