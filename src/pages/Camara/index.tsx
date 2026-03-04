@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Hls from 'hls.js';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { ActionButton } from '../../components/ActionButton/ActionButton';
@@ -18,13 +19,39 @@ interface CamaraProps {
   onBack?: () => void;
 }
 
+function HlsVideo({ src }: { src: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (Hls.isSupported()) {
+      const hls = new Hls({ autoStartLoad: true });
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      return () => hls.destroy();
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = src;
+    }
+  }, [src]);
+  return (
+    <video
+      ref={videoRef}
+      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      autoPlay
+      muted
+      loop
+      playsInline
+    />
+  );
+}
+
 type CamaraView = 'main' | 'deputy-detail' | 'deputies-grid';
 
 export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onBack }: CamaraProps) {
   const { deputiesList: deputies, loading, selectDeputyData } = useCamaraAPI();
   const [view, setView] = useState<CamaraView>('main');
   const [selectedDeputyId, setSelectedDeputyId] = useState<string | null>(null);
-  const [zone, setZone] = useState<'hero' | 'deputies' | 'content'>('hero');
+  const [zone, setZone] = useState<'hero' | 'deputies' | 'content-0' | 'content-1'>('hero');
   const [deputyIndex, setDeputyIndex] = useState(0);
   const [contentIndex, setContentIndex] = useState(0);
   const [loadingDeputy, setLoadingDeputy] = useState<string | null>(null);
@@ -36,7 +63,15 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
   // Total items in deputies rail: 1 "Ver todos" + all deputies
   const deputyRailTotal = deputies.length + 1;
 
-  const contentRailItems: ContentRailItem[] = programs.map(prog => ({
+  const plenariasItems: ContentRailItem[] = programs.slice(0, 5).map(prog => ({
+    id: prog.id,
+    variant: 'image-text' as const,
+    image: prog.thumbnail,
+    title: prog.title,
+    label: prog.category,
+  }));
+
+  const emAltaItems: ContentRailItem[] = programs.slice(5, 10).map(prog => ({
     id: prog.id,
     variant: 'image-text' as const,
     image: prog.thumbnail,
@@ -51,7 +86,11 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
   }, [isActive, view]);
 
   // Hero: 420px | Zone2: 360px fixed | Content offset
-  const scrollY = zone === 'hero' ? 0 : zone === 'deputies' ? 420 : 780;
+  const scrollY =
+    zone === 'hero' ? 0 :
+    zone === 'deputies' ? 380 :
+    zone === 'content-0' ? 760 :
+    zone === 'content-1' ? 1160 : 0;
 
   const handleDeputySelect = async (dep: typeof deputies[0]) => {
     setLoadingDeputy(dep.id);
@@ -80,16 +119,27 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
         } else if (zone === 'deputies') {
           e.preventDefault();
           e.stopPropagation();
-          setZone('content');
+          setZone('content-0');
+          setContentIndex(0);
+        } else if (zone === 'content-0') {
+          e.preventDefault();
+          e.stopPropagation();
+          setZone('content-1');
           setContentIndex(0);
         }
         break;
 
       case 'ArrowUp':
-        if (zone === 'content') {
+        if (zone === 'content-1') {
+          e.preventDefault();
+          e.stopPropagation();
+          setZone('content-0');
+          setContentIndex(0);
+        } else if (zone === 'content-0') {
           e.preventDefault();
           e.stopPropagation();
           setZone('deputies');
+          setContentIndex(0);
         } else if (zone === 'deputies') {
           e.preventDefault();
           e.stopPropagation();
@@ -103,7 +153,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
           e.preventDefault();
           e.stopPropagation();
           setDeputyIndex(i => i - 1);
-        } else if (zone === 'content' && contentIndex > 0) {
+        } else if ((zone === 'content-0' || zone === 'content-1') && contentIndex > 0) {
           e.preventDefault();
           e.stopPropagation();
           setContentIndex(i => i - 1);
@@ -116,7 +166,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
           e.preventDefault();
           e.stopPropagation();
           setDeputyIndex(i => i + 1);
-        } else if (zone === 'content' && contentIndex < programs.length - 1) {
+        } else if ((zone === 'content-0' || zone === 'content-1') && contentIndex < 5 - 1) {
           e.preventDefault();
           e.stopPropagation();
           setContentIndex(i => i + 1);
@@ -198,8 +248,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
         .camara-hero-bg {
           position: absolute;
           inset: 0;
-          background-size: cover;
-          background-position: center;
+          overflow: hidden;
         }
         .camara-hero-gradient {
           position: absolute;
@@ -252,10 +301,9 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
         .camara-section-title {
           color: #FFF;
           padding-left: 136px;
-          margin: 0 0 16px 0;
+          margin: 0 0 24px 0;
         }
         .camara-deputies-zone {
-          height: 408px;
           padding-top: 48px;
           overflow: visible;
         }
@@ -263,13 +311,14 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
           display: flex;
           flex-direction: row;
           padding-left: 136px;
+          padding-bottom: 48px;
           gap: 32px;
           overflow: visible;
           align-items: flex-end;
-          height: 312px;
+          height: 358px;
         }
         .camara-content-zone {
-          padding-top: 32px;
+          padding-top: 0;
         }
         .camara-loading-overlay {
           position: absolute;
@@ -300,10 +349,12 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
       >
         {/* Zone 1 — Hero */}
         <div className="camara-hero">
-          <div
-            className="camara-hero-bg"
-            style={{ backgroundImage: `url(${tvCamara.logoFull})` }}
-          />
+          <div className="camara-hero-bg">
+            {tvCamara.streamUrl
+              ? <HlsVideo src={tvCamara.streamUrl} />
+              : <img src={tvCamara.logoFull} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            }
+          </div>
           <div className="camara-hero-gradient" />
           <div className="camara-hero-content">
             <img
@@ -366,31 +417,62 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
               />
 
               {deputies.map((dep, i) => (
-                <CircleButton
+                <div
                   key={dep.id}
-                  image={dep.photo}
-                  label={dep.name}
-                  isFocused={zone === 'deputies' && deputyIndex === i + 1}
-                  onClick={() => {
-                    setZone('deputies');
-                    setDeputyIndex(i + 1);
-                    handleDeputySelect(dep);
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 0,
+                    flexShrink: 0,
                   }}
-                />
+                >
+                  <CircleButton
+                    image={dep.photo}
+                    label={dep.name}
+                    isFocused={zone === 'deputies' && deputyIndex === i + 1}
+                    onClick={() => {
+                      setZone('deputies');
+                      setDeputyIndex(i + 1);
+                      handleDeputySelect(dep);
+                    }}
+                  />
+                  <span style={{
+                    ...typography.body.small,
+                    color: colors.text.secondaryInverse,
+                    marginTop: '-8px',
+                    textAlign: 'center',
+                  }}>
+                    {dep.party} · {dep.state}
+                  </span>
+                </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Zone 3 — Content rail */}
+        {/* Zone 3 — Plenárias */}
+        <div className="camara-content-zone">
+          <ContentRail
+            title="Plenárias"
+            variant="image-text"
+            items={plenariasItems}
+            focusedIndex={zone === 'content-0' ? contentIndex : -1}
+            onFocusedIndexChange={(i) => setContentIndex(i)}
+            onNavigateUp={() => { setZone('deputies'); setContentIndex(0); }}
+            onNavigateDown={() => { setZone('content-1'); setContentIndex(0); }}
+          />
+        </div>
+
+        {/* Zone 4 — Em alta */}
         <div className="camara-content-zone">
           <ContentRail
             title="Em alta"
             variant="image-text"
-            items={contentRailItems}
-            focusedIndex={zone === 'content' ? contentIndex : -1}
+            items={emAltaItems}
+            focusedIndex={zone === 'content-1' ? contentIndex : -1}
             onFocusedIndexChange={(i) => setContentIndex(i)}
-            onNavigateUp={() => setZone('deputies')}
+            onNavigateUp={() => { setZone('content-0'); setContentIndex(0); }}
             onNavigateDown={() => {}}
           />
         </div>
