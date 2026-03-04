@@ -51,25 +51,16 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
   useEffect(() => {
     if (!isActive) return;
 
-    switch (mainZone) {
-      case 'hero':
-        setMainScrollY(0);
-        break;
-      case 'rail-0':
-        setMainScrollY(HERO_HEIGHT - RAIL_SCROLL_OFFSET);
-        break;
-      case 'rail-1':
-        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT - RAIL_SCROLL_OFFSET);
-        break;
-      case 'rail-2':
-        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 2 - RAIL_SCROLL_OFFSET);
-        break;
-      case 'rail-3':
-        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 3 - RAIL_SCROLL_OFFSET);
-        break;
-      case 'my-space':
-        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 4 - RAIL_SCROLL_OFFSET);
-        break;
+    if (mainZone === 'hero') {
+      setMainScrollY(0);
+    } else if (mainZone === 'my-space') {
+      setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * homeData.rails.length - RAIL_SCROLL_OFFSET);
+    } else {
+      const railMatch = mainZone.match(/^rail-(\d+)$/);
+      if (railMatch) {
+        const railIdx = parseInt(railMatch[1]);
+        setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * railIdx - RAIL_SCROLL_OFFSET);
+      }
     }
   }, [mainZone, isActive]);
 

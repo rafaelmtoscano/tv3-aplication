@@ -106,7 +106,7 @@ export const channels: Channel[] = [
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Ff721c15dcde24ceeba9ee7e1152d9921?format=webp&width=480&height=192',
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F8c6042eefaa9409593860cbbde83aad5?format=webp&width=800&height=450',
     backgroundColor: '#084987',
-    streamUrl: 'https://www.youtube.com/watch?v=Loa9DFv2dpA',
+    streamUrl: '',
     programs: [
       { id: 'tv-justica-1', title: 'Programa tv-justica-1', thumbnail: 'https://i.ytimg.com/vi/g1HEMB-9fXM/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=g1HEMB-9fXM', category: 'Direito' },
       { id: 'tv-justica-2', title: 'Programa tv-justica-2', thumbnail: 'https://i.ytimg.com/vi/6SJXwIgk9mM/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=6SJXwIgk9mM', category: 'Direito' },

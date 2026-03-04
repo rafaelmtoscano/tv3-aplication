@@ -15,6 +15,8 @@ interface WatchPageProps {
 
 type FocusedControl = 'back' | 'rewind' | 'playpause' | 'forward';
 
+const CONTROL_ORDER: FocusedControl[] = ['back', 'rewind', 'playpause', 'forward'];
+
 function extractYouTubeId(url: string): string {
   const match = url.match(/(?:v=|youtu\.be\/)([^&\s]+)/);
   return match?.[1] ?? '';
@@ -104,8 +106,6 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
     showControls();
   }, [showControls]);
 
-  const controlOrder: FocusedControl[] = ['back', 'rewind', 'playpause', 'forward'];
-
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const navKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape', 'Backspace'];
     if (navKeys.includes(e.key)) {
@@ -136,8 +136,8 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
 
       case 'ArrowLeft':
         if (controlsVisible) {
-          const idx = controlOrder.indexOf(focusedControl);
-          if (idx > 0) setFocusedControl(controlOrder[idx - 1]);
+          const idx = CONTROL_ORDER.indexOf(focusedControl);
+          if (idx > 0) setFocusedControl(CONTROL_ORDER[idx - 1]);
         } else {
           seekRelative(-10);
         }
@@ -146,8 +146,8 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
 
       case 'ArrowRight':
         if (controlsVisible) {
-          const idx = controlOrder.indexOf(focusedControl);
-          if (idx < controlOrder.length - 1) setFocusedControl(controlOrder[idx + 1]);
+          const idx = CONTROL_ORDER.indexOf(focusedControl);
+          if (idx < CONTROL_ORDER.length - 1) setFocusedControl(CONTROL_ORDER[idx + 1]);
         } else {
           seekRelative(10);
         }
@@ -159,7 +159,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
         showControls();
         break;
     }
-  }, [controlsVisible, focusedControl, onExit, seekRelative, togglePlayPause, showControls, controlOrder]);
+  }, [controlsVisible, focusedControl, onExit, seekRelative, togglePlayPause, showControls]);
 
   const opts = {
     width: '100%',

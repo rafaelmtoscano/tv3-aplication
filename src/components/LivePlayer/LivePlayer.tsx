@@ -71,7 +71,7 @@ export const LivePlayer = React.memo(
         };
       }, [resetTimer]);
 
-      const handleKeyDown = (e: React.KeyboardEvent) => {
+      const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         resetTimer();
 
         // Reminder modal takes priority
@@ -180,7 +180,7 @@ export const LivePlayer = React.memo(
           default:
             break;
         }
-      };
+      }, [controlsVisible, showEPG, singleChannel, channels, activeChannel, focusedIndex, epgFocusedIndex, sairFocused, reminderEntry, resetTimer, onExit]);
 
       if (!activeChannel) return null;
 
