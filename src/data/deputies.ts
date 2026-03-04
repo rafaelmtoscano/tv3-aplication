@@ -49,6 +49,7 @@ export interface Speech {
 
 export interface Deputy {
   id: string;
+  apiId?: number; // Numeric ID from the API
   name: string;                  // Nome parlamentar curto
   displayName: string;           // 'Dep. Arthur Lira'
   party: string;                 // 'PP'
@@ -662,4 +663,198 @@ export function formatMandate(mandate: Mandate): string {
 /** Retorna todos os deputados ordenados por nome */
 export function getDeputiesSorted(): Deputy[] {
   return [...deputies].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+}
+
+// ─────────────────────────────────────────────
+// API — Câmara dos Deputados (dados abertos)
+// https://dadosabertos.camara.leg.br/api/v2
+// ─────────────────────────────────────────────
+
+const CAMARA_API = 'https://dadosabertos.camara.leg.br/api/v2';
+
+export interface DeputyAPI {
+  id: number;
+  nome: string;
+  siglaPartido: string;
+  siglaUf: string;
+  urlFoto: string;
+  email: string;
+}
+
+export interface DeputyDetailAPI {
+  id: number;
+  ultimoStatus: {
+    nome: string;
+    siglaPartido: string;
+    siglaUf: string;
+    urlFoto: string;
+  };
+  dataNascimento: string;
+  municipioNascimento: string;
+  ufNascimento: string;
+  escolaridade: string;
+}
+
+export interface ProposalAPI {
+  id: number;
+  siglaTipo: string;
+  numero: number;
+  ano: number;
+  ementa: string;
+}
+
+export interface SpeechAPI {
+  dataHoraInicio: string;
+  sumario: string;
+  urlAudio: string;
+  faseEvento: { titulo: string };
+}
+
+export interface AgendaAPI {
+  dataHoraInicio: string;
+  descricaoTipo: string;
+  descricao: string;
+  localCamara: { nome: string };
+}
+
+/** Converte DeputyAPI + DeputyDetailAPI para o Deputy local */
+export function mapAPIToDeputy(
+  summary: DeputyAPI,
+  detail: DeputyDetailAPI | null,
+  proposals: ProposalAPI[],
+  speeches: SpeechAPI[],
+  agenda: AgendaAPI[]
+): Deputy {
+  const born = detail?.dataNascimento ?? '';
+  const birthDate = born
+    ? born.split('-').reverse().join('/')
+    : '';
+
+  const mandates: Mandate[] = detail
+    ? [
+        {
+          role: 'Deputado(a) Federal',
+          period: '2023-2027',
+          state: detail.ultimoStatus.siglaUf,
+          party: detail.ultimoStatus.siglaPartido,
+          assumedOn: '01/02/2023',
+        },
+      ]
+    : [];
+
+  const mappedProposals: LegislativeProposal[] = proposals.map((p) => ({
+    id: `${p.siglaTipo} ${p.numero}/${p.ano}`,
+    author: `${summary.nome} – ${summary.siglaPartido}/${summary.siglaUf}`,
+    summary: p.ementa || 'Sem ementa disponível.',
+    year: p.ano,
+    status: 'Em tramitação',
+  }));
+
+  const mappedSpeeches: Speech[] = speeches.map((s) => ({
+    title: s.sumario || s.faseEvento?.titulo || 'Discurso no Plenário',
+    date: s.dataHoraInicio
+      ? s.dataHoraInicio.split('T')[0].split('-').reverse().join('/')
+      : '',
+    videoUrl: s.urlAudio || '',
+    context: s.faseEvento?.titulo ?? '',
+  }));
+
+  const mappedAgenda: AgendaItem[] = agenda.map((a) => {
+    const dt = a.dataHoraInicio ? new Date(a.dataHoraInicio) : null;
+    const date = dt
+      ? dt.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })
+      : '';
+    const time = dt
+      ? dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      : '';
+    return {
+      date,
+      time,
+      location: a.localCamara?.nome || a.descricaoTipo || 'Câmara dos Deputados',
+      description: a.descricao || a.descricaoTipo || '',
+    };
+  });
+
+  const slug = summary.nome
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '-');
+
+  return {
+    id: slug,
+    apiId: summary.id,
+    name: summary.nome,
+    displayName: `Dep. ${summary.nome}`,
+    party: summary.siglaPartido,
+    state: summary.siglaUf,
+    photo: summary.urlFoto,
+    biography: {
+      fullName: detail?.ultimoStatus.nome ?? summary.nome,
+      birthDate,
+      birthplace: detail
+        ? `${detail.municipioNascimento}, BRASIL`
+        : '',
+      professions: [],
+      parentage: '',
+      education: detail?.escolaridade ?? '',
+      mandates,
+    },
+    proposals: mappedProposals,
+    speeches: mappedSpeeches,
+    agenda: mappedAgenda,
+  };
+}
+
+export async function fetchDeputies(params?: {
+  itens?: number;
+  siglaPartido?: string;
+  siglaUf?: string;
+}): Promise<DeputyAPI[]> {
+  const query = new URLSearchParams({
+    ordem: 'ASC',
+    ordenarPor: 'nome',
+    itens: String(params?.itens ?? 6),
+    ...(params?.siglaPartido && { siglaPartido: params.siglaPartido }),
+    ...(params?.siglaUf && { siglaUf: params.siglaUf }),
+  });
+  const res = await fetch(`${CAMARA_API}/deputados?${query}`);
+  if (!res.ok) throw new Error(`Câmara API error: ${res.status}`);
+  const json = await res.json();
+  return json.dados as DeputyAPI[];
+}
+
+export async function fetchDeputyDetail(id: number): Promise<DeputyDetailAPI> {
+  const res = await fetch(`${CAMARA_API}/deputados/${id}`);
+  if (!res.ok) throw new Error(`Câmara API error: ${res.status}`);
+  const json = await res.json();
+  return json.dados as DeputyDetailAPI;
+}
+
+export async function fetchDeputyProposals(id: number): Promise<ProposalAPI[]> {
+  const res = await fetch(
+    `${CAMARA_API}/proposicoes?idDeputadoAutor=${id}&ordenarPor=ano&ordem=DESC&itens=3`
+  );
+  if (!res.ok) throw new Error(`Câmara API error: ${res.status}`);
+  const json = await res.json();
+  return json.dados as ProposalAPI[];
+}
+
+export async function fetchDeputySpeeches(id: number): Promise<SpeechAPI[]> {
+  const res = await fetch(
+    `${CAMARA_API}/deputados/${id}/discursos?ordenarPor=dataHoraInicio&ordem=DESC&itens=3`
+  );
+  if (!res.ok) throw new Error(`Câmara API error: ${res.status}`);
+  const json = await res.json();
+  return json.dados as SpeechAPI[];
+}
+
+export async function fetchDeputyAgenda(id: number): Promise<AgendaAPI[]> {
+  const today = new Date().toISOString().split('T')[0];
+  const res = await fetch(
+    `${CAMARA_API}/deputados/${id}/agenda?dataInicio=${today}&itens=4`
+  );
+  if (!res.ok) throw new Error(`Câmara API error: ${res.status}`);
+  const json = await res.json();
+  return json.dados as AgendaAPI[];
 }

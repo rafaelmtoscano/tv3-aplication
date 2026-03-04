@@ -3,8 +3,8 @@ import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { ActionButton } from '../../components/ActionButton/ActionButton';
 import { ContentCard } from '../../components/ContentCard/ContentCard';
+import { useCamaraAPI } from '../../hooks/useCamaraAPI';
 import { channels } from '../../data/channels';
-import { deputies } from '../../data/deputies';
 
 interface CamaraProps {
   isActive: boolean;
@@ -14,6 +14,7 @@ interface CamaraProps {
 }
 
 export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack }: CamaraProps) {
+  const { deputiesList: apiDeputies, loading: apiLoading, selectDeputyData } = useCamaraAPI();
   const [zone, setZone] = useState<'hero' | 'deputies' | 'content'>('hero');
   const [deputyIndex, setDeputyIndex] = useState(0);
   const [contentIndex, setContentIndex] = useState(0);
@@ -74,7 +75,7 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack
         break;
 
       case 'ArrowRight':
-        if (zone === 'deputies' && deputyIndex < deputies.length - 1) {
+        if (zone === 'deputies' && deputyIndex < apiDeputies.length - 1) {
           e.preventDefault();
           e.stopPropagation();
           setDeputyIndex(i => i + 1);
@@ -91,12 +92,12 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack
         if (zone === 'hero') {
           onLiveChannel?.('tv-camara');
         } else if (zone === 'deputies') {
-          const dep = deputies[deputyIndex];
+          const dep = apiDeputies[deputyIndex];
           setLoadingDeputy(dep.id);
-          setTimeout(() => {
-            onDeputySelect?.(dep.id);
+          selectDeputyData(dep).then((fullId) => {
+            onDeputySelect?.(fullId);
             setLoadingDeputy(null);
-          }, 600);
+          });
         }
         break;
 
@@ -281,57 +282,61 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack
         {/* Zone 2 — Deputies rail */}
         <div style={{ height: '260px', paddingTop: '32px' }}>
           <h2 style={sectionTitleStyle}>Deputados</h2>
-          <div style={deputiesRailStyle}>
-            {deputies.map((dep, i) => {
-              const isFocused = zone === 'deputies' && deputyIndex === i;
-              return (
-                <div
-                  key={dep.id}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '12px',
-                    cursor: 'pointer',
-                    transition: 'transform 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
-                    transform: isFocused ? 'scale(1.1)' : 'scale(1)',
-                  }}
-                  onClick={() => {
-                    setZone('deputies');
-                    setDeputyIndex(i);
-                    setLoadingDeputy(dep.id);
-                    setTimeout(() => {
-                      onDeputySelect?.(dep.id);
-                      setLoadingDeputy(null);
-                    }, 600);
-                  }}
-                >
-                  <img
-                    src={dep.photo}
-                    alt={dep.displayName}
+          {apiLoading ? (
+            <div style={{ paddingLeft: '136px', ...typography.body.large, color: colors.text.secondaryInverse }}>Carregando...</div>
+          ) : (
+            <div style={deputiesRailStyle}>
+              {apiDeputies.map((dep, i) => {
+                const isFocused = zone === 'deputies' && deputyIndex === i;
+                return (
+                  <div
+                    key={dep.id}
                     style={{
-                      width: '120px',
-                      height: '120px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: isFocused
-                        ? `4px solid ${colors.background.brandPrimary}`
-                        : '4px solid transparent',
-                      transition: 'border-color 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '12px',
+                      cursor: 'pointer',
+                      transition: 'transform 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
+                      transform: isFocused ? 'scale(1.1)' : 'scale(1)',
                     }}
-                  />
-                  <span style={{
-                    ...typography.body.medium,
-                    color: '#FFF',
-                    textAlign: 'center',
-                    maxWidth: '140px',
-                  }}>
-                    {dep.name}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+                    onClick={() => {
+                      setZone('deputies');
+                      setDeputyIndex(i);
+                      setLoadingDeputy(dep.id);
+                      selectDeputyData(dep).then((fullId) => {
+                        onDeputySelect?.(fullId);
+                        setLoadingDeputy(null);
+                      });
+                    }}
+                  >
+                    <img
+                      src={dep.photo}
+                      alt={dep.displayName}
+                      style={{
+                        width: '120px',
+                        height: '120px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: isFocused
+                          ? `4px solid ${colors.background.brandPrimary}`
+                          : '4px solid transparent',
+                        transition: 'border-color 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
+                      }}
+                    />
+                    <span style={{
+                      ...typography.body.medium,
+                      color: '#FFF',
+                      textAlign: 'center',
+                      maxWidth: '140px',
+                    }}>
+                      {dep.name}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Zone 3 — Content rail */}
