@@ -7,6 +7,8 @@ import Schedule from './pages/Schedule/index';
 import Apps from './pages/Apps/index';
 import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
+import Camara from './pages/Camara/index';
+import DeputyDetail from './pages/Camara/DeputyDetail';
 import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
@@ -19,6 +21,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [livePage, setLivePage] = useState<{ channelId: string; singleChannel?: boolean } | null>(null);
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
+  const [camaraPage, setCamaraPage] = useState<{ deputyId?: string } | null>(null);
 
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
@@ -164,7 +167,15 @@ export default function App() {
           />
         );
       case 'apps':
-        return <Apps isActive={currentPage === 'apps'} isSidebarExpanded={isSidebarExpanded} />;
+        return (
+          <Apps
+            isActive={currentPage === 'apps'}
+            isSidebarExpanded={isSidebarExpanded}
+            onServiceSelect={(serviceId) => {
+              if (serviceId === 'camara-deputados') setCamaraPage({});
+            }}
+          />
+        );
       case 'settings':
         return <Settings isActive={currentPage === 'settings'} />;
       case 'help':
@@ -193,6 +204,20 @@ export default function App() {
       <div style={mainWrapperStyle}>
         {renderPage()}
       </div>
+
+      {camaraPage !== null && !livePage && !watchPage && (
+        camaraPage.deputyId
+          ? <DeputyDetail
+              deputyId={camaraPage.deputyId}
+              onBack={() => setCamaraPage({})}
+            />
+          : <Camara
+              isActive={true}
+              onLiveChannel={(channelId) => setLivePage({ channelId, singleChannel: true })}
+              onDeputySelect={(deputyId) => setCamaraPage({ deputyId })}
+              onBack={() => setCamaraPage(null)}
+            />
+      )}
     </div>
   );
 }
