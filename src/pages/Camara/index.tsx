@@ -14,7 +14,7 @@ import DeputiesGrid from './DeputiesGrid';
 
 // ─── Layout constants — mesmas da Home ───────────────────────────────────────
 const HERO_HEIGHT = 420;
-const DEPUTIES_HEIGHT = 438; // 48px padding-top + 312px circle + 30px label + 48px padding-bottom
+const DEPUTIES_HEIGHT = 502; // 48 paddingTop + 36 título + 48 gap + 370 rail
 const RAIL_HEIGHT = 408;     // igual Home — ContentRail ocupa isso no scroll virtual
 const SCROLL_OFFSET = 160;   // igual Home
 
@@ -263,6 +263,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
   // Deputies zone: sem height fixo, deixa o conteúdo determinar
   const deputiesZoneStyle: React.CSSProperties = {
     paddingTop: 48,
+    paddingBottom: 48,
     paddingLeft: 0, // ContentRail usa 64px, aqui controlamos manualmente
     overflow: 'visible',
   };
@@ -279,7 +280,6 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
     display: 'flex',
     flexDirection: 'row',
     paddingLeft: 64,
-    paddingBottom: 48,
     gap: 32,
     overflow: 'visible',
     alignItems: 'flex-end',
