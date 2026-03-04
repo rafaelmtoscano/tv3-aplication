@@ -15,7 +15,6 @@ export interface UseFocusNavigationOptions {
   sidebarItemIds: string[];   // ids dos itens do menu, SEM o avatar
   sidebarLength: number;      // sidebarItemIds.length + 1 (inclui o avatar)
   activeSidebarId: string;    // id do item correspondente à página atual, ex: 'home'
-  disabled?: boolean;   // ← novo
   onEnter?: (state: FocusState) => void;
   onSidebarSelect?: (id: string) => void;
 }
@@ -37,7 +36,6 @@ export const useFocusNavigation = ({
   sidebarItemIds,
   sidebarLength,
   activeSidebarId,
-  disabled,   // ← novo
   onEnter,
   onSidebarSelect,
 }: UseFocusNavigationOptions): UseFocusNavigationReturn => {
@@ -55,7 +53,6 @@ export const useFocusNavigation = ({
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      if (disabled) return;   // ← nova primeira linha
       const { region, sidebarIndex, mainZone, mainItemIndex } = focusStateRef.current;
 
       // Impedir scroll padrão do browser para teclas de navegação
@@ -177,7 +174,7 @@ export const useFocusNavigation = ({
         }
       }
     },
-    [disabled, heroLength, railLengths, sidebarItemIds, sidebarLength, activeSidebarId, onEnter, onSidebarSelect]
+    [heroLength, railLengths, sidebarItemIds, sidebarLength, activeSidebarId, onEnter, onSidebarSelect]
   );
 
   useEffect(() => {

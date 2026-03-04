@@ -8,8 +8,6 @@ import Apps from './pages/Apps/index';
 import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
 import Camara from './pages/Camara/index';
-import DeputyDetail from './pages/Camara/DeputyDetail';
-import DeputiesGrid from './pages/Camara/DeputiesGrid';
 import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
@@ -22,11 +20,6 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [livePage, setLivePage] = useState<{ channelId: string; singleChannel?: boolean } | null>(null);
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
-  const [camaraPage, setCamaraPage] = useState<{ deputyId?: string } | null>(null);
-  const [deputiesGridOpen, setDeputiesGridOpen] = useState(false);
-
-  const isCamaraOverlayActive = camaraPage !== null;
-
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
@@ -49,7 +42,6 @@ export default function App() {
     sidebarItemIds: sidebarItems.map((i) => i.id),
     sidebarLength: sidebarItems.length + 1,
     activeSidebarId: currentPage,
-    disabled: isCamaraOverlayActive,
     onEnter: (state) => {
       if (currentPage === 'home') {
         if (state.mainZone === 'hero') {
@@ -177,8 +169,17 @@ export default function App() {
             isActive={currentPage === 'apps'}
             isSidebarExpanded={isSidebarExpanded}
             onServiceSelect={(serviceId) => {
-              if (serviceId === 'camara-deputados') setCamaraPage({});
+              if (serviceId === 'camara-deputados') setCurrentPage('apps-camara');
             }}
+          />
+        );
+      case 'apps-camara':
+        return (
+          <Camara
+            isActive={currentPage === 'apps-camara'}
+            isSidebarExpanded={isSidebarExpanded}
+            onLiveChannel={(channelId) => setLivePage({ channelId, singleChannel: true })}
+            onBack={() => setCurrentPage('apps')}
           />
         );
       case 'settings':
@@ -210,25 +211,6 @@ export default function App() {
         {renderPage()}
       </div>
 
-      {camaraPage !== null && !livePage && !watchPage && (
-        deputiesGridOpen
-          ? <DeputiesGrid
-              onBack={() => setDeputiesGridOpen(false)}
-              onDeputySelect={(id) => { setDeputiesGridOpen(false); setCamaraPage({ deputyId: id }); }}
-            />
-          : camaraPage.deputyId
-            ? <DeputyDetail
-                deputyId={camaraPage.deputyId}
-                onBack={() => setCamaraPage({})}
-              />
-            : <Camara
-                isActive={true}
-                onLiveChannel={(channelId) => setLivePage({ channelId, singleChannel: true })}
-                onDeputySelect={(deputyId) => setCamaraPage({ deputyId })}
-                onViewAll={() => setDeputiesGridOpen(true)}
-                onBack={() => setCamaraPage(null)}
-              />
-      )}
     </div>
   );
 }

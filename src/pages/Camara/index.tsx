@@ -2,25 +2,28 @@ import React, { useState, useEffect, useRef } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { ActionButton } from '../../components/ActionButton/ActionButton';
-import { ContentCard } from '../../components/ContentCard/ContentCard';
+import { ContentRail } from '../../components/ContentRail';
+import type { ContentRailItem } from '../../components/ContentRail';
 import { CircleButton } from '../../components/CircleButton/CircleButton';
 import { GridIcon } from '../../icons';
-import { useDeputies } from '../../hooks/useDeputies';
+import { useCamaraAPI } from '../../hooks/useCamaraAPI';
 import { channels } from '../../data/channels';
+import DeputyDetail from './DeputyDetail';
+import DeputiesGrid from './DeputiesGrid';
 
 interface CamaraProps {
   isActive: boolean;
+  isSidebarExpanded?: boolean;
   onLiveChannel?: (channelId: string) => void;
-  onDeputySelect?: (deputyId: string) => void;
-  onViewAll?: () => void;
   onBack?: () => void;
 }
 
-// Total items in deputies rail: 1 "Ver todos" + 6 deputies = 7 (indices 0–6)
-const DEPUTY_RAIL_TOTAL = 7;
+type CamaraView = 'main' | 'deputy-detail' | 'deputies-grid';
 
-export default function Camara({ isActive, onLiveChannel, onDeputySelect, onViewAll, onBack }: CamaraProps) {
-  const { deputies, loading } = useDeputies(6);
+export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onBack }: CamaraProps) {
+  const { deputiesList: deputies, loading, selectDeputyData } = useCamaraAPI();
+  const [view, setView] = useState<CamaraView>('main');
+  const [selectedDeputyId, setSelectedDeputyId] = useState<string | null>(null);
   const [zone, setZone] = useState<'hero' | 'deputies' | 'content'>('hero');
   const [deputyIndex, setDeputyIndex] = useState(0);
   const [contentIndex, setContentIndex] = useState(0);
@@ -30,16 +33,43 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onView
   const tvCamara = channels.find(ch => ch.id === 'tv-camara')!;
   const programs = tvCamara.programs || [];
 
+  // Total items in deputies rail: 1 "Ver todos" + all deputies
+  const deputyRailTotal = deputies.length + 1;
+
+  const contentRailItems: ContentRailItem[] = programs.map(prog => ({
+    id: prog.id,
+    variant: 'image-text' as const,
+    image: prog.thumbnail,
+    title: prog.title,
+    label: prog.category,
+  }));
+
   useEffect(() => {
-    if (isActive) {
+    if (isActive && view === 'main') {
       containerRef.current?.focus();
     }
-  }, [isActive]);
+  }, [isActive, view]);
 
-  // Hero: 420px | Zone2: 460px (CircleButton focused 312px + label + overhead) | Content: 880px
-  const scrollY = zone === 'hero' ? 0 : zone === 'deputies' ? 420 : 880;
+  // Hero: 420px | Zone2: 360px fixed | Content offset
+  const scrollY = zone === 'hero' ? 0 : zone === 'deputies' ? 420 : 780;
+
+  const handleDeputySelect = async (dep: typeof deputies[0]) => {
+    setLoadingDeputy(dep.id);
+    try {
+      const resolvedId = await selectDeputyData(dep);
+      setSelectedDeputyId(resolvedId);
+      setView('deputy-detail');
+    } catch {
+      setSelectedDeputyId(dep.id);
+      setView('deputy-detail');
+    } finally {
+      setLoadingDeputy(null);
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isSidebarExpanded) return;
+
     switch (e.key) {
       case 'ArrowDown':
         if (zone === 'hero') {
@@ -82,7 +112,7 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onView
         break;
 
       case 'ArrowRight':
-        if (zone === 'deputies' && deputyIndex < DEPUTY_RAIL_TOTAL - 1) {
+        if (zone === 'deputies' && deputyIndex < deputyRailTotal - 1) {
           e.preventDefault();
           e.stopPropagation();
           setDeputyIndex(i => i + 1);
@@ -100,15 +130,11 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onView
           onLiveChannel?.('tv-camara');
         } else if (zone === 'deputies') {
           if (deputyIndex === 0) {
-            onViewAll?.();
+            setView('deputies-grid');
           } else {
-            const dep = deputies[deputyIndex - 1]; // offset by 1 due to "Ver todos" at index 0
+            const dep = deputies[deputyIndex - 1];
             if (dep) {
-              setLoadingDeputy(dep.id);
-              setTimeout(() => {
-                onDeputySelect?.(dep.id);
-                setLoadingDeputy(null);
-              }, 600);
+              handleDeputySelect(dep);
             }
           }
         }
@@ -121,6 +147,19 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onView
         break;
     }
   };
+
+  // Sub-view rendering
+  if (view === 'deputy-detail' && selectedDeputyId) {
+    return <DeputyDetail deputyId={selectedDeputyId} onBack={() => setView('main')} />;
+  }
+  if (view === 'deputies-grid') {
+    return (
+      <DeputiesGrid
+        onBack={() => setView('main')}
+        onDeputySelect={(id) => { setSelectedDeputyId(id); setView('deputy-detail'); }}
+      />
+    );
+  }
 
   const isVerTodosFocused = zone === 'deputies' && deputyIndex === 0;
 
@@ -211,7 +250,7 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onView
           margin: 0 0 24px 0;
         }
         .camara-deputies-zone {
-          height: 460px;
+          height: 360px;
           padding-top: 32px;
         }
         .camara-deputies-rail {
@@ -222,35 +261,8 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onView
           overflow: visible;
           align-items: flex-end;
         }
-        .camara-ver-todos-wrapper {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 16px;
-          cursor: pointer;
-        }
-        .camara-ver-todos-circle {
-          border-radius: 1000px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .camara-ver-todos-label {
-          height: 30px;
-          text-align: center;
-          margin: 0;
-          color: #FFF;
-        }
         .camara-content-zone {
           padding-top: 32px;
-        }
-        .camara-content-rail {
-          display: flex;
-          flex-direction: row;
-          padding-left: 136px;
-          gap: 24px;
-          overflow: visible;
         }
         .camara-loading-overlay {
           position: absolute;
@@ -343,11 +355,10 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onView
                 icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
                 label="Ver todos"
                 isFocused={isVerTodosFocused}
-                onClick={() => onViewAll?.()}
+                onClick={() => setView('deputies-grid')}
               />
 
-              {/* Deputy CircleButtons (indices 1–6) */}
-              {deputies.slice(0, 6).map((dep, i) => (
+              {deputies.map((dep, i) => (
                 <CircleButton
                   key={dep.id}
                   image={dep.photo}
@@ -356,11 +367,7 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onView
                   onClick={() => {
                     setZone('deputies');
                     setDeputyIndex(i + 1);
-                    setLoadingDeputy(dep.id);
-                    setTimeout(() => {
-                      onDeputySelect?.(dep.id);
-                      setLoadingDeputy(null);
-                    }, 600);
+                    handleDeputySelect(dep);
                   }}
                 />
               ))}
@@ -370,22 +377,15 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onView
 
         {/* Zone 3 — Content rail */}
         <div className="camara-content-zone">
-          <h2
-            className="camara-section-title"
-            style={{ ...typography.headline.large, marginBottom: '16px' }}
-          >Em alta</h2>
-          <div className="camara-content-rail">
-            {programs.map((prog, i) => (
-              <ContentCard
-                key={prog.id}
-                variant="image-text"
-                image={prog.thumbnail}
-                title={prog.title}
-                label={prog.category}
-                isFocused={zone === 'content' && contentIndex === i}
-              />
-            ))}
-          </div>
+          <ContentRail
+            title="Em alta"
+            variant="image-text"
+            items={contentRailItems}
+            focusedIndex={zone === 'content' ? contentIndex : -1}
+            onFocusedIndexChange={(i) => setContentIndex(i)}
+            onNavigateUp={() => setZone('deputies')}
+            onNavigateDown={() => {}}
+          />
         </div>
       </div>
 
