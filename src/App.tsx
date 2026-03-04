@@ -7,7 +7,6 @@ import Schedule from './pages/Schedule/index';
 import Apps from './pages/Apps/index';
 import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
-import Camara from './pages/Camara/index';
 import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
@@ -168,18 +167,7 @@ export default function App() {
           <Apps
             isActive={currentPage === 'apps'}
             isSidebarExpanded={isSidebarExpanded}
-            onServiceSelect={(serviceId) => {
-              if (serviceId === 'camara-deputados') setCurrentPage('apps-camara');
-            }}
-          />
-        );
-      case 'apps-camara':
-        return (
-          <Camara
-            isActive={currentPage === 'apps-camara'}
-            isSidebarExpanded={isSidebarExpanded}
-            onLiveChannel={(channelId) => setLivePage({ channelId, singleChannel: true })}
-            onBack={() => setCurrentPage('apps')}
+            onServiceSelect={() => {}}
           />
         );
       case 'settings':
