@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, memo, useCallback } from 'react';
+import React, { forwardRef, memo } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 
@@ -19,6 +19,10 @@ export interface MenuItemProps {
    * Whether the sidebar is expanded (shows label)
    */
   expanded?: boolean;
+  /**
+   * External focus state override
+   */
+  isFocused?: boolean;
   /**
    * Click handler
    */
@@ -53,6 +57,7 @@ export const MenuItem = memo(
         label,
         state = 'idle',
         expanded = false,
+        isFocused: isFocusedProp,
         onClick,
         onFocus,
         onBlur,
@@ -62,17 +67,7 @@ export const MenuItem = memo(
       },
       ref
     ) => {
-      const [isFocused, setIsFocused] = useState(false);
-
-      const handleFocus = useCallback(() => {
-        setIsFocused(true);
-        onFocus?.();
-      }, [onFocus]);
-
-      const handleBlur = useCallback(() => {
-        setIsFocused(false);
-        onBlur?.();
-      }, [onBlur]);
+      const isFocused = isFocusedProp ?? false;
 
       const isDisabled = state === 'disabled';
       const isSelected = state === 'selected';
@@ -164,8 +159,8 @@ export const MenuItem = memo(
           style={containerStyle}
           className={className}
           onClick={isDisabled ? undefined : onClick}
-          onFocus={isDisabled ? undefined : handleFocus}
-          onBlur={isDisabled ? undefined : handleBlur}
+          onFocus={onFocus}
+          onBlur={onBlur}
           disabled={isDisabled}
           tabIndex={isDisabled ? -1 : tabIndex}
           aria-label={ariaLabel || label}

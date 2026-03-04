@@ -61,12 +61,12 @@ export const ContentCard = memo(
       const [isInternalFocused, setIsInternalFocused] = useState(false);
       const isFocused = isFocusedProp ?? isInternalFocused;
 
-      const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
+      const handleFocus = (_e: React.FocusEvent<HTMLButtonElement>) => {
         setIsInternalFocused(true);
         onFocus?.();
       };
 
-      const handleBlur = (e: React.FocusEvent<HTMLButtonElement>) => {
+      const handleBlur = (_e: React.FocusEvent<HTMLButtonElement>) => {
         setIsInternalFocused(false);
         onBlur?.();
       };
@@ -165,18 +165,20 @@ export const ContentCard = memo(
           aria-label={ariaLabel || title || 'Content card'}
         >
           {image && <img src={image} alt="" style={imageStyle} />}
-          
-          <div style={scrimStyle} />
+
+          {variant !== 'image' && <div style={scrimStyle} />}
 
           <div style={contentLayerStyle}>
-            <div style={topRowStyle}>
-              {logo ? (
-                <img src={logo} alt="" style={{ height: '32px', objectFit: 'contain' }} />
-              ) : (
-                <div />
-              )}
-              {isLive && <div style={liveTagStyle}>Ao vivo</div>}
-            </div>
+            {variant !== 'image' && (
+              <div style={topRowStyle}>
+                {logo ? (
+                  <img src={logo} alt="" style={{ height: '32px', objectFit: 'contain' }} />
+                ) : (
+                  <div />
+                )}
+                {isLive && <div style={liveTagStyle}>Ao vivo</div>}
+              </div>
+            )}
 
             {variant === 'image-text' && (
               <div style={bottomRowStyle}>

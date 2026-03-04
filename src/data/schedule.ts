@@ -1,0 +1,807 @@
+// =============================================================================
+// src/data/schedule.ts
+// Grade de programação semanal dos canais públicos
+//
+// Fontes:
+//   TV Câmara  → https://www.camara.leg.br/tv/programacao-semanal
+//   Canal Gov  → grade-canal-gov.pdf
+//   TV Brasil  → https://tvbrasil.ebc.com.br/programacao
+//   TV Justiça → https://www.tvjustica.jus.br/programacao
+//
+// Última atualização: 2026-03-03
+// =============================================================================
+
+export type DayOfWeek =
+  | 'domingo'
+  | 'segunda'
+  | 'terca'
+  | 'quarta'
+  | 'quinta'
+  | 'sexta'
+  | 'sabado';
+
+export interface ScheduleEntry {
+  time: string;
+  title: string;
+  isLive?: boolean;
+}
+
+export interface ChannelSchedule {
+  channelId: string;
+  schedule: Record<DayOfWeek, ScheduleEntry[]>;
+}
+
+export interface EPGEntry {
+  time: string;
+  endTime: string;
+  title: string;
+  isLive: boolean;
+  durationMinutes: number;
+}
+
+// ─── TV Câmara ────────────────────────────────────────────────────────────────
+// TODO: substituir por chamada à API
+
+export const tvCamaraSchedule: ChannelSchedule = {
+  channelId: 'tv-camara',
+  schedule: {
+    domingo: [
+      { time: '00:30', title: 'Documentário 100 anos de Cultura e Conflitos: JK, Jango e o Golpe 64' },
+      { time: '01:00', title: 'Documentário TV Câmara: Ostras de Florianópolis' },
+      { time: '02:00', title: 'Reapresentação de Comissão' },
+      { time: '06:30', title: 'Câmara Debate' },
+      { time: '07:00', title: 'Ponto de Vista: Comunicação pública e novas tecnologias - Implantação da TV 3.0' },
+      { time: '07:30', title: 'Qual a Questão? Jornadas de trabalho no Brasil' },
+      { time: '08:00', title: 'Documentário Secretaria da Mulher: Até amanhã' },
+      { time: '08:30', title: 'Interesse Público: Edição nº 1098' },
+      { time: '09:00', title: 'Elas Pautam: Pacto pelo fim do feminicídio' },
+      { time: '09:30', title: 'Fatos e Opiniões' },
+      { time: '10:00', title: 'Documentário Secretaria da Mulher: Por trás da porta' },
+      { time: '10:30', title: 'Reapresentação de Comissão' },
+      { time: '13:00', title: 'Bora Entender: Pacto contra o feminicídio' },
+      { time: '14:00', title: 'Documentário Secretaria da Mulher: Quem sou eu' },
+      { time: '14:30', title: 'Expressão Nacional: Acordo Brasil-Mercosul' },
+      { time: '15:30', title: 'Ponto de Vista: Comunicação pública e novas tecnologias - Implantação da TV 3.0' },
+      { time: '16:00', title: 'Elas Pautam: Pacto pelo fim do feminicídio' },
+      { time: '16:30', title: 'Documentário Secretaria da Mulher: Escola de homens' },
+      { time: '17:00', title: 'Palavra Aberta' },
+      { time: '17:15', title: 'Palavra Aberta' },
+      { time: '17:30', title: 'Fatos e Opiniões' },
+      { time: '18:00', title: 'Documentário: Espaços de fronteira' },
+      { time: '19:00', title: 'Documentário Secretaria da Mulher: Marcas da alma' },
+      { time: '19:30', title: 'Bora Entender: Pacto contra o feminicídio' },
+      { time: '20:30', title: 'Qual a Questão? Jornadas de trabalho no Brasil' },
+      { time: '21:00', title: 'Encontro com a Autora: Aline Bei' },
+      { time: '22:00', title: 'Documentário TV Câmara: Ostras de Florianópolis' },
+      { time: '22:30', title: 'Fatos e Opiniões' },
+      { time: '23:00', title: 'Participação Popular' },
+    ],
+    segunda: [
+      { time: '00:30', title: 'Documentário 100 anos de Cultura e Conflitos: 1932 - Revolução, Cultura e Identidade' },
+      { time: '01:00', title: 'Documentário: Futuro da educação' },
+      { time: '02:00', title: 'Centro de Estudos e Debates Estratégicos - Audiência pública: Impactos da pejotização' },
+      { time: '04:15', title: 'Secretaria da Mulher - Audiência pública: Balanço dos 10 anos da Lei do Feminicídio' },
+      { time: '05:30', title: 'Sessão Solene do Congresso Nacional: Inauguração da Sessão Legislativa' },
+      { time: '06:30', title: 'Câmara Debate: IA na saúde' },
+      { time: '08:00', title: 'Painel Eletrônico', isLive: true },
+      { time: '09:00', title: 'Câmara Debate' },
+      { time: '09:30', title: 'Qual a Questão?' },
+      { time: '10:00', title: 'Participação Popular', isLive: true },
+      { time: '11:00', title: 'Comissão', isLive: true },
+      { time: '13:00', title: 'Comissão', isLive: true },
+      { time: '18:00', title: 'Comissão', isLive: true },
+      { time: '21:00', title: 'Comissão' },
+      { time: '22:00', title: 'Encontro com o Autor' },
+      { time: '23:00', title: 'Ponto de Vista' },
+      { time: '23:30', title: 'Palavra Aberta' },
+    ],
+    terca: [
+      { time: '00:35', title: 'Resumo das Votações', isLive: true },
+      { time: '01:00', title: 'Conselho de Comunicação Social - Audiência pública: Proteção de crianças no ambiente digital' },
+      { time: '04:00', title: 'Comissão de Trabalho - Audiência Pública: Reestruturação das carreiras no Banco do Brasil' },
+      { time: '06:30', title: 'Palavra Aberta: Prioridades da Comissão da Amazônia para 2026' },
+      { time: '06:45', title: 'Palavra Aberta: Diagnóstico de câncer com mais agilidade no SUS' },
+      { time: '07:00', title: 'Documentário: A linha da memória - Episódio 4' },
+      { time: '07:30', title: 'Palavra Aberta: Perspectivas para os trabalhos da Comissão de Direitos Humanos em 2026' },
+      { time: '07:45', title: 'Palavra Aberta: Spray de pimenta para mulheres' },
+      { time: '08:00', title: 'Painel Eletrônico', isLive: true },
+      { time: '09:00', title: 'Expressão Nacional: Acordo Brasil-Mercosul', isLive: true },
+      { time: '10:00', title: 'Câmara Agora', isLive: true },
+      { time: '13:15', title: 'Comissão', isLive: true },
+      { time: '13:30', title: 'Direto da Câmara', isLive: true },
+      { time: '13:55', title: 'Sessão Deliberativa Extraordinária', isLive: true },
+      { time: '21:00', title: 'Palavra Aberta: Prioridades da Comissão da Amazônia para 2026' },
+      { time: '21:15', title: 'Palavra Aberta: Diagnóstico de câncer com mais agilidade no SUS' },
+      { time: '21:30', title: 'Qual a Questão? Jornadas de trabalho no Brasil' },
+      { time: '22:00', title: 'Elas Pautam: Pacto pelo fim do feminicídio' },
+      { time: '22:30', title: 'Participação Popular: Saúde bucal: prevenção e cuidados' },
+      { time: '23:30', title: 'Palavra Aberta: Perspectivas para os trabalhos da Comissão de Direitos Humanos em 2026' },
+      { time: '23:45', title: 'Palavra Aberta: Spray de pimenta para mulheres' },
+    ],
+    quarta: [
+      { time: '00:00', title: 'Reapresentação da Sessão Plenária ou de Comissão' },
+      { time: '06:00', title: 'Câmara Debate: Escala 6x1' },
+      { time: '06:30', title: 'Palavra Aberta' },
+      { time: '06:45', title: 'Palavra Aberta' },
+      { time: '07:00', title: 'Qual a Questão? Jornadas de trabalho no Brasil' },
+      { time: '07:30', title: 'Palavra Aberta' },
+      { time: '07:45', title: 'Palavra Aberta' },
+      { time: '08:00', title: 'Painel Eletrônico', isLive: true },
+      { time: '09:00', title: 'Sessão Solene ou Comissão', isLive: true },
+      { time: '10:00', title: 'Câmara Agora', isLive: true },
+      { time: '13:15', title: 'Comissão', isLive: true },
+      { time: '13:30', title: 'Direto da Câmara', isLive: true },
+      { time: '13:55', title: 'Sessão Deliberativa Extraordinária', isLive: true },
+      { time: '21:00', title: 'Palavra Aberta' },
+      { time: '21:15', title: 'Palavra Aberta' },
+      { time: '21:30', title: 'Ponto de Vista: Racismo no Brasil - Política de cotas raciais' },
+      { time: '22:00', title: 'Bora Entender: Pacto contra o feminicídio' },
+      { time: '23:00', title: 'Parlamento Brasil: Edição nº 461' },
+      { time: '23:30', title: 'Palavra Aberta' },
+      { time: '23:45', title: 'Palavra Aberta' },
+    ],
+    quinta: [
+      { time: '00:00', title: 'Reapresentação da Sessão Plenária ou de Comissão' },
+      { time: '06:00', title: 'Câmara Debate: Fim da reprovação escolar' },
+      { time: '06:30', title: 'Palavra Aberta' },
+      { time: '06:45', title: 'Palavra Aberta' },
+      { time: '07:00', title: 'Documentário 100 anos de Cultura e Conflitos: JK, Jango e o Golpe 64' },
+      { time: '07:30', title: 'Palavra Aberta' },
+      { time: '07:45', title: 'Palavra Aberta' },
+      { time: '08:00', title: 'Painel Eletrônico', isLive: true },
+      { time: '09:00', title: 'Sessão Deliberativa Extraordinária', isLive: true },
+      { time: '13:30', title: 'Direto da Câmara', isLive: true },
+      { time: '14:00', title: 'Comissão', isLive: true },
+      { time: '18:00', title: 'Parlamento Brasil: Edição nº 461' },
+      { time: '18:30', title: 'Elas Pautam: Pacto pelo fim do feminicídio' },
+      { time: '19:00', title: 'Qual a Questão? Jornadas de trabalho no Brasil' },
+      { time: '19:30', title: 'Câmara Debate' },
+      { time: '20:00', title: 'Documentário 100 anos de Cultura e Conflitos: JK, Jango e o Golpe 64' },
+      { time: '20:30', title: 'Documentário TV Câmara: Ostras de Florianópolis' },
+      { time: '21:00', title: 'Participação Popular: Saúde bucal: prevenção e cuidados' },
+      { time: '22:00', title: 'Expressão Nacional: Acordo Brasil-Mercosul' },
+      { time: '23:00', title: 'Câmara Debate' },
+      { time: '23:30', title: 'Palavra Aberta' },
+      { time: '23:45', title: 'Palavra Aberta' },
+    ],
+    sexta: [
+      { time: '00:00', title: 'Reapresentação de Comissão' },
+      { time: '06:00', title: 'Câmara Debate' },
+      { time: '06:30', title: 'Palavra Aberta' },
+      { time: '06:45', title: 'Palavra Aberta' },
+      { time: '07:00', title: 'Interesse Público: Edição nº 1098' },
+      { time: '07:30', title: 'Palavra Aberta' },
+      { time: '07:45', title: 'Palavra Aberta' },
+      { time: '08:00', title: 'Painel Eletrônico', isLive: true },
+      { time: '09:00', title: 'Bora Entender: Pacto contra o feminicídio' },
+      { time: '10:00', title: 'Câmara Agora', isLive: true },
+      { time: '12:00', title: 'Participação Popular', isLive: true },
+      { time: '13:00', title: 'Câmara Debate' },
+      { time: '13:30', title: 'Direto da Câmara', isLive: true },
+      { time: '14:00', title: 'Comissão', isLive: true },
+      { time: '18:00', title: 'Participação Popular' },
+      { time: '19:00', title: 'Fatos e Opiniões' },
+      { time: '19:30', title: 'Câmara Debate' },
+      { time: '20:00', title: 'Ponto de Vista: Comunicação pública e novas tecnologias - Implantação da TV 3.0' },
+      { time: '20:30', title: 'Elas Pautam: Pacto pelo fim do feminicídio' },
+      { time: '21:00', title: 'Expressão Nacional: Acordo Brasil-Mercosul' },
+      { time: '22:00', title: 'Documentário: Espaços de fronteira' },
+      { time: '23:00', title: 'Câmara Debate' },
+      { time: '23:30', title: 'Palavra Aberta' },
+      { time: '23:45', title: 'Palavra Aberta' },
+    ],
+    sabado: [
+      { time: '00:00', title: 'Documentário TV Câmara: Ostras de Florianópolis' },
+      { time: '00:30', title: 'Qual a Questão? Jornadas de trabalho no Brasil' },
+      { time: '01:00', title: 'Parlamento Brasil: Edição nº 461' },
+      { time: '01:30', title: 'Elas Pautam: Pacto pelo fim do feminicídio' },
+      { time: '02:00', title: 'Reapresentação de Comissão' },
+      { time: '06:30', title: 'Interesse Público: Edição nº 1098' },
+      { time: '07:00', title: 'Câmara Debate' },
+      { time: '07:30', title: 'Documentário 100 anos de Cultura e Conflitos: JK, Jango e o Golpe 64' },
+      { time: '08:00', title: 'Expressão Nacional: Acordo Brasil-Mercosul' },
+      { time: '09:00', title: 'Fatos e Opiniões' },
+      { time: '09:30', title: 'Ponto de Vista: Comunicação pública e novas tecnologias - Implantação da TV 3.0' },
+      { time: '10:00', title: 'Reapresentação de Comissão' },
+      { time: '13:00', title: 'Participação Popular' },
+      { time: '14:00', title: 'Câmara Debate' },
+      { time: '14:30', title: 'Elas Pautam: Pacto pelo fim do feminicídio' },
+      { time: '15:00', title: 'Documentário TV Câmara: Espaços de fronteira' },
+      { time: '16:00', title: 'Bora Entender: Pacto contra o feminicídio' },
+      { time: '17:00', title: 'Palavra Aberta' },
+      { time: '17:15', title: 'Palavra Aberta' },
+      { time: '17:30', title: 'Documentário TV Câmara: Ostras de Florianópolis' },
+      { time: '18:00', title: 'Qual a Questão? Jornadas de trabalho no Brasil' },
+      { time: '18:30', title: 'Parlamento Brasil: Edição nº 461' },
+      { time: '19:00', title: 'Participação Popular' },
+      { time: '20:00', title: 'Documentário 100 anos de Cultura e Conflitos: JK, Jango e o Golpe 64' },
+      { time: '20:30', title: 'Encontro com a Autora: Aline Bei' },
+      { time: '21:30', title: 'Elas Pautam: Pacto pelo fim do feminicídio' },
+      { time: '22:00', title: 'Documentário TV Câmara: Ostras de Florianópolis' },
+      { time: '22:30', title: 'Fatos e Opiniões' },
+      { time: '23:00', title: 'Ponto de Vista: Comunicação pública e novas tecnologias - Implantação da TV 3.0' },
+      { time: '23:30', title: 'Expressão Nacional: Acordo Brasil-Mercosul' },
+    ],
+  },
+};
+
+// ─── Canal Gov ────────────────────────────────────────────────────────────────
+// TODO: substituir por chamada à API
+
+export const canalGovSchedule: ChannelSchedule = {
+  channelId: 'canal-gov',
+  schedule: {
+    segunda: [
+      { time: '06:00', title: 'Entrevistas da Voz' },
+      { time: '06:30', title: 'Cine Gov' },
+      { time: '07:00', title: 'Gov Destaque' },
+      { time: '08:00', title: 'Bom dia, Ministro/Ministra' },
+      { time: '09:00', title: 'Cine Gov' },
+      { time: '09:30', title: 'Brasil em Dia - 1ª Edição' },
+      { time: '10:00', title: 'Cine Gov' },
+      { time: '10:30', title: 'Entrevistas da Voz' },
+      { time: '11:00', title: 'Gov Destaque' },
+      { time: '12:30', title: 'Brasil em Dia - 2ª Edição' },
+      { time: '13:00', title: 'Entrevistas da Voz' },
+      { time: '14:00', title: 'Cine Gov' },
+      { time: '14:30', title: 'Entrevistas da Voz' },
+      { time: '15:00', title: 'Gov Notícias' },
+      { time: '15:30', title: 'Gov Destaque' },
+      { time: '16:30', title: 'Gov Notícias' },
+      { time: '17:00', title: 'Entrevistas da Voz' },
+      { time: '17:45', title: 'Bom dia, Ministro/Ministra' },
+      { time: '18:30', title: 'MEC - Adolescentes e o Mundo Digital' },
+      { time: '19:00', title: 'A Voz do Brasil' },
+      { time: '19:30', title: 'MINC - Podcast do MinC' },
+      { time: '20:00', title: 'Gov Destaque' },
+      { time: '21:00', title: 'A Voz do Brasil' },
+      { time: '21:30', title: 'MEC - Adolescentes e o Mundo Digital' },
+      { time: '22:00', title: 'Vida de Merendeira' },
+      { time: '23:00', title: 'Gov Destaque' },
+      { time: '00:00', title: 'Reprises da Programação' },
+    ],
+    terca: [
+      { time: '06:00', title: 'A Voz do Brasil' },
+      { time: '06:30', title: 'MEC - Adolescentes e o Mundo Digital' },
+      { time: '07:00', title: 'Gov Destaque' },
+      { time: '08:00', title: 'Bom dia, Ministro/Ministra' },
+      { time: '09:00', title: 'MINC - Podcast do MinC' },
+      { time: '09:30', title: 'Brasil em Dia - 1ª Edição' },
+      { time: '10:00', title: 'MEC - Adolescentes e o Mundo Digital' },
+      { time: '10:30', title: 'Entrevistas da Voz' },
+      { time: '11:00', title: 'Gov Destaque' },
+      { time: '12:30', title: 'Brasil em Dia - 2ª Edição' },
+      { time: '13:00', title: 'Entrevistas da Voz' },
+      { time: '13:30', title: 'MEC - Adolescentes e o Mundo Digital' },
+      { time: '14:00', title: 'MINC - Podcast do MinC' },
+      { time: '14:30', title: 'Entrevistas da Voz' },
+      { time: '15:00', title: 'Gov Notícias' },
+      { time: '15:30', title: 'Gov Destaque' },
+      { time: '16:30', title: 'Gov Notícias' },
+      { time: '17:00', title: 'Entrevistas da Voz' },
+      { time: '17:45', title: 'Bom dia, Ministro/Ministra' },
+      { time: '18:30', title: 'AGU - Farol' },
+      { time: '19:00', title: 'A Voz do Brasil' },
+      { time: '19:30', title: 'MDIR - Desenvolve Aí!' },
+      { time: '20:00', title: 'Gov Destaque' },
+      { time: '21:00', title: 'A Voz do Brasil' },
+      { time: '21:30', title: 'AGU - Farol' },
+      { time: '23:00', title: 'Gov Destaque' },
+      { time: '00:00', title: 'Reprises da Programação' },
+    ],
+    quarta: [
+      { time: '06:00', title: 'A Voz do Brasil' },
+      { time: '06:30', title: 'AGU - Farol' },
+      { time: '07:00', title: 'Gov Destaque' },
+      { time: '08:00', title: 'Bom dia, Ministro/Ministra' },
+      { time: '09:00', title: 'MDIR - Desenvolve Aí!' },
+      { time: '09:30', title: 'Brasil em Dia - 1ª Edição' },
+      { time: '10:00', title: 'AGU - Farol' },
+      { time: '10:30', title: 'Entrevistas da Voz' },
+      { time: '11:00', title: 'Gov Destaque' },
+      { time: '12:30', title: 'Brasil em Dia - 2ª Edição' },
+      { time: '13:00', title: 'Entrevistas da Voz' },
+      { time: '13:30', title: 'AGU - Farol' },
+      { time: '14:00', title: 'MDIR - Desenvolve Aí!' },
+      { time: '14:30', title: 'Entrevistas da Voz' },
+      { time: '15:00', title: 'Gov Notícias' },
+      { time: '15:30', title: 'Gov Destaque' },
+      { time: '16:30', title: 'Gov Notícias' },
+      { time: '17:00', title: 'Entrevistas da Voz' },
+      { time: '17:30', title: 'Gov Destaque' },
+      { time: '18:00', title: 'SECOM - GovDR' },
+      { time: '19:00', title: 'A Voz do Brasil' },
+      { time: '20:00', title: 'Gov Destaque' },
+      { time: '21:00', title: 'A Voz do Brasil' },
+      { time: '21:30', title: 'SECOM - GovDR' },
+      { time: '22:00', title: 'EBC - Caminhos da Reportagem' },
+      { time: '22:30', title: 'Cine Gov' },
+      { time: '23:00', title: 'Gov Destaque' },
+      { time: '00:00', title: 'Reprises da Programação' },
+    ],
+    quinta: [
+      { time: '06:00', title: 'A Voz do Brasil' },
+      { time: '06:30', title: 'SECOM - GovDR' },
+      { time: '07:00', title: 'Gov Destaque' },
+      { time: '08:00', title: 'Bom dia, Ministro/Ministra' },
+      { time: '09:00', title: "MS - 10 Minutinhos D'Agente" },
+      { time: '09:30', title: 'Brasil em Dia - 1ª Edição' },
+      { time: '10:00', title: 'SECOM - GovDR' },
+      { time: '10:30', title: 'Entrevistas da Voz' },
+      { time: '11:00', title: 'Gov Destaque' },
+      { time: '12:30', title: 'Brasil em Dia - 2ª Edição' },
+      { time: '13:00', title: 'Entrevistas da Voz' },
+      { time: '13:30', title: 'SECOM - GovDR' },
+      { time: '14:00', title: "MS - 10 Minutinhos D'Agente" },
+      { time: '14:30', title: 'Entrevistas da Voz' },
+      { time: '15:00', title: 'Gov Notícias' },
+      { time: '15:30', title: 'Gov Destaque' },
+      { time: '16:30', title: 'Gov Notícias' },
+      { time: '17:00', title: 'Entrevistas da Voz' },
+      { time: '17:30', title: 'Gov Destaque' },
+      { time: '18:00', title: 'SEBRAE - Olha Elas!' },
+      { time: '19:00', title: 'A Voz do Brasil' },
+      { time: '19:30', title: "MS - 10 Minutinhos D'Agente" },
+      { time: '20:00', title: 'Gov Destaque' },
+      { time: '21:00', title: 'A Voz do Brasil' },
+      { time: '21:30', title: 'SEBRAE - Olha Elas!' },
+      { time: '22:00', title: 'PRODAV - Olhares do Norte: Pará' },
+      { time: '22:30', title: 'Cine Gov' },
+      { time: '23:00', title: 'Vida de Merendeira' },
+      { time: '00:00', title: 'Reprises da Programação' },
+    ],
+    sexta: [
+      { time: '06:00', title: 'A Voz do Brasil' },
+      { time: '06:30', title: 'SEBRAE - Olha Elas!' },
+      { time: '07:00', title: 'Cine Gov' },
+      { time: '08:00', title: 'Bom dia, Ministro/Ministra' },
+      { time: '09:00', title: 'MCOM - MConta+' },
+      { time: '09:30', title: 'Brasil em Dia - 1ª Edição' },
+      { time: '10:00', title: 'SEBRAE - Olha Elas!' },
+      { time: '10:30', title: 'Entrevistas da Voz' },
+      { time: '11:00', title: 'Gov Destaque' },
+      { time: '12:30', title: 'Brasil em Dia - 2ª Edição' },
+      { time: '13:00', title: 'Entrevistas da Voz' },
+      { time: '13:30', title: 'SEBRAE - Olha Elas!' },
+      { time: '14:30', title: 'Entrevistas da Voz' },
+      { time: '15:00', title: 'Gov Notícias' },
+      { time: '15:30', title: 'Gov Destaque' },
+      { time: '16:30', title: 'Semana Gov' },
+      { time: '17:45', title: 'Bom dia, Ministro/Ministra' },
+      { time: '18:30', title: 'Cine Gov' },
+      { time: '19:00', title: 'A Voz do Brasil' },
+      { time: '19:30', title: 'CAIXA - PodCulturaR' },
+      { time: '20:00', title: 'Gov Destaque' },
+      { time: '21:00', title: 'A Voz do Brasil' },
+      { time: '21:30', title: 'Cine Gov' },
+      { time: '22:00', title: 'PRODAV - Rastro dos Bichos' },
+      { time: '22:30', title: 'PRODAV - Terra Viva' },
+      { time: '23:00', title: 'Semana Gov' },
+      { time: '00:00', title: 'Reprises da Programação' },
+    ],
+    sabado: [
+      { time: '06:30', title: 'Bom dia, Ministro/Ministra' },
+      { time: '07:00', title: 'Gov Destaque' },
+      { time: '08:00', title: 'PRODAV - Olhares do Norte: Pará' },
+      { time: '08:30', title: 'PRODAV - Rastro dos Bichos' },
+      { time: '09:00', title: 'PRODAV - Terra Viva' },
+      { time: '10:00', title: "MS - 10 Minutinhos D'Agente" },
+      { time: '10:30', title: 'MINC - Podcast do MinC' },
+      { time: '11:00', title: 'SECOM - GovDR' },
+      { time: '11:30', title: 'SEBRAE - Olha Elas!' },
+      { time: '12:00', title: 'Semana Gov' },
+      { time: '12:30', title: 'Entrevistas da Voz' },
+      { time: '13:00', title: 'Gov Destaque' },
+      { time: '14:00', title: 'Bom dia, Ministro/Ministra' },
+      { time: '15:00', title: 'Vida de Merendeira' },
+      { time: '16:00', title: 'Gov Destaque' },
+      { time: '17:00', title: 'Entrevistas da Voz' },
+      { time: '17:30', title: 'Semana Gov' },
+      { time: '18:00', title: 'MEC - Adolescentes e o Mundo Digital' },
+      { time: '18:30', title: 'MCOM - MConta+' },
+      { time: '19:00', title: 'SEBRAE - Olha Elas!' },
+      { time: '19:30', title: 'AGU - Farol' },
+      { time: '20:00', title: 'EBC - Caminhos da Reportagem' },
+      { time: '20:30', title: 'MDIR - Desenvolve Aí!' },
+      { time: '21:00', title: 'PRODAV - Olhares do Norte: Pará' },
+      { time: '21:30', title: 'PRODAV - Rastro dos Bichos' },
+      { time: '22:00', title: 'PRODAV - Terra Viva' },
+      { time: '23:00', title: 'Semana Gov' },
+      { time: '23:30', title: 'SECOM - GovDR' },
+      { time: '00:00', title: 'Reprises da Programação' },
+    ],
+    domingo: [
+      { time: '06:30', title: 'Bom dia, Ministro/Ministra' },
+      { time: '07:00', title: 'Gov Destaque' },
+      { time: '08:00', title: 'Vida de Merendeira' },
+      { time: '09:00', title: 'MEC - Adolescentes e o Mundo Digital' },
+      { time: '09:30', title: 'SEBRAE - Olha Elas!' },
+      { time: '11:00', title: 'EBC - Caminhos da Reportagem' },
+      { time: '12:00', title: 'Semana Gov' },
+      { time: '12:30', title: 'Entrevistas da Voz' },
+      { time: '13:00', title: 'Gov Destaque' },
+      { time: '14:00', title: 'Bom dia, Ministro/Ministra' },
+      { time: '15:00', title: 'Vida de Merendeira' },
+      { time: '16:00', title: 'Gov Destaque' },
+      { time: '17:00', title: 'Entrevistas da Voz' },
+      { time: '17:30', title: 'Semana Gov' },
+      { time: '18:00', title: "MS - 10 Minutinhos D'Agente" },
+      { time: '19:00', title: 'SECOM - GovDR' },
+      { time: '19:30', title: 'AGU - Farol' },
+      { time: '20:00', title: 'MDIR - Desenvolve Aí!' },
+      { time: '20:30', title: 'PRODAV - Olhares do Norte: Pará' },
+      { time: '21:00', title: 'Vida de Merendeira' },
+      { time: '21:30', title: 'PRODAV - Rastro dos Bichos' },
+      { time: '22:00', title: 'PRODAV - Terra Viva' },
+      { time: '23:00', title: 'Semana Gov' },
+      { time: '23:30', title: 'MEC - Adolescentes e o Mundo Digital' },
+      { time: '00:00', title: 'Reprises da Programação' },
+    ],
+  },
+};
+
+// ─── TV Brasil ────────────────────────────────────────────────────────────────
+// TODO: substituir por chamada à API
+
+export const tvBrasilSchedule: ChannelSchedule = {
+  channelId: 'tv-brasil',
+  schedule: {
+    segunda: [
+      { time: '01:15', title: 'Sessão de Cinema' },
+      { time: '02:30', title: 'Brasil no Mundo' },
+      { time: '03:30', title: 'Brasil Sobre Duas Rodas' },
+      { time: '04:00', title: 'Nos Caminhos dos Viajantes' },
+      { time: '05:00', title: 'Brasil Visto de Cima' },
+      { time: '05:30', title: 'Brasil Visto de Cima' },
+      { time: '06:00', title: 'Agro Amazonas' },
+      { time: '07:00', title: 'Mundo Bita' },
+      { time: '09:56', title: 'Manual de Sobrevivência da Literatura Brasileira' },
+      { time: '12:45', title: 'Repórter Brasil Tarde' },
+      { time: '13:30', title: 'Nova Amazônia' },
+      { time: '14:00', title: 'Brasil Visto de Cima' },
+      { time: '15:30', title: 'Expedições' },
+      { time: '16:00', title: 'Sem Censura' },
+      { time: '19:00', title: 'Repórter Brasil' },
+      { time: '20:00', title: 'Sangue Oculto' },
+      { time: '21:00', title: 'Sessão de Cinema' },
+      { time: '23:30', title: 'Sem Censura' },
+    ],
+    terca: [
+      { time: '01:30', title: 'Sangue Oculto' },
+      { time: '06:00', title: 'Discotoca' },
+      { time: '12:45', title: 'Repórter Brasil Tarde' },
+      { time: '13:30', title: 'Destino Pernambuco' },
+      { time: '16:00', title: 'Sem Censura' },
+      { time: '19:00', title: 'Repórter Brasil' },
+      { time: '20:00', title: 'Sangue Oculto' },
+      { time: '21:00', title: 'Sessão de Cinema' },
+      { time: '23:00', title: 'Dando a Real com Demori' },
+      { time: '23:30', title: 'Sem Censura' },
+    ],
+    quarta: [
+      { time: '01:30', title: 'Sangue Oculto' },
+      { time: '06:00', title: 'Univerciência' },
+      { time: '12:45', title: 'Repórter Brasil Tarde' },
+      { time: '13:30', title: 'Vem Ver' },
+      { time: '16:00', title: 'Sem Censura' },
+      { time: '19:00', title: 'Repórter Brasil' },
+      { time: '20:00', title: 'Sangue Oculto' },
+      { time: '21:00', title: 'Sessão de Cinema' },
+      { time: '23:00', title: 'Trilha de Letras' },
+      { time: '23:30', title: 'Sem Censura' },
+    ],
+    quinta: [
+      { time: '01:30', title: 'Sangue Oculto' },
+      { time: '06:00', title: 'Discotoca' },
+      { time: '12:45', title: 'Repórter Brasil Tarde' },
+      { time: '13:30', title: 'Destino Pernambuco' },
+      { time: '16:00', title: 'Sem Censura' },
+      { time: '19:00', title: 'Repórter Brasil' },
+      { time: '20:00', title: 'Sangue Oculto' },
+      { time: '21:00', title: 'Sessão de Cinema' },
+      { time: '23:00', title: 'Dando a Real com Demori' },
+      { time: '23:30', title: 'Sem Censura' },
+    ],
+    sexta: [
+      { time: '01:30', title: 'Sangue Oculto' },
+      { time: '06:00', title: 'Olhar Independente' },
+      { time: '12:45', title: 'Repórter Brasil Tarde' },
+      { time: '13:30', title: 'Bem Bahia' },
+      { time: '16:00', title: 'Sem Censura' },
+      { time: '19:00', title: 'Repórter Brasil' },
+      { time: '20:00', title: 'Sangue Oculto' },
+      { time: '21:00', title: 'Sessão de Cinema' },
+      { time: '23:30', title: 'Sem Censura' },
+    ],
+    sabado: [
+      { time: '01:30', title: 'Sangue Oculto' },
+      { time: '06:00', title: 'Vale Agrícola' },
+      { time: '12:30', title: 'Cozinha Amazônia' },
+      { time: '13:00', title: 'Xodó de Cozinha' },
+      { time: '13:30', title: 'Chefs do Brasil' },
+      { time: '15:30', title: 'Campeonato Baiano de Futebol' },
+      { time: '19:00', title: 'Repórter Brasil' },
+      { time: '19:30', title: 'Amor Veríssimo' },
+      { time: '20:00', title: 'Sangue Oculto' },
+      { time: '21:00', title: 'Sessão de Cinema' },
+      { time: '23:00', title: 'Samba na Gamboa' },
+    ],
+    domingo: [
+      { time: '00:00', title: 'Cena Musical' },
+      { time: '06:00', title: 'Retratos de Fé' },
+      { time: '08:00', title: 'Santa Missa' },
+      { time: '09:00', title: 'Vale Agrícola' },
+      { time: '10:45', title: 'Liga de Basquete Feminino' },
+      { time: '13:00', title: 'Samba na Gamboa' },
+      { time: '17:00', title: 'Campeonato Cearense de Futebol' },
+      { time: '20:30', title: 'Brasil no Mundo' },
+      { time: '21:00', title: 'Brasil Esporte' },
+      { time: '21:30', title: 'Sessão de Cinema' },
+      { time: '23:30', title: 'Sessão de Cinema' },
+    ],
+  },
+};
+
+// ─── TV Justiça ───────────────────────────────────────────────────────────────
+// TODO: substituir por chamada à API
+
+export const tvJusticaSchedule: ChannelSchedule = {
+  channelId: 'tv-justica',
+  schedule: {
+    domingo: [
+      { time: '00:00', title: 'Iluminuras' },
+      { time: '00:30', title: 'Repórter ECO' },
+      { time: '01:00', title: 'Arena dos Saberes' },
+      { time: '02:00', title: 'Noturno' },
+      { time: '03:00', title: 'Música Orquestrada' },
+      { time: '04:00', title: 'Último Recurso' },
+      { time: '05:00', title: 'Trabalho Legal' },
+      { time: '05:30', title: 'Justiça & Trabalho' },
+      { time: '06:00', title: 'Hora Extra' },
+      { time: '06:30', title: 'Justiça em Questão' },
+      { time: '07:00', title: 'Inteiro Teor' },
+      { time: '07:30', title: 'Interlocução' },
+      { time: '08:00', title: 'Saber Direito' },
+      { time: '10:30', title: 'Como funciona aí?' },
+      { time: '11:00', title: 'Direito sem Fronteiras' },
+      { time: '11:30', title: 'Repórter Justiça' },
+      { time: '12:00', title: 'Artigo 5º' },
+      { time: '12:30', title: 'Supremo na Semana' },
+      { time: '13:00', title: 'Justiça & Trabalho' },
+      { time: '13:30', title: 'Hora Extra' },
+      { time: '14:30', title: 'Descomplicando' },
+      { time: '15:00', title: 'Aulas Magnas' },
+      { time: '17:30', title: 'Plenárias' },
+      { time: '18:00', title: 'Entender Direito' },
+      { time: '19:00', title: 'Interesse Público' },
+      { time: '19:30', title: 'Pela Ordem' },
+      { time: '20:00', title: 'Iluminuras' },
+      { time: '20:30', title: 'Repórter ECO' },
+      { time: '21:00', title: 'Arena dos Saberes' },
+      { time: '22:00', title: 'Música Orquestrada' },
+      { time: '23:00', title: 'Noturno' },
+    ],
+    segunda: [
+      { time: '00:00', title: 'Iluminuras' },
+      { time: '00:30', title: 'Repórter ECO' },
+      { time: '01:00', title: 'Arena dos Saberes' },
+      { time: '02:00', title: 'Música Orquestrada' },
+      { time: '03:00', title: 'Noturno' },
+      { time: '04:00', title: 'Sessão Plenária TSE', isLive: true },
+      { time: '06:30', title: 'Saber Direito' },
+      { time: '07:00', title: 'Revista Justiça' },
+      { time: '08:00', title: 'Justiça Agora' },
+      { time: '18:00', title: 'Documentário' },
+      { time: '18:30', title: 'Jornal da Justiça' },
+      { time: '19:00', title: 'Academia' },
+      { time: '19:30', title: 'Artigo 5º' },
+      { time: '20:00', title: 'Repórter Justiça' },
+      { time: '20:30', title: 'Saber Direito' },
+      { time: '21:00', title: 'A Voz do Brasil' },
+      { time: '21:05', title: 'Revista TST' },
+      { time: '21:30', title: 'Inteiro Teor' },
+      { time: '22:00', title: 'Cartório Contemporâneo' },
+      { time: '22:30', title: 'Pensamento Jurídico' },
+      { time: '23:00', title: 'Trabalho Legal' },
+      { time: '23:40', title: 'Evento' },
+    ],
+    terca: [
+      { time: '00:00', title: 'Aulas Magnas' },
+      { time: '03:30', title: 'Sessão TST', isLive: true },
+      { time: '06:30', title: 'Saber Direito' },
+      { time: '07:00', title: 'Revista Justiça' },
+      { time: '08:00', title: 'Justiça Agora' },
+      { time: '09:00', title: 'Sessão TST', isLive: true },
+      { time: '14:00', title: 'Sessão Turma', isLive: true },
+      { time: '18:00', title: 'Documentário' },
+      { time: '18:30', title: 'Jornal da Justiça' },
+      { time: '19:00', title: 'Sessão Plenária TSE', isLive: true },
+      { time: '20:30', title: 'Saber Direito' },
+      { time: '21:00', title: 'A Voz do Brasil' },
+      { time: '21:05', title: 'Como funciona aí?' },
+      { time: '21:30', title: 'STJ Notícias' },
+      { time: '22:00', title: 'Sergipe Justiça' },
+      { time: '23:40', title: 'Evento' },
+    ],
+    quarta: [
+      { time: '00:00', title: 'Aulas Magnas' },
+      { time: '03:30', title: 'Direto do Plenário', isLive: true },
+      { time: '06:30', title: 'Saber Direito' },
+      { time: '07:00', title: 'Revista Justiça' },
+      { time: '08:00', title: 'Justiça Agora' },
+      { time: '13:00', title: 'Hora Extra' },
+      { time: '18:30', title: 'Jornal da Justiça' },
+      { time: '19:00', title: 'Iluminuras' },
+      { time: '19:30', title: 'Direito sem Fronteiras' },
+      { time: '20:30', title: 'Saber Direito' },
+      { time: '21:00', title: 'A Voz do Brasil' },
+      { time: '21:05', title: 'Descomplicando' },
+      { time: '21:30', title: 'Jornada TST' },
+      { time: '22:30', title: 'Entender Direito' },
+      { time: '23:40', title: 'Evento' },
+    ],
+    quinta: [
+      { time: '00:00', title: 'Aulas Magnas' },
+      { time: '03:30', title: 'Direto do Plenário', isLive: true },
+      { time: '06:30', title: 'Saber Direito' },
+      { time: '07:00', title: 'Revista Justiça' },
+      { time: '08:00', title: 'Justiça Agora' },
+      { time: '09:00', title: 'Sessão TST', isLive: true },
+      { time: '10:10', title: 'Sessão Plenária TSE', isLive: true },
+      { time: '18:00', title: 'Documentário' },
+      { time: '18:30', title: 'Jornal da Justiça' },
+      { time: '19:00', title: 'Academia' },
+      { time: '19:30', title: 'Artigo 5º' },
+      { time: '20:00', title: 'Repórter Justiça' },
+      { time: '20:30', title: 'Saber Direito' },
+      { time: '21:00', title: 'A Voz do Brasil' },
+      { time: '21:05', title: 'Como funciona aí?' },
+      { time: '21:30', title: 'AGU' },
+      { time: '22:00', title: 'Justiça & Trabalho' },
+      { time: '22:30', title: 'Jornal Atricon' },
+      { time: '23:00', title: 'Interlocução' },
+      { time: '23:40', title: 'Evento' },
+    ],
+    sexta: [
+      { time: '00:00', title: 'Aulas Magnas' },
+      { time: '03:30', title: 'Sessão TST', isLive: true },
+      { time: '06:30', title: 'Saber Direito' },
+      { time: '07:00', title: 'Revista Justiça' },
+      { time: '08:00', title: 'Justiça Agora' },
+      { time: '17:30', title: 'Plenárias' },
+      { time: '18:00', title: 'Documentário' },
+      { time: '18:30', title: 'Jornal da Justiça' },
+      { time: '19:00', title: 'Iluminuras' },
+      { time: '19:30', title: 'Direito sem Fronteiras' },
+      { time: '20:30', title: 'Saber Direito' },
+      { time: '21:00', title: 'A Voz do Brasil' },
+      { time: '21:05', title: 'Pela Ordem' },
+      { time: '21:30', title: 'Interesse Público' },
+      { time: '22:00', title: 'Justiça em Questão' },
+      { time: '22:30', title: 'Último Recurso' },
+      { time: '23:40', title: 'Evento' },
+    ],
+    sabado: [
+      { time: '00:00', title: 'Aulas Magnas' },
+      { time: '01:00', title: 'Arena dos Saberes' },
+      { time: '04:30', title: 'Cartório Contemporâneo' },
+      { time: '05:00', title: 'Sergipe Justiça' },
+      { time: '06:00', title: 'Pensamento Jurídico' },
+      { time: '07:00', title: 'Entender Direito' },
+      { time: '08:00', title: 'Saber Direito' },
+      { time: '12:30', title: 'Supremo na Semana' },
+      { time: '13:30', title: 'Jornal Atricon' },
+      { time: '14:30', title: 'Descomplicando' },
+      { time: '17:30', title: 'Plenárias' },
+      { time: '18:00', title: 'Jornada TST' },
+      { time: '18:30', title: 'STJ Notícias' },
+      { time: '19:00', title: 'Revista TST' },
+      { time: '19:30', title: 'AGU' },
+      { time: '20:00', title: 'Iluminuras' },
+      { time: '20:30', title: 'Repórter ECO' },
+      { time: '21:00', title: 'Arena dos Saberes' },
+      { time: '22:00', title: 'Noturno' },
+      { time: '23:00', title: 'Música Orquestrada' },
+    ],
+  },
+};
+
+// =============================================================================
+// ÍNDICE E UTILITÁRIOS
+// =============================================================================
+
+// TODO: adicionar 'tv-mec' e 'tv-senado' quando disponível
+export const allSchedules: Record<string, ChannelSchedule> = {
+  'tv-camara':  tvCamaraSchedule,
+  'canal-gov':  canalGovSchedule,
+  'tv-brasil':  tvBrasilSchedule,
+  'tv-justica': tvJusticaSchedule,
+};
+
+const DAY_MAP: Record<number, DayOfWeek> = {
+  0: 'domingo',
+  1: 'segunda',
+  2: 'terca',
+  3: 'quarta',
+  4: 'quinta',
+  5: 'sexta',
+  6: 'sabado',
+};
+
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function minutesToTime(totalMinutes: number): string {
+  const clamped = ((totalMinutes % 1440) + 1440) % 1440;
+  const h = Math.floor(clamped / 60).toString().padStart(2, '0');
+  const m = (clamped % 60).toString().padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function getBrasiliaDate(now: Date = new Date()): Date {
+  const brasiliaOffset = -3 * 60;
+  const utcMinutes = now.getTime() / 60000 + now.getTimezoneOffset();
+  return new Date((utcMinutes + brasiliaOffset) * 60000);
+}
+
+export function getCurrentProgram(
+  channelSchedule: ChannelSchedule,
+  now: Date = new Date()
+): ScheduleEntry | null {
+  const brasiliaDate = getBrasiliaDate(now);
+  const day = DAY_MAP[brasiliaDate.getDay()];
+  const entries = channelSchedule.schedule[day];
+  if (!entries?.length) return null;
+
+  const currentMinutes = brasiliaDate.getHours() * 60 + brasiliaDate.getMinutes();
+  let current: ScheduleEntry | null = null;
+  for (const entry of entries) {
+    if (timeToMinutes(entry.time) <= currentMinutes) current = entry;
+    else break;
+  }
+  return current;
+}
+
+export function buildEPG(
+  channelSchedule: ChannelSchedule,
+  day: DayOfWeek
+): EPGEntry[] {
+  const entries = channelSchedule.schedule[day];
+  if (!entries?.length) return [];
+
+  return entries.map((entry, i): EPGEntry => {
+    const startMin = timeToMinutes(entry.time);
+    const nextEntry = entries[i + 1];
+    const endMin = nextEntry ? timeToMinutes(nextEntry.time) : 1440;
+    const duration = endMin > startMin ? endMin - startMin : 1440 - startMin + endMin;
+
+    return {
+      time: entry.time,
+      endTime: minutesToTime(endMin),
+      title: entry.title,
+      isLive: entry.isLive ?? false,
+      durationMinutes: duration,
+    };
+  });
+}
+
+export function getUpcomingPrograms(
+  channelSchedule: ChannelSchedule,
+  count: number = 3,
+  now: Date = new Date()
+): EPGEntry[] {
+  const brasiliaDate = getBrasiliaDate(now);
+  const day = DAY_MAP[brasiliaDate.getDay()];
+  const epg = buildEPG(channelSchedule, day);
+  if (!epg.length) return [];
+
+  const currentMinutes = brasiliaDate.getHours() * 60 + brasiliaDate.getMinutes();
+  const currentIndex = epg.reduce(
+    (acc, entry, i) => (timeToMinutes(entry.time) <= currentMinutes ? i : acc),
+    0
+  );
+
+  return epg.slice(currentIndex, currentIndex + count);
+}

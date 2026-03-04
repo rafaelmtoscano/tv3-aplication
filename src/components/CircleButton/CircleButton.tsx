@@ -4,7 +4,9 @@ import { typography } from '../../styles/typography';
 
 export interface CircleButtonProps {
   /** The source URL for the image. */
-  image: string;
+  image?: string;
+  /** Optional icon to display inside the circle. */
+  icon?: React.ReactNode;
   /** Accessibility text for the image. */
   alt?: string;
   /** Optional text label to display below the circle. */
@@ -34,6 +36,7 @@ export const CircleButton = memo(
     (
       {
         image,
+        icon,
         alt,
         label,
         onClick,
@@ -49,12 +52,12 @@ export const CircleButton = memo(
       const [internalFocused, setInternalFocused] = useState(false);
       const isFocused = isFocusedProp !== undefined ? isFocusedProp : internalFocused;
 
-      const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
+      const handleFocus = (_e: React.FocusEvent<HTMLButtonElement>) => {
         setInternalFocused(true);
         onFocus?.();
       };
 
-      const handleBlur = (e: React.FocusEvent<HTMLButtonElement>) => {
+      const handleBlur = (_e: React.FocusEvent<HTMLButtonElement>) => {
         setInternalFocused(false);
         onBlur?.();
       };
@@ -84,7 +87,10 @@ export const CircleButton = memo(
         boxShadow: isFocused ? '0 8px 32px rgba(0, 0, 0, 0.4)' : 'none',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         transformOrigin: 'center center',
-        backgroundColor: 'rgba(255, 255, 255, 0.08)', // Fallback while loading
+        backgroundColor: isFocused ? colors.background.brandPrimary : 'rgba(255, 255, 255, 0.08)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       };
 
       // Image style (fills the circle)
@@ -119,7 +125,11 @@ export const CircleButton = memo(
           style={buttonStyle}
         >
           <div style={circleStyle}>
-            <img src={image} alt={alt || ''} style={imageStyle} />
+            {image ? (
+              <img src={image} alt={alt || ''} style={imageStyle} />
+            ) : (
+              icon
+            )}
           </div>
           {label && <p style={labelStyle}>{label}</p>}
         </button>

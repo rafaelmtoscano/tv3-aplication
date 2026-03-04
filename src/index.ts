@@ -33,6 +33,12 @@ export type { ContentRailProps, ContentRailItem } from './components/ContentRail
 export { ContentRailGroup } from './components/ContentRailGroup';
 export type { ContentRailGroupProps } from './components/ContentRailGroup';
 
+export { EPGCard } from './components/EPGCard';
+export type { EPGCardProps } from './components/EPGCard';
+
+export { EPGRail } from './components/EPGRail';
+export type { EPGRailProps } from './components/EPGRail';
+
 export { HeroBanner } from './components/HeroBanner';
 export type { HeroBannerProps, HeroBannerSlide } from './components/HeroBanner';
 

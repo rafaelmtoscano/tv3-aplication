@@ -1,4 +1,4 @@
-import React, { useState, useRef, forwardRef, memo, useEffect, useCallback } from 'react';
+import React, { useState, useRef, forwardRef, memo, useCallback } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { MenuItem } from '../MenuItem';
@@ -52,6 +52,10 @@ export interface SidebarProps {
    */
   activeItemId?: string;
   /**
+   * Currently focused item ID (from external navigation)
+   */
+  focusedItemId?: string;
+  /**
    * Custom class name
    */
   className?: string;
@@ -69,6 +73,7 @@ export const Sidebar = memo(
         onExpandedChange,
         onItemClick,
         activeItemId,
+        focusedItemId,
         className,
       },
       ref
@@ -77,8 +82,6 @@ export const Sidebar = memo(
       const isExpanded = externalExpanded ?? internalExpanded;
 
       const containerRef = useRef<HTMLDivElement>(null);
-      const signRef = useRef<HTMLButtonElement>(null);
-      const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
       // Update internal state and call callback
       const setExpanded = useCallback(
@@ -104,55 +107,6 @@ export const Sidebar = memo(
         },
         [setExpanded]
       );
-
-      const handleKeyDown = (e: React.KeyboardEvent) => {
-        const currentIndex = itemRefs.current.findIndex((el) => el === document.activeElement);
-        const isSignFocused = signRef.current === document.activeElement;
-
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          if (isSignFocused) {
-            itemRefs.current[0]?.focus();
-          } else if (currentIndex < items.length - 1) {
-            itemRefs.current[currentIndex + 1]?.focus();
-          }
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          if (currentIndex === 0) {
-            signRef.current?.focus();
-          } else if (currentIndex > 0) {
-            itemRefs.current[currentIndex - 1]?.focus();
-          }
-        } else if (e.key === 'ArrowRight' && isExpanded) {
-          e.preventDefault();
-          setExpanded(false);
-          // Move focus to main content (first focusable element after sidebar)
-          const mainContent = document.querySelector(
-            'main, [data-main-content], #main-content'
-          ) as HTMLElement;
-          mainContent?.focus();
-        }
-      };
-
-      // Handle ArrowLeft to enter sidebar
-      useEffect(() => {
-        const handleGlobalKeyDown = (e: KeyboardEvent) => {
-          if (e.key === 'ArrowLeft') {
-            const isFocusInSidebar = containerRef.current?.contains(document.activeElement);
-            if (!isFocusInSidebar) {
-              e.preventDefault();
-              if (sign) {
-                signRef.current?.focus();
-              } else {
-                itemRefs.current[0]?.focus();
-              }
-            }
-          }
-        };
-
-        window.addEventListener('keydown', handleGlobalKeyDown);
-        return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-      }, [sign, items.length]);
 
       // Styles
       const outerWrapperStyle: React.CSSProperties = {
@@ -250,7 +204,6 @@ export const Sidebar = memo(
             style={sidebarPanelStyle}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
           >
             {/* Logo area */}
             <div style={logoAreaStyle}>
@@ -262,25 +215,26 @@ export const Sidebar = memo(
             {sign && (
               <div style={signAreaStyle}>
                 <Sign
-                  ref={signRef}
                   variant={sign.variant}
                   icon={sign.icon}
                   image={sign.image}
                   alt={sign.alt}
                   style={{ marginLeft: '4px' }}
+                  isFocused={focusedItemId === 'avatar'}
+                  state={activeItemId === 'avatar' ? 'selected' : 'idle'}
                 />
               </div>
             )}
 
             {/* Navbar area */}
             <nav style={navbarStyle}>
-              {items.map((item, index) => (
+              {items.map((item) => (
                 <MenuItem
                   key={item.id}
-                  ref={(el) => { itemRefs.current[index] = el; }}
                   icon={item.icon}
                   label={item.label}
                   expanded={isExpanded}
+                  isFocused={focusedItemId === item.id}
                   state={activeItemId === item.id ? 'selected' : item.disabled ? 'disabled' : 'idle'}
                   onClick={() => onItemClick?.(item.id)}
                 />

@@ -1,20 +1,27 @@
 import React, { forwardRef, useState, useEffect, useRef, useCallback, useMemo, useImperativeHandle } from 'react';
 import { VideoPlayer } from '../VideoPlayer';
 import { TileButton } from '../TileButton';
-import { HomeIcon } from '../../icons';
+import { ActionButton } from '../ActionButton';
+import { EPGRail } from '../EPGRail';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
+import { allSchedules, getUpcomingPrograms } from '../../data/schedule';
+import { CloseIcon } from '../../icons';
+import type { EPGEntry } from '../../data/schedule';
 
 export interface LiveChannel {
   id: string;
   name: string;
   logo?: string;
+  logoFull?: string;
+  backgroundColor?: string;
   streamUrl: string;
 }
 
 export interface LivePlayerProps {
   channels: LiveChannel[];
   initialChannelId?: string;
+  singleChannel?: boolean;
   onExit?: () => void;
   className?: string;
 }
@@ -23,13 +30,17 @@ const PLACEHOLDER_LOGO = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/
 
 export const LivePlayer = React.memo(
   forwardRef<HTMLDivElement, LivePlayerProps>(
-    ({ channels = [], initialChannelId, onExit, className }, ref) => {
+    ({ channels = [], initialChannelId, singleChannel = false, onExit, className }, ref) => {
       const [activeChannelId, setActiveChannelId] = useState(
         initialChannelId || channels[0]?.id
       );
       const [focusedIndex, setFocusedIndex] = useState(channels.length > 0 ? 1 : 0);
+      const [sairFocused, setSairFocused] = useState(singleChannel);
       const [controlsVisible, setControlsVisible] = useState(true);
-      
+      const [showEPG, setShowEPG] = useState(false);
+      const [epgFocusedIndex, setEpgFocusedIndex] = useState(0);
+      const [reminderEntry, setReminderEntry] = useState<EPGEntry | null>(null);
+
       const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
       const containerRef = useRef<HTMLDivElement>(null);
 
@@ -60,28 +71,116 @@ export const LivePlayer = React.memo(
         };
       }, [resetTimer]);
 
-      const handleKeyDown = (e: React.KeyboardEvent) => {
+      const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         resetTimer();
-        
+
+        // Reminder modal takes priority
+        if (reminderEntry !== null) {
+          if (e.key === 'Escape' || e.key === 'Backspace') {
+            e.preventDefault();
+            e.stopPropagation();
+            setReminderEntry(null);
+          }
+          return;
+        }
+
         switch (e.key) {
-          case 'ArrowRight':
-            setFocusedIndex((i) => Math.min(i + 1, channels.length));
-            break;
-          case 'ArrowLeft':
-            setFocusedIndex((i) => Math.max(i - 1, 0));
-            break;
-          case 'Enter':
-          case ' ':
-            if (focusedIndex === 0) {
-              onExit?.();
-            } else if (channels[focusedIndex - 1]) {
-              setActiveChannelId(channels[focusedIndex - 1].id);
+          case 'ArrowDown':
+            if (controlsVisible && !showEPG) {
+              e.preventDefault();
+              setShowEPG(true);
+              setEpgFocusedIndex(0);
+              if (singleChannel) setSairFocused(false);
             }
             break;
+
+          case 'ArrowUp':
+            if (showEPG) {
+              e.preventDefault();
+              setShowEPG(false);
+              if (singleChannel) setSairFocused(true);
+            }
+            break;
+
+          case 'ArrowRight':
+            if (showEPG) {
+              e.preventDefault();
+              setEpgFocusedIndex((i) => Math.min(i + 1, 7));
+            } else if (!singleChannel) {
+              setFocusedIndex((i) => Math.min(i + 1, channels.length));
+            }
+            break;
+
+          case 'ArrowLeft':
+            if (showEPG) {
+              e.preventDefault();
+              setEpgFocusedIndex((i) => Math.max(i - 1, 0));
+            } else if (!singleChannel) {
+              setFocusedIndex((i) => Math.max(i - 1, 0));
+            }
+            break;
+
+          case 'Enter':
+            if (showEPG) {
+              e.preventDefault();
+              const epgEntries = getUpcomingPrograms(allSchedules[activeChannel.id], 8);
+              const entry = epgEntries[epgFocusedIndex];
+              if (entry) setReminderEntry(entry);
+            } else if (singleChannel) {
+              if (sairFocused) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
+                onExit?.();
+              }
+            } else {
+              if (focusedIndex === 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
+                onExit?.();
+              } else if (channels[focusedIndex - 1]) {
+                setActiveChannelId(channels[focusedIndex - 1].id);
+              }
+            }
+            break;
+
+          case ' ':
+            if (!showEPG) {
+              if (singleChannel) {
+                if (sairFocused) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.nativeEvent.stopImmediatePropagation();
+                  onExit?.();
+                }
+              } else if (focusedIndex === 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
+                onExit?.();
+              } else if (channels[focusedIndex - 1]) {
+                setActiveChannelId(channels[focusedIndex - 1].id);
+              }
+            }
+            break;
+
+          case 'Escape':
+          case 'Backspace':
+            e.preventDefault();
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
+            if (showEPG) {
+              setShowEPG(false);
+            } else {
+              onExit?.();
+            }
+            break;
+
           default:
             break;
         }
-      };
+      }, [controlsVisible, showEPG, singleChannel, channels, activeChannel, focusedIndex, epgFocusedIndex, sairFocused, reminderEntry, resetTimer, onExit]);
 
       if (!activeChannel) return null;
 
@@ -147,6 +246,18 @@ export const LivePlayer = React.memo(
       const nowWatchingStyle: React.CSSProperties = {
         color: colors.text.primaryInverse,
         ...typography.body.large,
+        marginBottom: 0,
+      };
+
+      const toggleLabelStyle: React.CSSProperties = {
+        ...typography.body.medium,
+        color: colors.text.secondaryInverse,
+        marginBottom: 8,
+      };
+
+      const railContainerStyle: React.CSSProperties = {
+        opacity: 1,
+        transition: 'opacity 0.3s ease-out',
       };
 
       const railWrapperStyle: React.CSSProperties = {
@@ -158,10 +269,49 @@ export const LivePlayer = React.memo(
         overflowY: 'visible',
         flexWrap: 'nowrap',
         width: '100%',
-        height: '312px', // fixed at focused TileButton height
+        height: '312px',
         paddingBlock: '32px',
         marginBlock: '-32px',
         boxSizing: 'content-box',
+      };
+
+      const reminderOverlayStyle: React.CSSProperties = {
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.7)',
+        zIndex: 200,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      };
+
+      const reminderCardStyle: React.CSSProperties = {
+        background: colors.background.baseInverse,
+        borderRadius: 24,
+        padding: 48,
+        maxWidth: 600,
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24,
+        boxSizing: 'border-box',
+      };
+
+      const reminderTitleStyle: React.CSSProperties = {
+        ...typography.headline.large,
+        color: colors.text.primaryInverse,
+        margin: 0,
+      };
+
+      const reminderSubtitleStyle: React.CSSProperties = {
+        ...typography.body.medium,
+        color: colors.text.secondaryInverse,
+        margin: 0,
+      };
+
+      const reminderActionsStyle: React.CSSProperties = {
+        display: 'flex',
+        gap: 16,
       };
 
       return (
@@ -170,6 +320,7 @@ export const LivePlayer = React.memo(
           style={containerStyle}
           tabIndex={0}
           onKeyDown={handleKeyDown}
+          onBlur={() => containerRef.current?.focus()}
           className={className}
         >
           {/* Video Layer */}
@@ -189,43 +340,101 @@ export const LivePlayer = React.memo(
 
             <div style={bottomSectionStyle}>
               <div style={nowWatchingStyle}>
-                Assistindo: {activeChannel.name}
+                Assistindo {activeChannel.name}
               </div>
 
-              <div style={railWrapperStyle}>
-                <TileButton
-                  variant="icon-label"
-                  icon={<HomeIcon size={32} />}
-                  label="Tela de início"
-                  isFocused={focusedIndex === 0}
-                  onClick={() => onExit?.()}
-                />
+              <div style={toggleLabelStyle}>
+                {showEPG ? 'Canais ▲' : 'Programação ▼'}
+              </div>
 
-                {channels.map((channel, i) => (
-                  <div
-                    key={channel.id}
-                    style={{
-                      borderRadius: '16px',
-                      outline: activeChannelId === channel.id && focusedIndex !== i + 1
-                        ? '3px solid rgba(255,255,255,0.4)'
-                        : 'none',
-                      transition: 'outline 0.2s ease',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <TileButton
-                      variant="image"
-                      image={channel.logo || PLACEHOLDER_LOGO}
-                      label={channel.name}
-                      alt={channel.name}
-                      isFocused={focusedIndex === i + 1}
-                      onClick={() => setActiveChannelId(channel.id)}
+              <div style={railContainerStyle}>
+                {!showEPG ? (
+                  singleChannel ? (
+                    <div style={{ height: '312px', display: 'flex', alignItems: 'center' }}>
+                      <ActionButton
+                        label="Sair"
+                        state={sairFocused ? 'focus' : 'idle'}
+                        isFocused={sairFocused}
+                        onClick={() => onExit?.()}
+                      />
+                    </div>
+                  ) : (
+                    <div style={railWrapperStyle}>
+                      <TileButton
+                      variant="icon-label"
+                      label="Sair"
+                      icon={<CloseIcon size={32} />}
+                      isFocused={focusedIndex === 0}
+                      onClick={() => onExit?.()}
                     />
-                  </div>
-                ))}
+
+                      {channels.map((channel, i) => (
+                        <div
+                          key={channel.id}
+                          style={{
+                            outline: activeChannelId === channel.id && focusedIndex !== i + 1
+                              ? '3px solid rgba(255,255,255,0.4)'
+                              : 'none',
+                            transition: 'outline 0.2s ease',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <TileButton
+                            variant="image"
+                            image={channel.logoFull || channel.logo || PLACEHOLDER_LOGO}
+                            label={channel.name}
+                            alt={channel.name}
+                            isFocused={focusedIndex === i + 1}
+                            onClick={() => setActiveChannelId(channel.id)}
+                            imageObjectFit="contain"
+                            backgroundColor={channel.backgroundColor}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  <EPGRail
+                    channelId={activeChannel.id}
+                    channelLogo={activeChannel.logo}
+                    channelName={activeChannel.name}
+                    focusedIndex={epgFocusedIndex}
+                    onFocusedIndexChange={setEpgFocusedIndex}
+                    onNavigateUp={() => setShowEPG(false)}
+                    onItemClick={(entry) => setReminderEntry(entry)}
+                    cardBackground={colors.background.baseInverse}
+                  />
+                )}
               </div>
             </div>
           </div>
+
+          {/* Reminder Modal */}
+          {reminderEntry && (
+            <div style={reminderOverlayStyle}>
+              <div style={reminderCardStyle}>
+                <span style={reminderTitleStyle}>{reminderEntry.title}</span>
+                <span style={reminderSubtitleStyle}>
+                  {reminderEntry.time} – {reminderEntry.endTime}
+                </span>
+                <div style={reminderActionsStyle}>
+                  <ActionButton
+                    label="Cancelar"
+                    state="idle"
+                    onClick={() => setReminderEntry(null)}
+                  />
+                  <ActionButton
+                    label="Adicionar lembrete"
+                    state="focus"
+                    onClick={() => {
+                      // TODO: implementar notificação
+                      setReminderEntry(null);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
