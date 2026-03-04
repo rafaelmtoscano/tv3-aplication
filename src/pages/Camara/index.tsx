@@ -339,31 +339,12 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onView
             >Carregando...</div>
           ) : (
             <div className="camara-deputies-rail">
-              {/* "Ver todos" — custom circle matching CircleButton style */}
-              <div
-                className="camara-ver-todos-wrapper"
+              <CircleButton
+                icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
+                label="Ver todos"
+                isFocused={isVerTodosFocused}
                 onClick={() => onViewAll?.()}
-              >
-                <div
-                  className="camara-ver-todos-circle"
-                  style={{
-                    width: isVerTodosFocused ? '312px' : '248px',
-                    height: isVerTodosFocused ? '312px' : '248px',
-                    background: isVerTodosFocused
-                      ? colors.background.brandPrimary
-                      : 'rgba(255,255,255,0.08)',
-                    boxShadow: isVerTodosFocused
-                      ? '0 8px 32px rgba(0, 0, 0, 0.4)'
-                      : 'none',
-                  }}
-                >
-                  <GridIcon size={isVerTodosFocused ? 56 : 44} color="#FFF" />
-                </div>
-                <p
-                  className="camara-ver-todos-label"
-                  style={{ ...typography.body.large }}
-                >Ver todos</p>
-              </div>
+              />
 
               {/* Deputy CircleButtons (indices 1–6) */}
               {deputies.slice(0, 6).map((dep, i) => (

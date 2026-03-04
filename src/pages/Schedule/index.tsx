@@ -54,11 +54,12 @@ export default function Schedule({ isActive, isSidebarExpanded, onLiveChannel }:
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (isSidebarExpanded) return; // Let global hook handle all keys
+      if (isSidebarExpanded) return;
       switch (e.key) {
         case 'ArrowDown':
           if (activeRailIndex < scheduledChannels.length - 1) {
             e.preventDefault();
+            e.stopPropagation();
             setActiveRailIndex(r => r + 1);
             setRailFocusedIndex(0);
           }
@@ -66,6 +67,7 @@ export default function Schedule({ isActive, isSidebarExpanded, onLiveChannel }:
         case 'ArrowUp':
           if (activeRailIndex > 0) {
             e.preventDefault();
+            e.stopPropagation();
             setActiveRailIndex(r => r - 1);
             setRailFocusedIndex(0);
           }
@@ -73,20 +75,23 @@ export default function Schedule({ isActive, isSidebarExpanded, onLiveChannel }:
         case 'ArrowLeft':
           if (railFocusedIndex > 0) {
             e.preventDefault();
+            e.stopPropagation();
             setRailFocusedIndex(i => i - 1);
           }
+          // railFocusedIndex === 0: não bloquear — propagar para sidebar
           break;
         case 'ArrowRight':
           if (railFocusedIndex < 7) {
             e.preventDefault();
+            e.stopPropagation();
             setRailFocusedIndex(i => i + 1);
           }
           break;
         case 'Enter': {
           e.preventDefault();
+          e.stopPropagation();
           const channel = scheduledChannels[activeRailIndex];
           if (!channel) break;
-          // railFocusedIndex 0 = 'now' card -> open LivePlayer
           if (railFocusedIndex === 0 && onLiveChannel) {
             onLiveChannel(channel.id);
           }

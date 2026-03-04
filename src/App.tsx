@@ -25,6 +25,8 @@ export default function App() {
   const [camaraPage, setCamaraPage] = useState<{ deputyId?: string } | null>(null);
   const [deputiesGridOpen, setDeputiesGridOpen] = useState(false);
 
+  const isCamaraOverlayActive = camaraPage !== null;
+
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
@@ -47,6 +49,7 @@ export default function App() {
     sidebarItemIds: sidebarItems.map((i) => i.id),
     sidebarLength: sidebarItems.length + 1,
     activeSidebarId: currentPage,
+    disabled: isCamaraOverlayActive,
     onEnter: (state) => {
       if (currentPage === 'home') {
         if (state.mainZone === 'hero') {
