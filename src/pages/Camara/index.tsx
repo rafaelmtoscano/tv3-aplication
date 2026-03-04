@@ -18,23 +18,17 @@ const DEPUTIES_HEIGHT = 438; // 48px padding-top + 312px circle + 30px label + 4
 const RAIL_HEIGHT = 408;     // igual Home — ContentRail ocupa isso no scroll virtual
 const SCROLL_OFFSET = 160;   // igual Home
 
-const SCROLL_BY_ZONE: Record<CamaraZone, number> = {
+// scrollY por zona
+// hero     → 0
+// deputies → HERO_HEIGHT - SCROLL_OFFSET
+// content-0 → HERO_HEIGHT + DEPUTIES_HEIGHT - SCROLL_OFFSET
+// content-1 → HERO_HEIGHT + DEPUTIES_HEIGHT + RAIL_HEIGHT - SCROLL_OFFSET
+const SCROLL_BY_ZONE = {
   'hero':      0,
   'deputies':  HERO_HEIGHT - SCROLL_OFFSET,
   'content-0': HERO_HEIGHT + DEPUTIES_HEIGHT - SCROLL_OFFSET,
   'content-1': HERO_HEIGHT + DEPUTIES_HEIGHT + RAIL_HEIGHT - SCROLL_OFFSET,
 };
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface CamaraProps {
-  isActive: boolean;
-  isSidebarExpanded?: boolean;
-  onLiveChannel?: (channelId: string) => void;
-  onBack?: () => void;
-}
-
-type CamaraView = 'main' | 'deputy-detail' | 'deputies-grid';
-type CamaraZone = 'hero' | 'deputies' | 'content-0' | 'content-1';
 
 // ─── HlsVideo ─────────────────────────────────────────────────────────────────
 function HlsVideo({ src }: { src: string }) {
@@ -54,7 +48,7 @@ function HlsVideo({ src }: { src: string }) {
   return (
     <video
       ref={videoRef}
-      className="camara-hero-video"
+      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
       autoPlay
       muted
       loop
@@ -62,6 +56,17 @@ function HlsVideo({ src }: { src: string }) {
     />
   );
 }
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface CamaraProps {
+  isActive: boolean;
+  isSidebarExpanded?: boolean;
+  onLiveChannel?: (channelId: string) => void;
+  onBack?: () => void;
+}
+
+type CamaraView = 'main' | 'deputy-detail' | 'deputies-grid';
+type CamaraZone = 'hero' | 'deputies' | 'content-0' | 'content-1';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onBack }: CamaraProps) {
@@ -76,7 +81,8 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
 
   const tvCamara = channels.find(ch => ch.id === 'tv-camara')!;
   const programs = tvCamara.programs || [];
-  const deputyRailTotal = deputies.length + 1;
+
+  const deputyRailTotal = deputies.length + 1; // +1 for "Ver todos"
 
   const plenariasItems: ContentRailItem[] = programs.slice(0, 5).map(prog => ({
     id: prog.id,
@@ -102,6 +108,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
 
   const scrollY = SCROLL_BY_ZONE[zone] ?? 0;
 
+  // ─── Deputy selection ────────────────────────────────────────────────────
   const handleDeputySelect = async (dep: typeof deputies[0]) => {
     setLoadingDeputy(dep.id);
     try {
@@ -116,6 +123,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
     }
   };
 
+  // ─── Keyboard ────────────────────────────────────────────────────────────
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (isSidebarExpanded) return;
 
@@ -189,7 +197,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
     }
   };
 
-  // Sub-views
+  // ─── Sub-views ───────────────────────────────────────────────────────────
   if (view === 'deputy-detail' && selectedDeputyId) {
     return <DeputyDetail deputyId={selectedDeputyId} onBack={() => setView('main')} />;
   }
@@ -198,182 +206,154 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
       <DeputiesGrid
         deputies={deputies}
         onBack={() => setView('main')}
-        onDeputySelect={(dep) => { setView('main'); handleDeputySelect(dep); }}
+        onDeputySelect={(dep) => {
+          setView('main');
+          handleDeputySelect(dep);
+        }}
       />
     );
   }
 
+  // ─── Styles ───────────────────────────────────────────────────────────────
   const isVerTodosFocused = zone === 'deputies' && deputyIndex === 0;
 
+  const pageStyle: React.CSSProperties = {
+    position: 'fixed',
+    inset: 0,
+    overflow: 'hidden',
+    background: '#0D1B12',
+    outline: 'none',
+  };
+
+  const scrollTrackStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    transform: `translateY(-${scrollY}px)`,
+    transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  };
+
+  const heroStyle: React.CSSProperties = {
+    position: 'relative',
+    height: `${HERO_HEIGHT}px`,
+    width: '100%',
+    overflow: 'hidden',
+  };
+
+  const heroBgStyle: React.CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    overflow: 'hidden',
+  };
+
+  const heroGradientStyle: React.CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(13,27,18,1) 100%)',
+  };
+
+  const heroContentStyle: React.CSSProperties = {
+    position: 'absolute',
+    bottom: 40,
+    left: 136,
+    zIndex: 2,
+  };
+
+  // Deputies zone: sem height fixo, deixa o conteúdo determinar
+  const deputiesZoneStyle: React.CSSProperties = {
+    paddingTop: 48,
+    paddingLeft: 0, // ContentRail usa 64px, aqui controlamos manualmente
+    overflow: 'visible',
+  };
+
+  const deputiesTitleStyle: React.CSSProperties = {
+    ...typography.display.small,
+    color: colors.text.primaryInverse,
+    paddingLeft: 64,
+    margin: '0 0 48px 0',
+  };
+
+  // Rail de deputados: altura fixada pelo maior item (focado = 312px) + label + partido
+  const deputiesRailStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'row',
+    paddingLeft: 64,
+    paddingBottom: 48,
+    gap: 32,
+    overflow: 'visible',
+    alignItems: 'flex-end',
+    height: 370, // 312px círculo + 30px label + 28px partido
+  };
+
+  const deputySubtitleStyle: React.CSSProperties = {
+    ...typography.body.small,
+    color: colors.text.secondaryInverse,
+    marginTop: 4,
+    textAlign: 'center',
+    display: 'block',
+  };
+
+  const loadingOverlayStyle: React.CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    background: 'rgba(0,0,0,0.6)',
+    zIndex: 50,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div
       ref={containerRef}
       tabIndex={0}
-      className="camara-page"
+      style={pageStyle}
       onKeyDown={handleKeyDown}
     >
-      <style>{`
-        @keyframes camara-spin {
-          to { transform: rotate(360deg); }
-        }
-        .camara-page {
-          position: fixed;
-          inset: 0;
-          overflow: hidden;
-          background: #0D1B12;
-          outline: none;
-        }
-        .camara-scroll-wrapper {
-          transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .camara-hero {
-          position: relative;
-          height: 420px;
-          width: 100%;
-          overflow: hidden;
-        }
-        .camara-hero-bg {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-        }
-        .camara-hero-video {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .camara-hero-gradient {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(13,27,18,1) 100%);
-        }
-        .camara-hero-content {
-          position: absolute;
-          bottom: 40px;
-          left: 136px;
-          z-index: 2;
-        }
-        .camara-channel-logo {
-          height: 40px;
-          object-fit: contain;
-        }
-        .camara-hero-title {
-          color: #FFF;
-          margin: 12px 0 0 0;
-        }
-        .camara-badges-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin: 12px 0 0 0;
-        }
-        .camara-badge-live-indicator {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: ${colors.background.brandPrimary};
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #FFF;
-        }
-        .camara-badge-live {
-          background: #E53935;
-          border-radius: 6px;
-          padding: 4px 12px;
-          color: #FFF;
-        }
-        .camara-badge-hd {
-          background: rgba(255,255,255,0.2);
-          border-radius: 6px;
-          padding: 4px 12px;
-          color: #FFF;
-        }
-        .camara-hero-description {
-          color: rgba(255,255,255,0.75);
-          margin: 12px 0 20px 0;
-          max-width: 600px;
-        }
-        .camara-deputies-zone {
-          padding-top: 48px;
-          overflow: visible;
-        }
-        .camara-section-title {
-          color: #FFF;
-          padding-left: 136px;
-          margin: 0 0 24px 0;
-        }
-        .camara-deputies-rail {
-          display: flex;
-          flex-direction: row;
-          padding-left: 136px;
-          padding-bottom: 48px;
-          gap: 32px;
-          overflow: visible;
-          align-items: flex-end;
-          height: 358px;
-        }
-        .camara-deputy-card {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0;
-          flex-shrink: 0;
-        }
-        .camara-deputy-subtitle {
-          text-align: center;
-          margin-top: -8px;
-          color: ${colors.text.secondaryInverse};
-        }
-        .camara-content-zone {
-          padding-top: 0;
-        }
-        .camara-deputies-loading {
-          padding-left: 136px;
-        }
-        .camara-loading-overlay {
-          position: absolute;
-          inset: 0;
-          background: rgba(0,0,0,0.6);
-          z-index: 50;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .camara-spinner {
-          width: 48px;
-          height: 48px;
-          border: 4px solid rgba(255,255,255,0.3);
-          border-top: 4px solid #FFF;
-          border-radius: 50%;
-          animation: camara-spin 0.8s linear infinite;
-        }
-      `}</style>
+      <div style={scrollTrackStyle}>
 
-      <div
-        className="camara-scroll-wrapper"
-        style={{ transform: `translateY(-${scrollY}px)` }}
-      >
         {/* Zone 1 — Hero */}
-        <div className="camara-hero">
-          <div className="camara-hero-bg">
+        <div style={heroStyle}>
+          <div style={heroBgStyle}>
             {tvCamara.streamUrl
               ? <HlsVideo src={tvCamara.streamUrl} />
               : <img src={tvCamara.logoFull} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             }
           </div>
-          <div className="camara-hero-gradient" />
-          <div className="camara-hero-content">
-            <img src={tvCamara.logo} alt="TV Câmara" className="camara-channel-logo" />
-            <h1 className="camara-hero-title" style={{ ...typography.display.large }}>
+          <div style={heroGradientStyle} />
+          <div style={heroContentStyle}>
+            <img
+              src={tvCamara.logo}
+              alt="TV Câmara"
+              style={{ height: 40, objectFit: 'contain' }}
+            />
+            <h1 style={{ ...typography.display.large, color: '#FFF', margin: '12px 0 0 0' }}>
               Plenária
             </h1>
-            <div className="camara-badges-row">
-              <span className="camara-badge-live-indicator" style={{ ...typography.label.small }}>L</span>
-              <span className="camara-badge-live" style={{ ...typography.body.small }}>Ao vivo</span>
-              <span className="camara-badge-hd" style={{ ...typography.body.small }}>HD</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '12px 0 0 0' }}>
+              <span style={{
+                width: 24, height: 24, borderRadius: '50%',
+                background: colors.background.brandPrimary,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#FFF', ...typography.label.small,
+              }}>L</span>
+              <span style={{
+                background: '#E53935', borderRadius: 6,
+                padding: '4px 12px', color: '#FFF', ...typography.body.small,
+              }}>Ao vivo</span>
+              <span style={{
+                background: 'rgba(255,255,255,0.2)', borderRadius: 6,
+                padding: '4px 12px', color: '#FFF', ...typography.body.small,
+              }}>HD</span>
             </div>
-            <p className="camara-hero-description" style={{ ...typography.body.large }}>
+            <p style={{
+              ...typography.body.large,
+              color: 'rgba(255,255,255,0.75)',
+              margin: '12px 0 20px 0',
+              maxWidth: 600,
+            }}>
               Acompanhe ao vivo as sessões do Plenário da Câmara dos Deputados.
             </p>
             <ActionButton
@@ -385,27 +365,34 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
         </div>
 
         {/* Zone 2 — Deputies rail */}
-        <div className="camara-deputies-zone">
-          <h2 className="camara-section-title" style={{ ...typography.headline.large }}>
-            Deputados
-          </h2>
+        <div style={deputiesZoneStyle}>
+          <h2 style={deputiesTitleStyle}>Deputados</h2>
           {loading ? (
-            <p className="camara-deputies-loading" style={{ ...typography.body.large, color: colors.text.secondaryInverse }}>
+            <p style={{
+              ...typography.body.large,
+              color: colors.text.secondaryInverse,
+              paddingLeft: 64,
+            }}>
               Carregando...
             </p>
           ) : (
-            <div className="camara-deputies-rail">
-              {/* Ver todos button */}
-              <CircleButton
-                icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
-                label="Ver todos"
-                isFocused={isVerTodosFocused}
-                onClick={() => setView('deputies-grid')}
-              />
+            <div style={deputiesRailStyle}>
+              {/* Ver todos */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                <CircleButton
+                  icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
+                  label="Ver todos"
+                  isFocused={isVerTodosFocused}
+                  onClick={() => setView('deputies-grid')}
+                />
+              </div>
 
-              {/* Deputy cards */}
+              {/* Deputies */}
               {deputies.map((dep, i) => (
-                <div key={dep.id} className="camara-deputy-card">
+                <div
+                  key={dep.id}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}
+                >
                   <CircleButton
                     image={dep.photo}
                     label={dep.name}
@@ -416,7 +403,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
                       handleDeputySelect(dep);
                     }}
                   />
-                  <span className="camara-deputy-subtitle" style={{ ...typography.body.small }}>
+                  <span style={deputySubtitleStyle}>
                     {dep.party} · {dep.state}
                   </span>
                 </div>
@@ -425,39 +412,44 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
           )}
         </div>
 
-        {/* Zone 3 — Plenárias */}
-        <div className="camara-content-zone">
-          <ContentRail
-            title="Plenárias"
-            variant="image-text"
-            items={plenariasItems}
-            focusedIndex={zone === 'content-0' ? contentIndex : -1}
-            onFocusedIndexChange={(i) => setContentIndex(i)}
-            onNavigateUp={() => { setZone('deputies'); setContentIndex(0); }}
-            onNavigateDown={() => { setZone('content-1'); setContentIndex(0); }}
-          />
-        </div>
+        {/* Zone 3 — Plenárias rail */}
+        <ContentRail
+          title="Plenárias"
+          variant="image-text"
+          items={plenariasItems}
+          focusedIndex={zone === 'content-0' ? contentIndex : -1}
+          onFocusedIndexChange={(i) => setContentIndex(i)}
+          onNavigateUp={() => { setZone('deputies'); setContentIndex(0); }}
+          onNavigateDown={() => { setZone('content-1'); setContentIndex(0); }}
+        />
 
-        {/* Zone 4 — Em alta */}
-        <div className="camara-content-zone">
-          <ContentRail
-            title="Em alta"
-            variant="image-text"
-            items={emAltaItems}
-            focusedIndex={zone === 'content-1' ? contentIndex : -1}
-            onFocusedIndexChange={(i) => setContentIndex(i)}
-            onNavigateUp={() => { setZone('content-0'); setContentIndex(0); }}
-            onNavigateDown={() => {}}
-          />
-        </div>
+        {/* Zone 4 — Em alta rail */}
+        <ContentRail
+          title="Em alta"
+          variant="image-text"
+          items={emAltaItems}
+          focusedIndex={zone === 'content-1' ? contentIndex : -1}
+          onFocusedIndexChange={(i) => setContentIndex(i)}
+          onNavigateUp={() => { setZone('content-0'); setContentIndex(0); }}
+          onNavigateDown={() => {}}
+        />
+
       </div>
 
-      {/* Loading deputy overlay */}
+      {/* Loading overlay */}
       {loadingDeputy && (
-        <div className="camara-loading-overlay">
-          <div className="camara-spinner" />
+        <div style={loadingOverlayStyle}>
+          <div style={{
+            width: 48, height: 48,
+            border: '4px solid rgba(255,255,255,0.3)',
+            borderTop: '4px solid #FFF',
+            borderRadius: '50%',
+            animation: 'camara-spin 0.8s linear infinite',
+          }} />
         </div>
       )}
+
+      <style>{`@keyframes camara-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
