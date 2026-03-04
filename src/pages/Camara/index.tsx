@@ -14,7 +14,7 @@ interface CamaraProps {
 }
 
 export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack }: CamaraProps) {
-  const { deputies: apiDeputies, loading: apiLoading } = useDeputies();
+  const { deputies, loading } = useDeputies(6);
   const [zone, setZone] = useState<'hero' | 'deputies' | 'content'>('hero');
   const [deputyIndex, setDeputyIndex] = useState(0);
   const [contentIndex, setContentIndex] = useState(0);
@@ -75,7 +75,7 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack
         break;
 
       case 'ArrowRight':
-        if (zone === 'deputies' && deputyIndex < apiDeputies.length - 1) {
+        if (zone === 'deputies' && deputyIndex < deputies.length - 1) {
           e.preventDefault();
           e.stopPropagation();
           setDeputyIndex(i => i + 1);
@@ -92,7 +92,7 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack
         if (zone === 'hero') {
           onLiveChannel?.('tv-camara');
         } else if (zone === 'deputies') {
-          const dep = apiDeputies[deputyIndex];
+          const dep = deputies[deputyIndex];
           setLoadingDeputy(dep.id);
           setTimeout(() => {
             onDeputySelect?.(dep.id);
@@ -282,11 +282,11 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack
         {/* Zone 2 — Deputies rail */}
         <div style={{ height: '260px', paddingTop: '32px' }}>
           <h2 style={sectionTitleStyle}>Deputados</h2>
-          {apiLoading ? (
+          {loading ? (
             <div style={{ paddingLeft: '136px', ...typography.body.large, color: colors.text.secondaryInverse }}>Carregando...</div>
           ) : (
             <div style={deputiesRailStyle}>
-              {apiDeputies.map((dep, i) => {
+              {deputies.map((dep, i) => {
                 const isFocused = zone === 'deputies' && deputyIndex === i;
                 return (
                   <div
