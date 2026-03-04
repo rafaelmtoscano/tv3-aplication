@@ -3,7 +3,7 @@ import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { ActionButton } from '../../components/ActionButton/ActionButton';
 import { ContentCard } from '../../components/ContentCard/ContentCard';
-import { useCamaraAPI } from '../../hooks/useCamaraAPI';
+import { useDeputies } from '../../hooks/useDeputies';
 import { channels } from '../../data/channels';
 
 interface CamaraProps {
@@ -14,7 +14,7 @@ interface CamaraProps {
 }
 
 export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack }: CamaraProps) {
-  const { deputiesList: apiDeputies, loading: apiLoading, selectDeputyData } = useCamaraAPI();
+  const { deputies: apiDeputies, loading: apiLoading } = useDeputies();
   const [zone, setZone] = useState<'hero' | 'deputies' | 'content'>('hero');
   const [deputyIndex, setDeputyIndex] = useState(0);
   const [contentIndex, setContentIndex] = useState(0);
@@ -94,10 +94,10 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack
         } else if (zone === 'deputies') {
           const dep = apiDeputies[deputyIndex];
           setLoadingDeputy(dep.id);
-          selectDeputyData(dep).then((fullId) => {
-            onDeputySelect?.(fullId);
+          setTimeout(() => {
+            onDeputySelect?.(dep.id);
             setLoadingDeputy(null);
-          });
+          }, 600);
         }
         break;
 
@@ -304,10 +304,10 @@ export default function Camara({ isActive, onLiveChannel, onDeputySelect, onBack
                       setZone('deputies');
                       setDeputyIndex(i);
                       setLoadingDeputy(dep.id);
-                      selectDeputyData(dep).then((fullId) => {
-                        onDeputySelect?.(fullId);
+                      setTimeout(() => {
+                        onDeputySelect?.(dep.id);
                         setLoadingDeputy(null);
-                      });
+                      }, 600);
                     }}
                   >
                     <img
