@@ -14,20 +14,16 @@ import DeputiesGrid from './DeputiesGrid';
 
 // ─── Layout constants — mesmas da Home ───────────────────────────────────────
 const HERO_HEIGHT = 420;
-const DEPUTIES_HEIGHT = 502; // 48 paddingTop + 36 título + 48 gap + 370 rail
-const RAIL_HEIGHT = 408;     // igual Home — ContentRail ocupa isso no scroll virtual
+const RAIL_HEIGHT = 408;     // igual Home — cada zona ocupa isso no scroll virtual
 const SCROLL_OFFSET = 160;   // igual Home
 
-// scrollY por zona
-// hero     → 0
-// deputies → HERO_HEIGHT - SCROLL_OFFSET
-// content-0 → HERO_HEIGHT + DEPUTIES_HEIGHT - SCROLL_OFFSET
-// content-1 → HERO_HEIGHT + DEPUTIES_HEIGHT + RAIL_HEIGHT - SCROLL_OFFSET
-const SCROLL_BY_ZONE = {
-  'hero': 0,
-  'deputies': HERO_HEIGHT - SCROLL_OFFSET,
-  'content-0': HERO_HEIGHT + DEPUTIES_HEIGHT - SCROLL_OFFSET,
-  'content-1': HERO_HEIGHT + DEPUTIES_HEIGHT + RAIL_HEIGHT - SCROLL_OFFSET,
+// Índice de cada zona no scroll virtual (mesma fórmula da Home)
+type CamaraZone = 'hero' | 'deputies' | 'content-0' | 'content-1';
+const ZONE_INDEX: Record<CamaraZone, number> = {
+  'hero': -1,
+  'deputies': 0,
+  'content-0': 1,
+  'content-1': 2,
 };
 
 // ─── HlsVideo ─────────────────────────────────────────────────────────────────
@@ -66,7 +62,6 @@ interface CamaraProps {
 }
 
 type CamaraView = 'main' | 'deputy-detail' | 'deputies-grid';
-type CamaraZone = 'hero' | 'deputies' | 'content-0' | 'content-1';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onBack }: CamaraProps) {
@@ -106,7 +101,8 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
     }
   }, [isActive, view]);
 
-  const scrollY = SCROLL_BY_ZONE[zone] ?? 0;
+  const zoneIdx = ZONE_INDEX[zone];
+  const scrollY = zoneIdx < 0 ? 0 : HERO_HEIGHT + RAIL_HEIGHT * zoneIdx - SCROLL_OFFSET;
 
   // ─── Deputy selection ────────────────────────────────────────────────────
   const handleDeputySelect = async (dep: typeof deputies[0]) => {
@@ -263,8 +259,6 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
   // Deputies zone: sem height fixo, deixa o conteúdo determinar
   const deputiesZoneStyle: React.CSSProperties = {
     paddingTop: 48,
-    paddingBottom: 48,
-    paddingLeft: 0, // ContentRail usa 64px, aqui controlamos manualmente
     overflow: 'visible',
   };
 
@@ -283,7 +277,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
     gap: 32,
     overflow: 'visible',
     alignItems: 'flex-end',
-    height: 370, // 312px círculo + 30px label + 28px partido
+    minHeight: 320, // espaço mínimo; focado cresce para cima via alignItems: flex-end
   };
 
   const deputySubtitleStyle: React.CSSProperties = {
