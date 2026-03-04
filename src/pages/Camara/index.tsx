@@ -155,8 +155,12 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
   if (view === 'deputies-grid') {
     return (
       <DeputiesGrid
+        deputies={deputies}
         onBack={() => setView('main')}
-        onDeputySelect={(id) => { setSelectedDeputyId(id); setView('deputy-detail'); }}
+        onDeputySelect={(dep) => {
+          setView('main');
+          handleDeputySelect(dep);
+        }}
       />
     );
   }
@@ -183,6 +187,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
         }
         .camara-scroll-wrapper {
           transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow: hidden;
         }
         .camara-hero {
           position: relative;
@@ -247,11 +252,12 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
         .camara-section-title {
           color: #FFF;
           padding-left: 136px;
-          margin: 0 0 24px 0;
+          margin: 0 0 16px 0;
         }
         .camara-deputies-zone {
-          height: 360px;
-          padding-top: 32px;
+          height: 408px;
+          padding-top: 48px;
+          overflow: visible;
         }
         .camara-deputies-rail {
           display: flex;
@@ -260,6 +266,7 @@ export default function Camara({ isActive, isSidebarExpanded, onLiveChannel, onB
           gap: 32px;
           overflow: visible;
           align-items: flex-end;
+          height: 312px;
         }
         .camara-content-zone {
           padding-top: 32px;

@@ -71,18 +71,7 @@ export default function DeputyDetail({ deputyId, onBack }: DeputyDetailProps) {
 
   if (!deputy) {
     return (
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        background: colors.background.baseInverse,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#FFF',
-        ...typography.headline.large,
-      }}>
-        Deputado não encontrado
-      </div>
+      <ErrorScreen onBack={onBack} />
     );
   }
 
@@ -204,6 +193,52 @@ export default function DeputyDetail({ deputyId, onBack }: DeputyDetailProps) {
           {activeTab === 5 && <ContatoTab deputy={deputy} />}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ── Error Screen ── */
+
+function ErrorScreen({ onBack }: { onBack: () => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    containerRef.current?.focus();
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    e.stopPropagation();
+    if (e.key === 'Enter' || e.key === 'Escape' || e.key === 'Backspace') {
+      e.preventDefault();
+      onBack();
+    }
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: colors.background.baseInverse,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '32px',
+        outline: 'none',
+      }}
+    >
+      <p style={{ ...typography.headline.large, color: colors.text.primaryInverse, margin: 0 }}>
+        Falha ao carregar informações
+      </p>
+      <ActionButton
+        label="Voltar"
+        state="focus"
+        onClick={onBack}
+      />
     </div>
   );
 }

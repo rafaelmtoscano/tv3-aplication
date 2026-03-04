@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { CircleButton } from '../../components/CircleButton/CircleButton';
-import { deputies } from '../../data/deputies';
+import { deputies as staticDeputies } from '../../data/deputies';
 import type { Deputy } from '../../data/deputies';
 
 interface DeputiesGridProps {
   onBack: () => void;
-  onDeputySelect: (deputyId: string) => void;
+  onDeputySelect: (deputy: Deputy) => void;
+  deputies?: Deputy[];
 }
 
 type FilterType = 'estados' | 'partido';
@@ -21,7 +22,8 @@ interface DeputyGroup {
 
 const GROUP_HEIGHT = 420; // px — CircleButton idle 248px + label 30px + gap 16px + group label + margin
 
-export default function DeputiesGrid({ onBack, onDeputySelect }: DeputiesGridProps) {
+export default function DeputiesGrid({ onBack, onDeputySelect, deputies: propDeputies }: DeputiesGridProps) {
+  const deputies = propDeputies ?? staticDeputies;
   const [activeFilter, setActiveFilter] = useState<FilterType>('estados');
   const [headerFocus, setHeaderFocus] = useState<HeaderFocus>('estados');
   const [focusZone, setFocusZone] = useState<FocusZone>('header');
@@ -105,7 +107,7 @@ export default function DeputiesGrid({ onBack, onDeputySelect }: DeputiesGridPro
         }
         case 'Enter': {
           const dep = groups[gridRow]?.deputies[gridCol];
-          if (dep) onDeputySelect(dep.id);
+          if (dep) onDeputySelect(dep);
           break;
         }
         case 'Escape':
@@ -276,7 +278,7 @@ export default function DeputiesGrid({ onBack, onDeputySelect }: DeputiesGridPro
                       gridRow === groupIndex &&
                       gridCol === depIndex
                     }
-                    onClick={() => onDeputySelect(dep.id)}
+                    onClick={() => onDeputySelect(dep)}
                   />
                 ))}
               </div>
