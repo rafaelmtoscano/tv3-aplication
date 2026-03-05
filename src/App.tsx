@@ -12,13 +12,16 @@ import DeputiesGrid from './pages/Camara/DeputiesGrid';
 import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
+import type { FocusState } from './hooks/useFocusNavigation';
 import { homeData } from './data/home';
 import { channels } from './data/channels';
 import { colors } from './styles/colors';
 import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
 
+type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'settings' | 'help' | 'apps-camara' | 'my-channels';
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState<PageId>('home');
   const [livePage, setLivePage] = useState<{ channelId: string; singleChannel?: boolean } | null>(null);
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
   const [showDeputiesGrid, setShowDeputiesGrid] = useState(false);
@@ -57,7 +60,7 @@ export default function App() {
     sidebarItemIds,
     sidebarLength: sidebarItems.length + 1,
     activeSidebarId: currentPage,
-    onEnter: useCallback((state) => {
+    onEnter: useCallback((state: FocusState) => {
       const currentPage = currentPageRef.current;
       if (currentPage === 'apps-camara') {
         if (state.mainZone === 'hero') {
@@ -112,7 +115,7 @@ export default function App() {
         if (firstLiveChannel) setLivePage({ channelId: firstLiveChannel.id });
         return;
       }
-      setCurrentPage(id);
+      setCurrentPage(id as PageId);
     }, []),
   });
 
@@ -198,8 +201,10 @@ export default function App() {
         return <Settings isActive={currentPage === 'settings'} />;
       case 'help':
         return <Help isActive={currentPage === 'help'} />;
+      case 'my-channels':
+      case 'live':
       default:
-        return <Home mainZone={mainZone} mainItemIndex={mainItemIndex} isActive={currentPage === 'home'} />;
+        return <Home mainZone={mainZone} mainItemIndex={mainItemIndex} isActive={(currentPage as string) === 'home'} />;
     }
   };
 
@@ -214,7 +219,7 @@ export default function App() {
           expanded={isSidebarExpanded}
           activeItemId={currentPage}
           focusedItemId={isSidebarExpanded ? (sidebarIndex === 0 ? 'avatar' : sidebarItems[sidebarIndex - 1]?.id) : undefined}
-          onItemClick={(id) => setCurrentPage(id)}
+          onItemClick={(id) => setCurrentPage(id as PageId)}
         />
 
         {/* Spacer to prevent content from going under the fixed sidebar collapsed strip */}

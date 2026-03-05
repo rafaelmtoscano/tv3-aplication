@@ -74,6 +74,13 @@ export const LivePlayer = React.memo(
       const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         resetTimer();
 
+        // Prevent navigation keys from leaking to global handler
+        const navKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape', 'Backspace', ' '];
+        if (navKeys.includes(e.key)) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
         // Reminder modal takes priority
         if (reminderEntry !== null) {
           if (e.key === 'Escape' || e.key === 'Backspace') {

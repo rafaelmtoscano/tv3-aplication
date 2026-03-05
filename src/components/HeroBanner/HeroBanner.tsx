@@ -230,7 +230,7 @@ export const HeroBanner = memo(
               }}
             >
               {s.mediaType === 'video' ? (
-                <HlsVideo src={s.mediaSrc} />
+                activeIndex === i ? <HlsVideo src={s.mediaSrc} /> : null
               ) : (
                 <img
                   src={s.mediaSrc}

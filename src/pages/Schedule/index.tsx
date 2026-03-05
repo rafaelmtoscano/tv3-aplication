@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { EPGRail } from '../../components/EPGRail';
-import { allSchedules } from '../../data/schedule';
 import { channels } from '../../data/channels';
 
 interface ScheduleProps {

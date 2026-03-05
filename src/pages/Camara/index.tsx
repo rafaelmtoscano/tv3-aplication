@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Hls from 'hls.js';
+import React, { useState, useEffect } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { HeroBanner } from '../../components/HeroBanner';
@@ -24,33 +23,6 @@ const ZONE_INDEX: Record<string, number> = {
   'rail-1':  1,
 };
 
-// ─── HlsVideo ─────────────────────────────────────────────────────────────────
-function HlsVideo({ src }: { src: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (Hls.isSupported()) {
-      const hls = new Hls({ autoStartLoad: true });
-      hls.loadSource(src);
-      hls.attachMedia(video);
-      return () => hls.destroy();
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = src;
-    }
-  }, [src]);
-  return (
-    <video
-      ref={videoRef}
-      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-      autoPlay
-      muted
-      loop
-      playsInline
-    />
-  );
-}
-
 // ─── Props ────────────────────────────────────────────────────────────────────
 export interface CamaraProps {
   mainZone: MainZone;
@@ -66,8 +38,6 @@ export default function Camara({
   mainZone,
   mainItemIndex,
   isActive,
-  onLiveChannel,
-  onWatchVideo,
   onOpenGrid,
 }: CamaraProps) {
   const { deputiesList: deputies } = useCamaraAPI();
@@ -89,9 +59,6 @@ export default function Camara({
     description: 'Acompanhe ao vivo as sessões do Plenário da Câmara dos Deputados.',
     buttonLabel: 'Assistir agora',
   };
-
-  // ─── Deputies rail items (CircleButton via ContentRail não suporta — renderizado manualmente) ──
-  const deputyRailLength = deputies.length + 1; // +1 "Ver todos"
 
   // ─── Vídeos rail ────────────────────────────────────────────────────────
   const videoItems: ContentRailItem[] = programs.map(prog => ({

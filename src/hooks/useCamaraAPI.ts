@@ -7,7 +7,6 @@ import {
   fetchDeputySpeeches,
   fetchDeputyAgenda,
   mapAPIToDeputy,
-  getDeputyById,
 } from '../data/deputies';
 import type { Deputy, DeputyAPI } from '../data/deputies';
 
