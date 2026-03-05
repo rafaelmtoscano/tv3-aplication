@@ -141,10 +141,7 @@ export default function Camara({
         </div>
 
         {/* Rail 0 — Deputados (CircleButtons) */}
-        <div style={{
-          paddingTop: 48,
-          overflow: 'visible',
-        }}>
+        <div style={{ paddingTop: 48, overflow: 'visible' }}>
           <h2 style={{
             ...typography.display.small,
             color: colors.text.primaryInverse,
@@ -153,49 +150,51 @@ export default function Camara({
           }}>
             Deputados
           </h2>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            paddingLeft: 64,
-            paddingBottom: 64,
-            gap: 32,
-            overflow: 'visible',
-            alignItems: 'flex-end',
-            minHeight: 320,
-          }}>
-            {/* Ver todos */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-              <CircleButton
-                icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
-                label="Ver todos"
-                isFocused={isVerTodosFocused}
-              />
+          <div style={{ height: 366, overflow: 'visible' }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              paddingLeft: 64,
+              gap: 32,
+              overflow: 'visible',
+              alignItems: 'flex-end',
+              height: '100%',
+            }}>
+              {/* Ver todos */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                <CircleButton
+                  icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
+                  label="Ver todos"
+                  isFocused={isVerTodosFocused}
+                />
+              </div>
+              {/* Deputies */}
+              {deputies.map((dep, i) => {
+                const isFocused = mainZone === 'rail-0' && mainItemIndex === i + 1;
+                return (
+                  <div
+                    key={dep.id}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}
+                  >
+                    <CircleButton
+                      image={dep.photo}
+                      label={dep.name}
+                      isFocused={isFocused}
+                    />
+                    <span style={{
+                      ...typography.body.small,
+                      color: colors.text.secondaryInverse,
+                      marginTop: 4,
+                      textAlign: 'center' as const,
+                    }}>
+                      {dep.party} · {dep.state}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-            {/* Deputies */}
-            {deputies.map((dep, i) => {
-              const isFocused = mainZone === 'rail-0' && mainItemIndex === i + 1;
-              return (
-                <div
-                  key={dep.id}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}
-                >
-                  <CircleButton
-                    image={dep.photo}
-                    label={dep.name}
-                    isFocused={isFocused}
-                  />
-                  <span style={{
-                    ...typography.body.small,
-                    color: colors.text.secondaryInverse,
-                    marginTop: 4,
-                    textAlign: 'center' as const,
-                  }}>
-                    {dep.party} · {dep.state}
-                  </span>
-                </div>
-              );
-            })}
           </div>
+          <div style={{ height: 64 }} />
         </div>
 
         {/* Rail 1 — Vídeos */}
