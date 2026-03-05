@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import Home from './pages/Home/index';
 import Live from './pages/Live/index';
 import WatchPage from './pages/Watch/index';
@@ -33,9 +33,17 @@ export default function App() {
   ], []);
 
   const heroLength = currentPage === 'apps-camara' ? 1 : homeData.hero.length;
-  const railLengths = currentPage === 'apps-camara'
-    ? [7, 10]
-    : homeData.rails.map((r) => r.cards.length);
+  const railLengths = useMemo(() =>
+    currentPage === 'apps-camara'
+      ? [7, 10]
+      : homeData.rails.map((r) => r.cards.length),
+    [currentPage]
+  );
+
+  const sidebarItemIds = useMemo(() => sidebarItems.map((i) => i.id), [sidebarItems]);
+
+  const currentPageRef = useRef(currentPage);
+  currentPageRef.current = currentPage;
 
   const {
     isSidebarExpanded,
@@ -46,10 +54,11 @@ export default function App() {
   } = useFocusNavigation({
     heroLength,
     railLengths,
-    sidebarItemIds: sidebarItems.map((i) => i.id),
+    sidebarItemIds,
     sidebarLength: sidebarItems.length + 1,
     activeSidebarId: currentPage,
-    onEnter: (state) => {
+    onEnter: useCallback((state) => {
+      const currentPage = currentPageRef.current;
       if (currentPage === 'apps-camara') {
         if (state.mainZone === 'hero') {
           const tvCamara = channels.find(ch => ch.id === 'tv-camara');
@@ -95,8 +104,8 @@ export default function App() {
           }
         }
       }
-    },
-    onSidebarSelect: (id) => {
+    }, []),
+    onSidebarSelect: useCallback((id: string) => {
       if (id === 'avatar') return;
       if (id === 'live') {
         const firstLiveChannel = channels.find(ch => ch.streamUrl && ch.streamUrl.length > 0);
@@ -104,7 +113,7 @@ export default function App() {
         return;
       }
       setCurrentPage(id);
-    },
+    }, []),
   });
 
   const sidebarSign: SidebarSign = useMemo(() => ({
@@ -112,45 +121,12 @@ export default function App() {
     icon: <PersonIcon size={28} />,
   }), []);
 
-  if (showDeputiesGrid) {
-    return (
-      <DeputiesGrid
-        isActive={true}
-        onBack={() => { setShowDeputiesGrid(false); }}
-        onDeputySelect={() => { setShowDeputiesGrid(false); }}
-      />
-    );
-  }
-
-  if (watchPage) {
-    return (
-      <WatchPage
-        {...watchPage}
-        onExit={() => {
-          setWatchPage(null);
-          resetToMain();
-        }}
-      />
-    );
-  }
-
-  if (livePage) {
-    return (
-      <Live
-        initialChannelId={livePage.channelId}
-        singleChannel={livePage.singleChannel}
-        onExit={() => {
-          setLivePage(null);
-          resetToMain();
-        }}
-      />
-    );
-  }
+  const hasOverlay = !!(showDeputiesGrid || watchPage || livePage);
 
   const rootStyle: React.CSSProperties = {
     position: 'fixed',
     inset: 0,
-    display: 'flex',
+    display: hasOverlay ? 'none' : 'flex',
     flexDirection: 'row',
     background: colors.background.baseInverse,
     overflow: 'hidden',
@@ -228,25 +204,55 @@ export default function App() {
   };
 
   return (
-    <div style={rootStyle}>
-      <Sidebar
-        logoName="Plataforma"
-        logoSubtitle="Comum"
-        items={sidebarItems}
-        sign={sidebarSign}
-        expanded={isSidebarExpanded}
-        activeItemId={currentPage}
-        focusedItemId={isSidebarExpanded ? (sidebarIndex === 0 ? 'avatar' : sidebarItems[sidebarIndex - 1]?.id) : undefined}
-        onItemClick={(id) => setCurrentPage(id)}
-      />
-      
-      {/* Spacer to prevent content from going under the fixed sidebar collapsed strip */}
-      <div style={sidebarSpacerStyle} />
+    <>
+      <div style={rootStyle}>
+        <Sidebar
+          logoName="Plataforma"
+          logoSubtitle="Comum"
+          items={sidebarItems}
+          sign={sidebarSign}
+          expanded={isSidebarExpanded}
+          activeItemId={currentPage}
+          focusedItemId={isSidebarExpanded ? (sidebarIndex === 0 ? 'avatar' : sidebarItems[sidebarIndex - 1]?.id) : undefined}
+          onItemClick={(id) => setCurrentPage(id)}
+        />
 
-      <div style={mainWrapperStyle}>
-        {renderPage()}
+        {/* Spacer to prevent content from going under the fixed sidebar collapsed strip */}
+        <div style={sidebarSpacerStyle} />
+
+        <div style={mainWrapperStyle}>
+          {renderPage()}
+        </div>
       </div>
 
-    </div>
+      {showDeputiesGrid && (
+        <DeputiesGrid
+          isActive={true}
+          onBack={() => { setShowDeputiesGrid(false); }}
+          onDeputySelect={() => { setShowDeputiesGrid(false); }}
+        />
+      )}
+
+      {watchPage && (
+        <WatchPage
+          {...watchPage}
+          onExit={() => {
+            setWatchPage(null);
+            resetToMain();
+          }}
+        />
+      )}
+
+      {livePage && (
+        <Live
+          initialChannelId={livePage.channelId}
+          singleChannel={livePage.singleChannel}
+          onExit={() => {
+            setLivePage(null);
+            resetToMain();
+          }}
+        />
+      )}
+    </>
   );
 }
