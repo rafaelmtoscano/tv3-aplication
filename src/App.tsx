@@ -7,6 +7,7 @@ import Schedule from './pages/Schedule/index';
 import Apps from './pages/Apps/index';
 import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
+import Camara from './pages/Camara/index';
 import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
@@ -29,6 +30,11 @@ export default function App() {
     { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
   ], []);
 
+  const heroLength = currentPage === 'apps-camara' ? 1 : homeData.hero.length;
+  const railLengths = currentPage === 'apps-camara'
+    ? [1, 10]
+    : homeData.rails.map((r) => r.cards.length);
+
   const {
     isSidebarExpanded,
     mainZone,
@@ -36,12 +42,26 @@ export default function App() {
     sidebarIndex,
     resetToMain,
   } = useFocusNavigation({
-    heroLength: homeData.hero.length,
-    railLengths: homeData.rails.map((r) => r.cards.length),
+    heroLength,
+    railLengths,
     sidebarItemIds: sidebarItems.map((i) => i.id),
     sidebarLength: sidebarItems.length + 1,
     activeSidebarId: currentPage,
     onEnter: (state) => {
+      if (currentPage === 'apps-camara') {
+        if (state.mainZone === 'hero') {
+          const tvCamara = channels.find(ch => ch.id === 'tv-camara');
+          if (tvCamara?.streamUrl) setLivePage({ channelId: 'tv-camara', singleChannel: true });
+        }
+        const zoneMatch2 = state.mainZone.match(/^rail-(\d+)$/);
+        if (zoneMatch2 && parseInt(zoneMatch2[1]) === 1) {
+          const tvCamara = channels.find(ch => ch.id === 'tv-camara');
+          const prog = tvCamara?.programs?.[state.mainItemIndex];
+          if (prog?.videoUrl) {
+            setWatchPage({ videoUrl: prog.videoUrl, title: prog.title, logo: tvCamara?.logo, channelName: 'TV Câmara' });
+          }
+        }
+      }
       if (currentPage === 'home') {
         if (state.mainZone === 'hero') {
           const slide = homeData.hero[state.mainItemIndex];
@@ -167,7 +187,19 @@ export default function App() {
           <Apps
             isActive={currentPage === 'apps'}
             isSidebarExpanded={isSidebarExpanded}
-            onServiceSelect={() => {}}
+            onServiceSelect={(serviceId) => {
+              if (serviceId === 'camara-deputados') setCurrentPage('apps-camara');
+            }}
+          />
+        );
+      case 'apps-camara':
+        return (
+          <Camara
+            mainZone={mainZone}
+            mainItemIndex={mainItemIndex}
+            isActive={currentPage === 'apps-camara'}
+            onLiveChannel={(channelId) => setLivePage({ channelId, singleChannel: true })}
+            onWatchVideo={(videoUrl, title, logo, channelName) => setWatchPage({ videoUrl, title, logo, channelName })}
           />
         );
       case 'settings':
