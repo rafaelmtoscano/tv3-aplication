@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { CircleButton } from '../../components/CircleButton/CircleButton';
-import { useCamaraAPI } from '../../hooks/useCamaraAPI';
 import type { Deputy } from '../../data/deputies';
 
 const SIDEBAR_WIDTH = 88;
@@ -16,6 +15,8 @@ const SKELETON_COUNT = 8;
 export interface DeputiesGridProps {
   isActive: boolean;
   isSidebarExpanded?: boolean;
+  deputies: Deputy[];
+  loading: boolean;
   onBack: () => void;
   onDeputySelect: (deputy: Deputy) => void;
 }
@@ -63,8 +64,7 @@ function SkeletonRail() {
   );
 }
 
-export default function DeputiesGrid({ isActive, isSidebarExpanded, onBack, onDeputySelect }: DeputiesGridProps) {
-  const { deputiesList: deputies, loading } = useCamaraAPI();
+export default function DeputiesGrid({ isActive, isSidebarExpanded, deputies, loading, onBack, onDeputySelect }: DeputiesGridProps) {
   const [filterMode, setFilterMode] = useState<FilterMode>('estado');
   const [focusRegion, setFocusRegion] = useState<'nav' | 'grid'>('grid');
   const [navIndex, setNavIndex] = useState(0);

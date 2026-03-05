@@ -13,6 +13,7 @@ import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
 import type { FocusState } from './hooks/useFocusNavigation';
+import { useCamaraAPI } from './hooks/useCamaraAPI';
 import { homeData } from './data/home';
 import { channels } from './data/channels';
 import { colors } from './styles/colors';
@@ -25,6 +26,7 @@ export default function App() {
   const [livePage, setLivePage] = useState<{ channelId: string; singleChannel?: boolean } | null>(null);
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
   const [showDeputiesGrid, setShowDeputiesGrid] = useState(false);
+  const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
@@ -38,9 +40,9 @@ export default function App() {
   const heroLength = currentPage === 'apps-camara' ? 1 : homeData.hero.length;
   const railLengths = useMemo(() =>
     currentPage === 'apps-camara'
-      ? [7, 10]
+      ? [deputies.length + 1, 10] // +1 for "Ver todos"
       : homeData.rails.map((r) => r.cards.length),
-    [currentPage]
+    [currentPage, deputies.length]
   );
 
   const sidebarItemIds = useMemo(() => sidebarItems.map((i) => i.id), [sidebarItems]);
@@ -192,6 +194,7 @@ export default function App() {
             mainZone={mainZone}
             mainItemIndex={mainItemIndex}
             isActive={currentPage === 'apps-camara'}
+            deputies={deputies}
             onLiveChannel={(channelId) => setLivePage({ channelId, singleChannel: true })}
             onWatchVideo={(videoUrl, title, logo, channelName) => setWatchPage({ videoUrl, title, logo, channelName })}
             onOpenGrid={() => setShowDeputiesGrid(true)}
@@ -233,6 +236,8 @@ export default function App() {
       {showDeputiesGrid && (
         <DeputiesGrid
           isActive={true}
+          deputies={deputies}
+          loading={deputiesLoading}
           onBack={() => { setShowDeputiesGrid(false); }}
           onDeputySelect={() => { setShowDeputiesGrid(false); }}
         />

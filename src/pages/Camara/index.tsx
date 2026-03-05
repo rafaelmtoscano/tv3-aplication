@@ -7,8 +7,8 @@ import { ContentRail } from '../../components/ContentRail';
 import type { ContentRailItem } from '../../components/ContentRail';
 import { CircleButton } from '../../components/CircleButton/CircleButton';
 import { GridIcon } from '../../icons';
-import { useCamaraAPI } from '../../hooks/useCamaraAPI';
 import { channels } from '../../data/channels';
+import type { Deputy } from '../../data/deputies';
 import type { MainZone } from '../../hooks/useFocusNavigation';
 
 // ─── Layout constants — mesma fórmula da Home ─────────────────────────────────
@@ -28,6 +28,7 @@ export interface CamaraProps {
   mainZone: MainZone;
   mainItemIndex: number;
   isActive: boolean;
+  deputies: Deputy[];
   onLiveChannel: (channelId: string) => void;
   onWatchVideo: (videoUrl: string, title?: string, logo?: string, channelName?: string) => void;
   onOpenGrid: () => void;
@@ -38,9 +39,9 @@ export default function Camara({
   mainZone,
   mainItemIndex,
   isActive,
+  deputies,
   onOpenGrid,
 }: CamaraProps) {
-  const { deputiesList: deputies } = useCamaraAPI();
   const [scrollY, setScrollY] = useState(0);
 
   const tvCamara = channels.find(ch => ch.id === 'tv-camara')!;
