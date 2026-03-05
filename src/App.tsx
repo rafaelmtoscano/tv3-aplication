@@ -8,6 +8,7 @@ import Apps from './pages/Apps/index';
 import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
 import Camara from './pages/Camara/index';
+import DeputiesGrid from './pages/Camara/DeputiesGrid';
 import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
@@ -20,6 +21,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [livePage, setLivePage] = useState<{ channelId: string; singleChannel?: boolean } | null>(null);
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
+  const [showDeputiesGrid, setShowDeputiesGrid] = useState(false);
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
@@ -52,6 +54,9 @@ export default function App() {
         if (state.mainZone === 'hero') {
           const tvCamara = channels.find(ch => ch.id === 'tv-camara');
           if (tvCamara?.streamUrl) setLivePage({ channelId: 'tv-camara', singleChannel: true });
+        }
+        if (state.mainZone === 'rail-0' && state.mainItemIndex === 0) {
+          setShowDeputiesGrid(true);
         }
         const zoneMatch2 = state.mainZone.match(/^rail-(\d+)$/);
         if (zoneMatch2 && parseInt(zoneMatch2[1]) === 1) {
@@ -106,6 +111,16 @@ export default function App() {
     variant: 'icon',
     icon: <PersonIcon size={28} />,
   }), []);
+
+  if (showDeputiesGrid) {
+    return (
+      <DeputiesGrid
+        isActive={true}
+        onBack={() => { setShowDeputiesGrid(false); }}
+        onDeputySelect={() => { setShowDeputiesGrid(false); }}
+      />
+    );
+  }
 
   if (watchPage) {
     return (
@@ -200,6 +215,7 @@ export default function App() {
             isActive={currentPage === 'apps-camara'}
             onLiveChannel={(channelId) => setLivePage({ channelId, singleChannel: true })}
             onWatchVideo={(videoUrl, title, logo, channelName) => setWatchPage({ videoUrl, title, logo, channelName })}
+            onOpenGrid={() => setShowDeputiesGrid(true)}
           />
         );
       case 'settings':

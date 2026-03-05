@@ -11,7 +11,6 @@ import { GridIcon } from '../../icons';
 import { useCamaraAPI } from '../../hooks/useCamaraAPI';
 import { channels } from '../../data/channels';
 import type { MainZone } from '../../hooks/useFocusNavigation';
-import DeputiesGrid from './DeputiesGrid';
 
 // ─── Layout constants — mesma fórmula da Home ─────────────────────────────────
 const HERO_HEIGHT = 680;
@@ -59,6 +58,7 @@ export interface CamaraProps {
   isActive: boolean;
   onLiveChannel: (channelId: string) => void;
   onWatchVideo: (videoUrl: string, title?: string, logo?: string, channelName?: string) => void;
+  onOpenGrid: () => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -68,10 +68,10 @@ export default function Camara({
   isActive,
   onLiveChannel,
   onWatchVideo,
+  onOpenGrid,
 }: CamaraProps) {
   const { deputiesList: deputies } = useCamaraAPI();
   const [scrollY, setScrollY] = useState(0);
-  const [showGrid, setShowGrid] = useState(false);
 
   const tvCamara = channels.find(ch => ch.id === 'tv-camara')!;
   const programs = tvCamara.programs || [];
@@ -128,16 +128,6 @@ export default function Camara({
     transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   };
 
-  if (showGrid) {
-    return (
-      <DeputiesGrid
-        isActive={true}
-        onBack={() => setShowGrid(false)}
-        onDeputySelect={() => setShowGrid(false)}
-      />
-    );
-  }
-
   const isVerTodosFocused = mainZone === 'rail-0' && mainItemIndex === 0;
 
   return (
@@ -178,7 +168,7 @@ export default function Camara({
                   icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
                   label="Ver todos"
                   isFocused={isVerTodosFocused}
-                  onClick={() => setShowGrid(true)}
+                  onClick={onOpenGrid}
                 />
               </div>
               {/* Deputies */}
