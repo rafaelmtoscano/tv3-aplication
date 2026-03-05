@@ -157,7 +157,7 @@ export default function Camara({
               paddingLeft: 64,
               gap: 32,
               overflow: 'visible',
-              alignItems: 'flex-end',
+              alignItems: 'center',
               height: '100%',
             }}>
               {/* Ver todos */}
