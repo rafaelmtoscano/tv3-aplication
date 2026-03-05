@@ -32,7 +32,7 @@ export default function App() {
 
   const heroLength = currentPage === 'apps-camara' ? 1 : homeData.hero.length;
   const railLengths = currentPage === 'apps-camara'
-    ? [1, 10]
+    ? [7, 10]
     : homeData.rails.map((r) => r.cards.length);
 
   const {

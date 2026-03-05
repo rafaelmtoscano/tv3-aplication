@@ -13,7 +13,7 @@ import { channels } from '../../data/channels';
 import type { MainZone } from '../../hooks/useFocusNavigation';
 
 // ─── Layout constants — mesma fórmula da Home ─────────────────────────────────
-const HERO_HEIGHT = 420;
+const HERO_HEIGHT = 680;
 const RAIL_HEIGHT = 408;
 const SCROLL_OFFSET = 160;
 
@@ -133,7 +133,7 @@ export default function Camara({
       <div style={scrollTrackStyle}>
 
         {/* Hero */}
-        <div style={{ height: HERO_HEIGHT, overflow: 'hidden' }}>
+        <div style={{ height: HERO_HEIGHT }}>
           <HeroBanner
             slides={[heroSlide]}
             activeIndex={mainZone === 'hero' ? 0 : undefined}
