@@ -298,7 +298,6 @@ export default function DeputiesGrid({
 
         {/* ── Rails ── */}
         {!loading && groups.map((group, gIdx) => {
-          if (!itemRefs.current[gIdx]) itemRefs.current[gIdx] = [];
           const isRailFocused = focusRegion === 'grid' && railIndex === gIdx;
           return (
             <div key={group.label} style={{ paddingTop: 40 }}>
@@ -332,7 +331,10 @@ export default function DeputiesGrid({
                     return (
                       <div
                         key={dep.id}
-                        ref={(el) => { itemRefs.current[gIdx][dIdx] = el; }}
+                        ref={(el) => {
+                          if (!itemRefs.current[gIdx]) itemRefs.current[gIdx] = [];
+                          itemRefs.current[gIdx][dIdx] = el;
+                        }}
                         style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}
                       >
                         <CircleButton
