@@ -29,8 +29,6 @@ export interface CamaraProps {
   mainItemIndex: number;
   isActive: boolean;
   deputies: Deputy[];
-  onLiveChannel: (channelId: string) => void;
-  onWatchVideo: (videoUrl: string, title?: string, logo?: string, channelName?: string) => void;
   onOpenGrid: () => void;
 }
 
@@ -127,7 +125,7 @@ export default function Camara({
               paddingLeft: 64,
               gap: 32,
               overflow: 'visible',
-              alignItems: 'center',
+              alignItems: 'flex-end',
               height: '100%',
             }}>
               {/* Ver todos */}
@@ -181,8 +179,6 @@ export default function Camara({
 
         <div style={{ height: RAIL_HEIGHT }} />
       </div>
-
-      <style>{`@keyframes camara-spin { to { transform: rotate(360deg); } }`}</style>
     </main>
   );
 }

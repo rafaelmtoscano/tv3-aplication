@@ -195,8 +195,6 @@ export default function App() {
             mainItemIndex={mainItemIndex}
             isActive={currentPage === 'apps-camara'}
             deputies={deputies}
-            onLiveChannel={(channelId) => setLivePage({ channelId, singleChannel: true })}
-            onWatchVideo={(videoUrl, title, logo, channelName) => setWatchPage({ videoUrl, title, logo, channelName })}
             onOpenGrid={() => setShowDeputiesGrid(true)}
           />
         );
