@@ -304,6 +304,7 @@ export default function App() {
         <Live
           initialChannelId={livePage.channelId}
           singleChannel={livePage.singleChannel}
+          isActive={true}
           onExit={() => {
             setLivePage(null);
             resetToMain();
