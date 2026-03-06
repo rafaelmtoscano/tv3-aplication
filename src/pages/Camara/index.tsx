@@ -30,6 +30,7 @@ export interface CamaraProps {
   isActive: boolean;
   deputies: Deputy[];
   onOpenGrid: () => void;
+  onDeputySelect: (deputy: Deputy) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -39,6 +40,7 @@ export default function Camara({
   isActive,
   deputies,
   onOpenGrid,
+  onDeputySelect,
 }: CamaraProps) {
   const [scrollY, setScrollY] = useState(0);
 
@@ -180,6 +182,7 @@ export default function Camara({
                       image={dep.photo}
                       label={dep.name}
                       isFocused={isFocused}
+                      onClick={() => onDeputySelect(dep)}
                     />
                     <span style={{
                       ...typography.body.small,

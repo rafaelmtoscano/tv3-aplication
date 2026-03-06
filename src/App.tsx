@@ -52,6 +52,47 @@ export default function App() {
   const currentPageRef = useRef(currentPage);
   currentPageRef.current = currentPage;
 
+  const handleSidebarSelect = useCallback((id: string) => {
+    if (id === 'avatar') return;
+    if (id === 'live') {
+      const firstLiveChannel = channels.find(ch => ch.streamUrl && ch.streamUrl.length > 0);
+      if (firstLiveChannel) setLivePage({ channelId: firstLiveChannel.id });
+      return;
+    }
+    setCurrentPage(id as PageId);
+  }, []);
+
+  const handleDeputySelect = useCallback(async (deputy: import('./data/deputies').Deputy) => {
+    setShowDeputiesGrid(false);
+    // Abre imediatamente com dados do resumo (foto, nome, partido)
+    // enquanto os dados completos são buscados em background
+    setSelectedDeputy(deputy);
+    // Busca propostas, agenda e biografia da API
+    if (deputy.apiId) {
+      try {
+        const [detail, proposals, speeches, agenda] = await Promise.all([
+          import('./data/deputies').then(m => m.fetchDeputyDetail(deputy.apiId!)),
+          import('./data/deputies').then(m => m.fetchDeputyProposals(deputy.apiId!)),
+          import('./data/deputies').then(m => m.fetchDeputySpeeches(deputy.apiId!)),
+          import('./data/deputies').then(m => m.fetchDeputyAgenda(deputy.apiId!)),
+        ]);
+        const { mapAPIToDeputy } = await import('./data/deputies');
+        const apiSummary = {
+          id: deputy.apiId!,
+          nome: deputy.name,
+          siglaPartido: deputy.party,
+          siglaUf: deputy.state,
+          urlFoto: deputy.photo,
+          email: '',
+        };
+        const full = mapAPIToDeputy(apiSummary, detail, proposals, speeches, agenda);
+        setSelectedDeputy(full);
+      } catch (e) {
+        console.error('Erro ao buscar dados completos do deputado:', e);
+      }
+    }
+  }, []);
+
   const {
     isSidebarExpanded,
     mainZone,
@@ -71,8 +112,13 @@ export default function App() {
           const tvCamara = channels.find(ch => ch.id === 'tv-camara');
           if (tvCamara?.streamUrl) setLivePage({ channelId: 'tv-camara', singleChannel: true });
         }
-        if (state.mainZone === 'rail-0' && state.mainItemIndex === 0) {
-          setShowDeputiesGrid(true);
+        if (state.mainZone === 'rail-0') {
+          if (state.mainItemIndex === 0) {
+            setShowDeputiesGrid(true);
+          } else {
+            const dep = deputies[state.mainItemIndex - 1];
+            if (dep) handleDeputySelect(dep);
+          }
         }
         const zoneMatch2 = state.mainZone.match(/^rail-(\d+)$/);
         if (zoneMatch2 && parseInt(zoneMatch2[1]) === 1) {
@@ -112,15 +158,7 @@ export default function App() {
         }
       }
     }, []),
-    onSidebarSelect: useCallback((id: string) => {
-      if (id === 'avatar') return;
-      if (id === 'live') {
-        const firstLiveChannel = channels.find(ch => ch.streamUrl && ch.streamUrl.length > 0);
-        if (firstLiveChannel) setLivePage({ channelId: firstLiveChannel.id });
-        return;
-      }
-      setCurrentPage(id as PageId);
-    }, []),
+    onSidebarSelect: handleSidebarSelect,
   });
 
   const sidebarSign: SidebarSign = useMemo(() => ({
@@ -198,6 +236,7 @@ export default function App() {
             isActive={currentPage === 'apps-camara'}
             deputies={deputies}
             onOpenGrid={() => setShowDeputiesGrid(true)}
+            onDeputySelect={handleDeputySelect}
           />
         );
       case 'settings':
@@ -222,7 +261,7 @@ export default function App() {
           expanded={isSidebarExpanded}
           activeItemId={currentPage}
           focusedItemId={isSidebarExpanded ? (sidebarIndex === 0 ? 'avatar' : sidebarItems[sidebarIndex - 1]?.id) : undefined}
-          onItemClick={(id) => setCurrentPage(id as PageId)}
+          onItemClick={handleSidebarSelect}
         />
 
         {/* Spacer to prevent content from going under the fixed sidebar collapsed strip */}
@@ -239,36 +278,7 @@ export default function App() {
           deputies={deputies}
           loading={deputiesLoading}
           onBack={() => { setShowDeputiesGrid(false); }}
-          onDeputySelect={async (deputy) => {
-            setShowDeputiesGrid(false);
-            // Abre imediatamente com dados do resumo (foto, nome, partido)
-            // enquanto os dados completos são buscados em background
-            setSelectedDeputy(deputy);
-            // Busca propostas, agenda e biografia da API
-            if (deputy.apiId) {
-              try {
-                const [detail, proposals, speeches, agenda] = await Promise.all([
-                  import('./data/deputies').then(m => m.fetchDeputyDetail(deputy.apiId!)),
-                  import('./data/deputies').then(m => m.fetchDeputyProposals(deputy.apiId!)),
-                  import('./data/deputies').then(m => m.fetchDeputySpeeches(deputy.apiId!)),
-                  import('./data/deputies').then(m => m.fetchDeputyAgenda(deputy.apiId!)),
-                ]);
-                const { mapAPIToDeputy } = await import('./data/deputies');
-                const apiSummary = {
-                  id: deputy.apiId!,
-                  nome: deputy.name,
-                  siglaPartido: deputy.party,
-                  siglaUf: deputy.state,
-                  urlFoto: deputy.photo,
-                  email: '',
-                };
-                const full = mapAPIToDeputy(apiSummary, detail, proposals, speeches, agenda);
-                setSelectedDeputy(full);
-              } catch (e) {
-                console.error('Erro ao buscar dados completos do deputado:', e);
-              }
-            }
-          }}
+          onDeputySelect={handleDeputySelect}
         />
       )}
 
