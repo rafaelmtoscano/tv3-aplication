@@ -56,11 +56,11 @@ function getChannel(id: string) {
 
 // TODO: substituir por chamada à API — ordenar por audiência/destaque
 const heroSlides: HeroSlide[] = [
-  // Slide 1 — Canal Gov ao vivo
+  // Slide 1 — TV Brasil ao vivo
   (() => {
-    const ch = getChannel('canal-gov');
+    const ch = getChannel('tv-brasil');
     return {
-      id: 'hero-live-canal-gov',
+      id: 'hero-live-tv-brasil',
       mediaType: 'video' as const,
       mediaSrc: ch.streamUrl!,
       logo: ch.logo,
@@ -68,25 +68,25 @@ const heroSlides: HeroSlide[] = [
       signal: 'HD' as const,
       classification: 'L' as const,
       title: ch.programs![0].title,
-      description: 'Acompanhe ao vivo a programação do Canal Gov com as principais notícias e ações do Governo Federal.',
+      description: 'Acompanhe ao vivo a programação da TV Brasil com conteúdo jornalístico de qualidade.',
       buttonLabel: 'Assistir ao vivo',
       channelId: ch.id,
     };
   })(),
 
-  // Slide 2 — TV Brasil destaque
+  // Slide 2 — Canal Gov destaque
   (() => {
-    const ch = getChannel('tv-brasil');
+    const ch = getChannel('canal-gov');
     const prog = ch.programs![0];
     return {
-      id: 'hero-tv-brasil-1',
+      id: 'hero-canal-gov-1',
       mediaType: 'image' as const,
       mediaSrc: prog.thumbnail,
       logo: ch.logo,
       signal: 'HD' as const,
       classification: 'L' as const,
       title: prog.title,
-      description: 'Conteúdo jornalístico de qualidade da TV Brasil, a emissora pública federal.',
+      description: 'Acompanhe as principais notícias e ações do Governo Federal no Canal Gov.',
       buttonLabel: 'Assistir agora',
       channelId: ch.id,
       videoUrl: prog.videoUrl,
