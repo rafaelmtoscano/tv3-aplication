@@ -53,90 +53,17 @@ function ServicesSection({ focusedIndex }: ServicesSectionProps) {
         </div>
 
         {/* Banner gov.br */}
-        <div style={{
-          borderRadius: '24px',
-          background: 'linear-gradient(135deg, #1a3a1a 0%, #1e5c1e 50%, #2d7a2d 100%)',
-          padding: '48px 64px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '48px',
-        }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <p style={{
-              fontFamily: 'Plus Jakarta Sans, sans-serif',
-              fontWeight: 700,
-              fontSize: '36px',
-              lineHeight: '120%',
-              color: '#FFFFFF',
-              margin: 0,
-            }}>
-              Acesse seus serviços digitais
-            </p>
-            <p style={{
-              fontFamily: 'Plus Jakarta Sans, sans-serif',
-              fontWeight: 400,
-              fontSize: '20px',
-              color: 'rgba(255,255,255,0.75)',
-              margin: 0,
-            }}>
-              Faça login com sua conta gov.br
-            </p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexShrink: 0 }}>
-            {/* gov.br logo */}
-            <div style={{
-              width: '96px',
-              height: '96px',
-              borderRadius: '20px',
-              background: '#FFFFFF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-              flexShrink: 0,
-            }}>
-              <img
-                src="https://www.gov.br/++theme++padrao_govbr/img/govbr-colorido.png"
-                alt="gov.br"
-                style={{ width: '72px', objectFit: 'contain' }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-            </div>
-            {/* QR Code + caption */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-              <div style={{
-                width: '96px',
-                height: '96px',
-                borderRadius: '12px',
-                background: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                flexShrink: 0,
-              }}>
-                <img
-                  src="https://chart.googleapis.com/chart?chs=80x80&cht=qr&chl=https://acesso.gov.br&choe=UTF-8"
-                  alt="QR Code gov.br"
-                  style={{ width: '80px', height: '80px' }}
-                />
-              </div>
-              <p style={{
-                fontFamily: 'Plus Jakarta Sans, sans-serif',
-                fontWeight: 500,
-                fontSize: '16px',
-                color: 'rgba(255,255,255,0.85)',
-                textAlign: 'center' as const,
-                maxWidth: '200px',
-                lineHeight: '1.5',
-                margin: 0,
-              }}>
-                Aponte a câmera do seu celular para o QR Code e siga as instruções para um login na <strong>sua conta gov.br</strong>.
-              </p>
-            </div>
-          </div>
-        </div>
+        <img
+          src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F3c51489c8feb4b94a9e29d040e13c91f"
+          alt="Acesse seus serviços digitais - gov.br"
+          style={{
+            width: '100%',
+            height: 'auto',
+            borderRadius: '24px',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+        />
 
       </div>
     </div>
