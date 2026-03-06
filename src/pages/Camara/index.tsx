@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { HeroBanner } from '../../components/HeroBanner';
@@ -41,6 +41,20 @@ export default function Camara({
   onOpenGrid,
 }: CamaraProps) {
   const [scrollY, setScrollY] = useState(0);
+
+  const deputyScrollRef = useRef<HTMLDivElement>(null);
+  const deputyItemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const idx = mainZone === 'rail-0' ? mainItemIndex : -1;
+    if (idx >= 0 && deputyItemRefs.current[idx]) {
+      deputyItemRefs.current[idx]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  }, [mainZone, mainItemIndex]);
 
   const tvCamara = channels.find(ch => ch.id === 'tv-camara')!;
   const programs = tvCamara.programs || [];
@@ -118,18 +132,33 @@ export default function Camara({
           }}>
             Deputados
           </h2>
-          <div style={{ height: 366, overflow: 'visible' }}>
-            <div style={{
+          {/* Outer: reserves vertical space so focused items don't get clipped */}
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            height: isVerTodosFocused || (mainZone === 'rail-0' && mainItemIndex > 0) ? '312px' : '248px',
+            transition: 'height 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
+            overflow: 'visible',
+          }}>
+            {/* Inner: horizontal scroll only */}
+            <div ref={deputyScrollRef} className="deputy-rail" style={{
+              position: 'absolute',
+              inset: 0,
               display: 'flex',
               flexDirection: 'row',
               paddingLeft: 64,
+              paddingRight: 64,
               gap: 32,
-              overflow: 'visible',
+              overflowX: 'auto',
+              overflowY: 'visible',
               alignItems: 'center',
-              height: '100%',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              scrollBehavior: 'smooth',
+              boxSizing: 'border-box',
             }}>
               {/* Ver todos */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+              <div ref={(el) => { deputyItemRefs.current[0] = el; }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
                 <CircleButton
                   icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
                   label="Ver todos"
@@ -143,6 +172,7 @@ export default function Camara({
                 return (
                   <div
                     key={dep.id}
+                    ref={(el) => { deputyItemRefs.current[i + 1] = el; }}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}
                   >
                     <CircleButton
@@ -179,6 +209,7 @@ export default function Camara({
 
         <div style={{ height: RAIL_HEIGHT }} />
       </div>
+      <style>{`.deputy-rail::-webkit-scrollbar { display: none; }`}</style>
     </main>
   );
 }
