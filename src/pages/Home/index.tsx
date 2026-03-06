@@ -209,6 +209,9 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
           />
         </div>
 
+        {/* Spacing after banner */}
+        <div style={{ height: '80px' }} />
+
         {/* Content Rails */}
         {homeData.rails.map((rail, railIndex) => (
           <ContentRail
