@@ -4,15 +4,11 @@ import { typography } from '../../styles/typography';
 import { CircleButton } from '../../components/CircleButton/CircleButton';
 import type { Deputy } from '../../data/deputies';
 
-const SIDEBAR_WIDTH = 88;
-const CONTENT_PADDING = 64;
-const LEFT_OFFSET = SIDEBAR_WIDTH + CONTENT_PADDING;
 const HEADER_HEIGHT = 168;
 const RAIL_HEIGHT = 530;
 const SCROLL_OFFSET = 80;
 const SKELETON_COUNT = 8;
 
-const REGION_ORDER = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'];
 const REGION_STATES: Record<string, string[]> = {
   'Norte':        ['AC','AM','AP','PA','RO','RR','TO'],
   'Nordeste':     ['AL','BA','CE','MA','PB','PE','PI','RN','SE'],

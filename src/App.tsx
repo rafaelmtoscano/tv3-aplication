@@ -28,7 +28,7 @@ export default function App() {
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
   const [showDeputiesGrid, setShowDeputiesGrid] = useState(false);
   const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
-  const { deputiesList: deputies, loading: deputiesLoading, selectDeputyData } = useCamaraAPI();
+  const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },

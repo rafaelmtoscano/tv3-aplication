@@ -225,7 +225,6 @@ function BiographyTab({ deputy }: { deputy: Deputy }) {
 
 export default function DeputyDetail({ deputy, isActive, onBack }: DeputyDetailProps) {
   const [activeTab, setActiveTab]   = useState<TabId>('agenda');
-  const [activeTabIdx, setActiveTabIdx] = useState(0);
   const [scrollY, setScrollY]       = useState(0);
   const contentHeightRef            = useRef(0);
   const contentRef                  = useRef<HTMLDivElement>(null);
@@ -233,7 +232,6 @@ export default function DeputyDetail({ deputy, isActive, onBack }: DeputyDetailP
   // Reset ao abrir novo deputado
   useEffect(() => {
     setActiveTab('agenda');
-    setActiveTabIdx(0);
     setScrollY(0);
   }, [deputy.id]);
 
@@ -263,18 +261,17 @@ export default function DeputyDetail({ deputy, isActive, onBack }: DeputyDetailP
       e.preventDefault();
 
       if (e.key === 'ArrowRight') {
-        setActiveTabIdx(i => {
-          const next = Math.min(i + 1, TABS.length - 1);
-          setActiveTab(TABS[next].id);
-          return next;
+        setActiveTab(prevTab => {
+          const currentIndex = TABS.findIndex(t => t.id === prevTab);
+          const nextIndex = Math.min(currentIndex + 1, TABS.length - 1);
+          return TABS[nextIndex].id;
         });
       } else if (e.key === 'ArrowLeft') {
-        setActiveTabIdx(i => {
-          const prev = Math.max(i - 1, 0);
-          // Se já está na aba 0 e pressiona esquerda, volta
-          if (i === 0) { onBack(); return 0; }
-          setActiveTab(TABS[prev].id);
-          return prev;
+        setActiveTab(prevTab => {
+          const currentIndex = TABS.findIndex(t => t.id === prevTab);
+          const prevIndex = Math.max(currentIndex - 1, 0);
+          if (currentIndex === 0) { onBack(); return prevTab; }
+          return TABS[prevIndex].id;
         });
       } else if (e.key === 'ArrowDown') {
         setScrollY(y => Math.min(y + SCROLL_STEP, maxScroll()));
@@ -388,7 +385,6 @@ export default function DeputyDetail({ deputy, isActive, onBack }: DeputyDetailP
               style={tabBtnStyle(activeTab === tab.id)}
               onClick={() => {
                 setActiveTab(tab.id);
-                setActiveTabIdx(TABS.findIndex(t => t.id === tab.id));
               }}
             >
               {tab.label}

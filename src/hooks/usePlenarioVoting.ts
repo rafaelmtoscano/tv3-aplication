@@ -2,14 +2,8 @@
 // Hook que detecta sessão plenária ativa, faz polling e gerencia o voto social do usuário.
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  fetchSessaoCompleta,
-  getSavedVote,
-  saveVote,
-  removeVote,
-} from '../data/plenario';
+import { fetchSessaoCompleta, getSavedVote, saveVote, removeVote } from '../data/plenario';
 import type { SessaoAtiva, VotoSocial } from '../data/plenario';
-import { getCurrentProgram, tvCamaraSchedule } from '../data/schedule';
 
 const POLLING_INTERVAL = 60_000;
 const INITIAL_DELAY = 5_000;
