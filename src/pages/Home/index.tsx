@@ -25,6 +25,27 @@ function ServicesSection({ focusedIndex }: ServicesSectionProps) {
     <div style={{ background: colors.line.dark, paddingTop: '56px', paddingBottom: '56px' }}>
       <div style={{ padding: '0 64px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
 
+        {/* Header gov.br */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F8f7c09382abf47279a18236cee0142fa"
+              alt="gov.br"
+              style={{ height: '48px', objectFit: 'contain' }}
+            />
+            <p style={{
+              fontFamily: 'Plus Jakarta Sans, sans-serif',
+              fontWeight: 400,
+              fontSize: '24px',
+              color: 'rgba(255,255,255,0.75)',
+              margin: 0,
+            }}>
+              Serviços e informações públicas em um só lugar
+            </p>
+          </div>
+          <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+        </div>
+
         {/* Label + rail of service tiles */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <p style={{
@@ -37,7 +58,7 @@ function ServicesSection({ focusedIndex }: ServicesSectionProps) {
           }}>
             Serviços
           </p>
-          <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'center' }}>
             {services.map((service, i) => (
               <TileButton
                 key={service.id}
