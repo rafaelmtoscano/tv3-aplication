@@ -1,7 +1,6 @@
 // src/pages/Live/components/VotingOverlay.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { colors } from '../../../styles/colors';
-import { typography } from '../../../styles/typography';
 import type { UsePlenarioVotingReturn } from '../../../hooks/usePlenarioVoting';
 
 interface VotingOverlayProps {
@@ -13,9 +12,7 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
   const {
     phase,
     sessao,
-    userVote,
     vote,
-    changeVote,
     dismiss,
     goToQuestion,
     goToDetails,
@@ -41,8 +38,8 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
     switch (phase) {
       case 'intro': return 3;
       case 'question': return 3;
-      case 'details': return 2;
-      case 'results': return 2;
+      case 'details': return 1;
+      case 'results': return 1;
       default: return 0;
     }
   }, [phase]);
@@ -66,19 +63,12 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
         break;
       case 'details':
         if (focusedBtn === 0) goToIntro();
-        else dismissAction();
         break;
       case 'results':
-        if (focusedBtn === 0) dismissAction(); // Plan says Fechar is here
-        else if (focusedBtn === 1) dismissAction(); // Fallback
-        // Mudar meu voto would be index 0 if we follow plan strictly, but figma shows Fechar.
-        // Let's follow the plan: result bars / Mudar meu voto (ghost) / Fechar (ghost)
-        // Wait, if I follow the plan, index 0 is Mudar meu voto.
-        if (focusedBtn === 0) changeVote();
-        else dismissAction();
+        if (focusedBtn === 0) dismissAction();
         break;
     }
-  }, [phase, focusedBtn, goToQuestion, goToDetails, dismissAction, vote, goToIntro, changeVote]);
+  }, [phase, focusedBtn, goToQuestion, goToDetails, dismissAction, vote, goToIntro]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -113,15 +103,12 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
 
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
-    bottom: '80px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '520px',
-    background: 'rgba(10, 15, 30, 0.92)',
-    backdropFilter: 'blur(20px)',
-    borderRadius: '20px',
-    border: `1px solid ${colors.line.dark}`,
-    padding: '40px 48px 36px',
+    bottom: '48px',
+    left: '48px',
+    width: '420px',
+    background: '#11172B',
+    borderRadius: '32px',
+    padding: '48px',
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
@@ -131,33 +118,30 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
     outline: 'none',
   };
 
-  const buttonStyle = (isFocused: boolean, type: 'primary' | 'ghost' | 'success' | 'danger' = 'ghost'): React.CSSProperties => {
-    let backgroundColor = 'rgba(255, 255, 255, 0.08)';
-    let color = colors.text.primaryInverse;
+  const buttonStyle = (isFocused: boolean, type: 'primary' | 'ghost' = 'ghost'): React.CSSProperties => {
+    let backgroundColor = 'transparent';
+    let color = '#FFF';
 
     if (type === 'primary') {
-      backgroundColor = colors.background.primary;
-      color = colors.text.primary;
-    } else if (type === 'success') {
-      backgroundColor = '#22C55E';
-    } else if (type === 'danger') {
-      backgroundColor = '#EF4444';
+      backgroundColor = '#FFF';
+      color = '#11172B';
     }
 
     return {
-      height: '64px',
-      borderRadius: '10px',
+      height: '72px',
+      borderRadius: '100px',
       width: '100%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      border: 'none',
-      outline: isFocused ? '3px solid white' : 'none',
-      transform: isFocused ? 'scale(1.03)' : 'scale(1)',
+      border: isFocused ? `4px solid ${colors.background.brandPrimary}` : '4px solid transparent',
+      outline: 'none',
+      transform: isFocused ? 'scale(1.05)' : 'scale(1)',
       transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
       cursor: 'pointer',
-      ...typography.body.large,
-      letterSpacing: 'normal',
+      fontFamily: 'Plus Jakarta Sans',
+      fontSize: '24px',
+      fontWeight: 500,
       backgroundColor,
       color,
     };
@@ -174,21 +158,18 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <h3 style={{ ...typography.headline.small, color: colors.text.primaryInverse, textAlign: 'center', margin: 0 }}>
-          {phase === 'intro' && 'Qual sua opinião sobre?'}
-          {phase === 'question' && 'Qual sua opinião sobre?'}
-          {phase === 'details' && (pautaItem?.titulo || 'Detalhes da pauta')}
-          {phase === 'results' && 'Qual sua opinião sobre?'}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <h3 style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '32px', fontWeight: 500, color: '#FFF', margin: 0 }}>
+          {phase === 'details' ? (pautaItem?.titulo || 'Detalhes') : 'Qual sua opinião sobre?'}
         </h3>
-        {sessao.votacaoAtiva && phase !== 'details' && (
-          <div style={{ ...typography.body.small, color: colors.text.secondaryInverse, textAlign: 'center', marginTop: '8px' }}>
-            Pauta: {pautaItem?.titulo || sessao.votacaoAtiva.id}
+        {phase !== 'details' && (
+          <div style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '24px', fontWeight: 400, color: 'rgba(255, 255, 255, 0.6)' }}>
+            Pauta: {pautaItem?.titulo || 'PL 1/2025'}
           </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {phase === 'intro' && (
           <>
             <button style={buttonStyle(focusedBtn === 0, 'primary')}>Responder enquete</button>
@@ -207,39 +188,37 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
 
         {phase === 'details' && (
           <>
-            <div style={{ ...typography.body.medium, color: colors.text.secondaryInverse, lineHeight: '1.6', maxHeight: '300px', overflowY: 'auto', marginBottom: '16px' }}>
-               {pautaItem?.ementa || sessao.votacaoAtiva?.descricao || 'Nenhuma descrição disponível.'}
+            <div style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '20px', fontWeight: 400, color: '#FFF', lineHeight: '1.5', marginBottom: '16px' }}>
+               {pautaItem?.ementa || 'Nenhuma descrição disponível.'}
             </div>
             <button style={buttonStyle(focusedBtn === 0, 'primary')}>Voltar</button>
-            <button style={buttonStyle(focusedBtn === 1, 'ghost')}>Fechar</button>
           </>
         )}
 
         {phase === 'results' && (
           <>
-            <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '12px', background: 'rgba(255,255,255,0.04)', borderRadius: '16px' }}>
-               <div style={{ ...typography.label.small, color: colors.text.secondaryInverse }}>Consulta popular</div>
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', ...typography.body.small, color: colors.text.primaryInverse }}>
+            <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '24px', marginBottom: '16px' }}>
+               <div style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '18px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.6)' }}>Consulta popular</div>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Plus Jakarta Sans', fontSize: '24px', fontWeight: 500, color: '#FFF' }}>
                     <span>Concordo</span>
                     <span>80%</span>
                   </div>
-                  <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: '80%', background: '#22C55E' }} />
+                  <div style={{ height: '12px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '100px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: '80%', background: '#10B981' }} />
                   </div>
                </div>
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', ...typography.body.small, color: colors.text.primaryInverse }}>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Plus Jakarta Sans', fontSize: '24px', fontWeight: 500, color: '#FFF' }}>
                     <span>Discordo</span>
                     <span>20%</span>
                   </div>
-                  <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ height: '12px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '100px', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: '20%', background: '#EF4444' }} />
                   </div>
                </div>
             </div>
-            <button style={buttonStyle(focusedBtn === 0, 'ghost')}>Mudar meu voto</button>
-            <button style={buttonStyle(focusedBtn === 1, 'ghost')}>Fechar</button>
+            <button style={buttonStyle(focusedBtn === 0, 'primary')}>Fechar</button>
           </>
         )}
       </div>
