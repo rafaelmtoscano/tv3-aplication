@@ -7,10 +7,41 @@ import type { Deputy } from '../../data/deputies';
 const SIDEBAR_WIDTH = 88;
 const CONTENT_PADDING = 64;
 const LEFT_OFFSET = SIDEBAR_WIDTH + CONTENT_PADDING;
-const HEADER_HEIGHT = 140;
+const HEADER_HEIGHT = 156;
 const RAIL_HEIGHT = 530;
 const SCROLL_OFFSET = 80;
 const SKELETON_COUNT = 8;
+
+const REGION_ORDER = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'];
+const REGION_STATES: Record<string, string[]> = {
+  'Norte':        ['AC','AM','AP','PA','RO','RR','TO'],
+  'Nordeste':     ['AL','BA','CE','MA','PB','PE','PI','RN','SE'],
+  'Centro-Oeste': ['DF','GO','MS','MT'],
+  'Sudeste':      ['ES','MG','RJ','SP'],
+  'Sul':          ['PR','RS','SC'],
+};
+
+function getRegion(state: string): string {
+  for (const [region, states] of Object.entries(REGION_STATES)) {
+    if (states.includes(state)) return region;
+  }
+  return 'Outros';
+}
+
+// Tab definition: index 0 = Voltar (special), 1..N = filter tabs
+type TabId = 'todos' | 'partido' | 'Norte' | 'Nordeste' | 'Centro-Oeste' | 'Sudeste' | 'Sul';
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'todos',         label: 'Todos' },
+  { id: 'partido',       label: 'Partido' },
+  { id: 'Norte',         label: 'Norte' },
+  { id: 'Nordeste',      label: 'Nordeste' },
+  { id: 'Centro-Oeste',  label: 'Centro-Oeste' },
+  { id: 'Sudeste',       label: 'Sudeste' },
+  { id: 'Sul',           label: 'Sul' },
+];
+// navIndex 0 = Voltar, navIndex 1..7 = TABS[0..6]
+const NAV_TOTAL = 1 + TABS.length;
 
 export interface DeputiesGridProps {
   isActive: boolean;
@@ -21,8 +52,6 @@ export interface DeputiesGridProps {
   onDeputySelect: (deputy: Deputy) => void;
 }
 
-type FilterMode = 'estado' | 'partido';
-
 function groupBy<T>(items: T[], key: (item: T) => string): Record<string, T[]> {
   return items.reduce((acc, item) => {
     const k = key(item);
@@ -32,6 +61,7 @@ function groupBy<T>(items: T[], key: (item: T) => string): Record<string, T[]> {
   }, {} as Record<string, T[]>);
 }
 
+// ─── Skeleton ────────────────────────────────────────────────────────────────
 function SkeletonRail() {
   return (
     <>
@@ -46,10 +76,10 @@ function SkeletonRail() {
           animation: deputies-shimmer 1.4s ease-in-out infinite;
         }
       `}</style>
-      <div style={{ paddingTop: 40, overflow: 'visible' }}>
-        <div className="deputies-shimmer" style={{ height: 24, width: 120, borderRadius: 8, marginLeft: LEFT_OFFSET, marginBottom: 32 }} />
-        <div style={{ height: 366, overflow: 'visible' }}>
-          <div style={{ display: 'flex', flexDirection: 'row', paddingLeft: LEFT_OFFSET, gap: 32, alignItems: 'center', height: '100%' }}>
+      <div style={{ paddingTop: 40 }}>
+        <div className="deputies-shimmer" style={{ height: 24, width: 140, borderRadius: 8, marginLeft: LEFT_OFFSET, marginBottom: 32 }} />
+        <div style={{ height: 310, overflow: 'visible' }}>
+          <div style={{ display: 'flex', paddingLeft: LEFT_OFFSET, gap: 32, alignItems: 'center', height: '100%' }}>
             {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
                 <div className="deputies-shimmer" style={{ width: 248, height: 248, borderRadius: '50%' }} />
@@ -64,25 +94,45 @@ function SkeletonRail() {
   );
 }
 
-export default function DeputiesGrid({ isActive, isSidebarExpanded, deputies, loading, onBack, onDeputySelect }: DeputiesGridProps) {
-  const [filterMode, setFilterMode] = useState<FilterMode>('estado');
+// ─── Component ───────────────────────────────────────────────────────────────
+export default function DeputiesGrid({
+  isActive, isSidebarExpanded, deputies, loading, onBack, onDeputySelect,
+}: DeputiesGridProps) {
+  const [activeTab, setActiveTab] = useState<TabId>('todos');
   const [focusRegion, setFocusRegion] = useState<'nav' | 'grid'>('grid');
-  const [navIndex, setNavIndex] = useState(0);
+  const [navIndex, setNavIndex] = useState(0);   // 0=Voltar, 1..7=tabs
   const [railIndex, setRailIndex] = useState(0);
   const [itemIndex, setItemIndex] = useState(0);
   const [scrollY, setScrollY] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[][]>([]);
 
+  // ─── Groups by active tab ─────────────────────────────────────────────────
   const groups = useMemo(() => {
     if (!deputies.length) return [];
-    const grouped = filterMode === 'estado'
-      ? groupBy(deputies, d => d.state)
-      : groupBy(deputies, d => d.party);
-    return Object.entries(grouped)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([label, items]) => ({ label, items }));
-  }, [deputies, filterMode]);
 
+    if (activeTab === 'todos') {
+      const sorted = [...deputies].sort((a, b) => a.name.localeCompare(b.name));
+      return [{ label: 'Todos os deputados', items: sorted }];
+    }
+
+    if (activeTab === 'partido') {
+      const grouped = groupBy(deputies, d => d.party);
+      return Object.entries(grouped)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([label, items]) => ({ label, items: items.sort((a, b) => a.name.localeCompare(b.name)) }));
+    }
+
+    // Region tab — sub-group by state within that region
+    const regionDeputies = deputies.filter(d => getRegion(d.state) === activeTab);
+    const byState = groupBy(regionDeputies, d => d.state);
+    const stateOrder = REGION_STATES[activeTab] || [];
+    return stateOrder
+      .filter(s => byState[s])
+      .map(s => ({ label: s, items: byState[s].sort((a, b) => a.name.localeCompare(b.name)) }));
+  }, [deputies, activeTab]);
+
+  // ─── Scroll virtual ───────────────────────────────────────────────────────
   useEffect(() => {
     if (!isActive) return;
     if (focusRegion === 'nav') {
@@ -93,54 +143,91 @@ export default function DeputiesGrid({ isActive, isSidebarExpanded, deputies, lo
     }
   }, [focusRegion, railIndex, isActive]);
 
+  // Focus container on open
   useEffect(() => {
     if (isActive) containerRef.current?.focus();
   }, [isActive]);
 
+  // Reset grid position when tab changes
   useEffect(() => {
     setRailIndex(0);
     setItemIndex(0);
     setFocusRegion('grid');
-  }, [filterMode]);
+    itemRefs.current = [];
+  }, [activeTab]);
 
+  // Scroll focused item into view
+  useEffect(() => {
+    if (focusRegion !== 'grid') return;
+    const el = itemRefs.current[railIndex]?.[itemIndex];
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, [focusRegion, railIndex, itemIndex]);
+
+  // ─── Apply tab change immediately on nav focus ────────────────────────────
+  const applyTab = (nIdx: number) => {
+    if (nIdx === 0) return; // Voltar — sem troca de tab
+    const tab = TABS[nIdx - 1];
+    if (tab) setActiveTab(tab.id);
+  };
+
+  // ─── Keyboard ────────────────────────────────────────────────────────────
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (isSidebarExpanded) return;
-    const currentGroup = groups[railIndex];
-    const groupLength = currentGroup?.items.length ?? 0;
+    const groupLength = groups[railIndex]?.items.length ?? 0;
+
     switch (e.key) {
       case 'ArrowUp':
         e.preventDefault(); e.stopPropagation();
         if (focusRegion === 'grid') {
           if (railIndex > 0) { setRailIndex(r => r - 1); setItemIndex(0); }
-          else { setFocusRegion('nav'); setNavIndex(1); }
+          else { setFocusRegion('nav'); setNavIndex(1); } // vai para primeira tab
         }
         break;
+
       case 'ArrowDown':
         e.preventDefault(); e.stopPropagation();
-        if (focusRegion === 'nav') { setFocusRegion('grid'); setRailIndex(0); setItemIndex(0); }
-        else if (railIndex < groups.length - 1) { setRailIndex(r => r + 1); setItemIndex(0); }
+        if (focusRegion === 'nav') {
+          setFocusRegion('grid'); setRailIndex(0); setItemIndex(0);
+        } else if (railIndex < groups.length - 1) {
+          setRailIndex(r => r + 1); setItemIndex(0);
+        }
         break;
+
       case 'ArrowLeft':
         e.preventDefault(); e.stopPropagation();
-        if (focusRegion === 'nav') setNavIndex(n => Math.max(0, n - 1));
-        else if (itemIndex > 0) setItemIndex(i => i - 1);
+        if (focusRegion === 'nav') {
+          const next = Math.max(0, navIndex - 1);
+          setNavIndex(next);
+          applyTab(next);
+        } else if (itemIndex > 0) {
+          setItemIndex(i => i - 1);
+        } else {
+          // Primeiro item da rail → sobe para nav
+          setFocusRegion('nav'); setNavIndex(1);
+        }
         break;
+
       case 'ArrowRight':
         e.preventDefault(); e.stopPropagation();
-        if (focusRegion === 'nav') setNavIndex(n => Math.min(2, n + 1));
-        else if (itemIndex < groupLength - 1) setItemIndex(i => i + 1);
+        if (focusRegion === 'nav') {
+          const next = Math.min(NAV_TOTAL - 1, navIndex + 1);
+          setNavIndex(next);
+          applyTab(next);
+        } else if (itemIndex < groupLength - 1) {
+          setItemIndex(i => i + 1);
+        }
         break;
+
       case 'Enter':
         e.preventDefault(); e.stopPropagation();
         if (focusRegion === 'nav') {
           if (navIndex === 0) onBack();
-          if (navIndex === 1) setFilterMode('estado');
-          if (navIndex === 2) setFilterMode('partido');
         } else {
-          const dep = currentGroup?.items[itemIndex];
+          const dep = groups[railIndex]?.items[itemIndex];
           if (dep) onDeputySelect(dep);
         }
         break;
+
       case 'Escape':
       case 'Backspace':
         e.preventDefault(); e.stopPropagation();
@@ -149,6 +236,7 @@ export default function DeputiesGrid({ isActive, isSidebarExpanded, deputies, lo
     }
   };
 
+  // ─── Styles ──────────────────────────────────────────────────────────────
   const backBtnStyle = (focused: boolean): React.CSSProperties => ({
     display: 'flex', alignItems: 'center', gap: 8,
     color: focused ? colors.background.brandPrimary : colors.text.primaryInverse,
@@ -159,56 +247,117 @@ export default function DeputiesGrid({ isActive, isSidebarExpanded, deputies, lo
     transition: 'all 0.2s ease-out', flexShrink: 0,
   });
 
-  const filterBtnStyle = (active: boolean, focused: boolean): React.CSSProperties => ({
+  const tabBtnStyle = (active: boolean, focused: boolean): React.CSSProperties => ({
     ...typography.body.large,
     color: active ? colors.background.baseInverse : colors.text.primaryInverse,
     background: active ? colors.text.primaryInverse : 'rgba(255,255,255,0.08)',
     border: focused ? `2px solid ${colors.background.brandPrimary}` : '2px solid transparent',
-    borderRadius: 40, padding: '10px 32px', cursor: 'pointer', outline: 'none',
-    transition: 'all 0.2s ease-out',
+    borderRadius: 40, padding: '10px 28px', cursor: 'pointer', outline: 'none',
+    transition: 'all 0.2s ease-out', flexShrink: 0,
   });
 
+  // ─── Render ──────────────────────────────────────────────────────────────
   return (
-    <div ref={containerRef} tabIndex={0} style={{ position: 'fixed', inset: 0, background: colors.background.baseInverse, overflow: 'clip', outline: 'none' }} onKeyDown={handleKeyDown}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, transform: `translateY(-${scrollY}px)`, transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+    <div
+      ref={containerRef}
+      tabIndex={0}
+      style={{ position: 'fixed', inset: 0, background: colors.background.baseInverse, overflow: 'hidden', outline: 'none' }}
+      onKeyDown={handleKeyDown}
+    >
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0,
+        transform: `translateY(-${scrollY}px)`,
+        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}>
 
-        <div style={{ height: HEADER_HEIGHT, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 16, paddingLeft: LEFT_OFFSET }}>
-          <span style={{ ...typography.headline.large, color: colors.text.primaryInverse }}>TV CÂMARA</span>
-          <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-            <button style={backBtnStyle(focusRegion === 'nav' && navIndex === 0)} onClick={onBack}>← Voltar</button>
-            <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 16 }}>
-              <button style={filterBtnStyle(filterMode === 'estado', focusRegion === 'nav' && navIndex === 1)} onClick={() => setFilterMode('estado')}>Estados</button>
-              <button style={filterBtnStyle(filterMode === 'partido', focusRegion === 'nav' && navIndex === 2)} onClick={() => setFilterMode('partido')}>Partido</button>
-            </div>
+        {/* ── Header ── */}
+        <div style={{ height: HEADER_HEIGHT, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 20, paddingLeft: LEFT_OFFSET, paddingRight: 64 }}>
+          <span style={{ ...typography.headline.large, color: colors.text.primaryInverse }}>
+            TV CÂMARA — Deputados
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, overflowX: 'visible' }}>
+            {/* Voltar */}
+            <button style={backBtnStyle(focusRegion === 'nav' && navIndex === 0)} onClick={onBack}>
+              ← Voltar
+            </button>
+            {/* Tabs */}
+            {TABS.map((tab, i) => (
+              <button
+                key={tab.id}
+                style={tabBtnStyle(activeTab === tab.id, focusRegion === 'nav' && navIndex === i + 1)}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {loading && <><SkeletonRail /><SkeletonRail /></>}
+        {/* ── Skeleton ── */}
+        {loading && <><SkeletonRail /><SkeletonRail /><SkeletonRail /></>}
 
-        {!loading && groups.map((group, gIdx) => (
-          <div key={group.label} style={{ paddingTop: 40, overflow: 'visible' }}>
-            <h2 style={{ ...typography.headline.large, color: colors.text.primaryInverse, paddingLeft: LEFT_OFFSET, margin: '0 0 32px 0' }}>{group.label}</h2>
-            <div style={{ height: 366, overflow: 'visible' }}>
-              <div style={{ display: 'flex', flexDirection: 'row', paddingLeft: LEFT_OFFSET, gap: 32, overflow: 'visible', alignItems: 'center', height: '100%' }}>
-                {group.items.map((dep, dIdx) => {
-                  const isFocused = focusRegion === 'grid' && railIndex === gIdx && itemIndex === dIdx;
-                  return (
-                    <div key={dep.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                      <CircleButton image={dep.photo} label={dep.name} isFocused={isFocused} onClick={() => onDeputySelect(dep)} />
-                      <span style={{ ...typography.body.small, color: colors.text.secondaryInverse, marginTop: 4, textAlign: 'center' as const }}>
-                        {filterMode === 'estado' ? dep.party : dep.state}
-                      </span>
-                    </div>
-                  );
-                })}
+        {/* ── Rails ── */}
+        {!loading && groups.map((group, gIdx) => {
+          if (!itemRefs.current[gIdx]) itemRefs.current[gIdx] = [];
+          const isRailFocused = focusRegion === 'grid' && railIndex === gIdx;
+          return (
+            <div key={group.label} style={{ paddingTop: 40 }}>
+              <h2 style={{ ...typography.headline.large, color: colors.text.primaryInverse, paddingLeft: LEFT_OFFSET, margin: '0 0 24px 0' }}>
+                {group.label}
+                <span style={{ ...typography.body.medium, color: colors.text.secondaryInverse, marginLeft: 16 }}>
+                  {group.items.length} deputados
+                </span>
+              </h2>
+
+              {/* Two-div scroll pattern */}
+              <div style={{
+                position: 'relative', width: '100%',
+                height: isRailFocused ? '380px' : '310px',
+                transition: 'height 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
+                overflow: 'visible',
+              }}>
+                <div
+                  className="deputy-grid-rail"
+                  style={{
+                    position: 'absolute', inset: 0,
+                    display: 'flex', paddingLeft: LEFT_OFFSET, paddingRight: 64,
+                    gap: 32, overflowX: 'auto', overflowY: 'visible',
+                    alignItems: 'center', scrollbarWidth: 'none',
+                    msOverflowStyle: 'none', scrollBehavior: 'smooth',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  {group.items.map((dep, dIdx) => {
+                    const isFocused = isRailFocused && itemIndex === dIdx;
+                    return (
+                      <div
+                        key={dep.id}
+                        ref={(el) => { itemRefs.current[gIdx][dIdx] = el; }}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}
+                      >
+                        <CircleButton
+                          image={dep.photo}
+                          label={dep.name}
+                          isFocused={isFocused}
+                          onClick={() => onDeputySelect(dep)}
+                        />
+                        <span style={{ ...typography.body.small, color: colors.text.secondaryInverse, marginTop: 4, textAlign: 'center' as const }}>
+                          {activeTab === 'partido' ? dep.state : `${dep.party} · ${dep.state}`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
+              <div style={{ height: 40 }} />
             </div>
-            <div style={{ height: 40 }} />
-          </div>
-        ))}
+          );
+        })}
 
         <div style={{ height: 120 }} />
       </div>
+
+      <style>{`.deputy-grid-rail::-webkit-scrollbar { display: none; }`}</style>
     </div>
   );
 }
