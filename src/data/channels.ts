@@ -68,6 +68,7 @@ export const channels: Channel[] = [
     backgroundColor: '#EEBE08',
     streamUrl: 'https://tvbrasil-stream.ebc.com.br/EBC_HD-avc1_3000000=10004.m3u8',
     programs: [
+      { id: 'tv-brasil-manual', title: 'Manual de Sobrevivência da Literatura Brasileira', thumbnail: 'https://i.ytimg.com/vi/tu0fMZNKQQs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=tu0fMZNKQQs', category: 'Jornalismo' },
       { id: 'tv-brasil-1', title: 'BRASIL NO MUNDO | Eduardo Serra, professor de Relações Internacionais', thumbnail: 'https://i.ytimg.com/vi/tu0fMZNKQQs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=tu0fMZNKQQs', category: 'Jornalismo' },
       { id: 'tv-brasil-2', title: 'Quando o esquecimento chega: Alzheimer e outras demências | Caminhos da Reportagem', thumbnail: 'https://i.ytimg.com/vi/dcyFeAErXdg/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=dcyFeAErXdg', category: 'Jornalismo' },
       { id: 'tv-brasil-3', title: 'Sem Censura | Tatiana Sampaio explica como funciona o tratamento da tetraplegia com polilaminina', thumbnail: 'https://i.ytimg.com/vi/9rzXNAO8UJs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=9rzXNAO8UJs', category: 'Jornalismo' },
