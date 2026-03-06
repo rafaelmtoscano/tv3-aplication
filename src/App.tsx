@@ -16,6 +16,7 @@ import { useFocusNavigation } from './hooks/useFocusNavigation';
 import type { FocusState } from './hooks/useFocusNavigation';
 import { useCamaraAPI } from './hooks/useCamaraAPI';
 import { homeData } from './data/home';
+import { services } from './data/services';
 import { channels } from './data/channels';
 import { colors } from './styles/colors';
 import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
@@ -43,7 +44,7 @@ export default function App() {
   const railLengths = useMemo(() =>
     currentPage === 'apps-camara'
       ? [deputies.length + 1, 10] // +1 for "Ver todos"
-      : homeData.rails.map((r) => r.cards.length),
+      : [...homeData.rails.map((r) => r.cards.length), services.length],
     [currentPage, deputies.length]
   );
 
@@ -149,11 +150,19 @@ export default function App() {
         const zoneMatch = state.mainZone.match(/^rail-(\d+)$/);
         if (zoneMatch) {
           const railIndex = parseInt(zoneMatch[1]);
-          if (railIndex >= 1) {
+          if (railIndex >= 1 && railIndex < homeData.rails.length) {
             const card = homeData.rails[railIndex]?.cards[state.mainItemIndex];
             if (card?.videoUrl) {
               setWatchPage({ videoUrl: card.videoUrl, title: card.title, logo: card.logo, channelName: card.channelName });
             }
+          }
+        }
+
+        // rail-4 = Serviços
+        if (state.mainZone === 'rail-4') {
+          const service = services[state.mainItemIndex];
+          if (service?.id === 'camara-deputados') {
+            setCurrentPage('apps-camara');
           }
         }
       }
