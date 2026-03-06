@@ -160,11 +160,11 @@ export default function Camara({
               {/* Ver todos */}
               <div ref={(el) => { deputyItemRefs.current[0] = el; }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
                 <CircleButton
-                  icon={<GridIcon size={isVerTodosFocused ? 56 : 44} color={isVerTodosFocused ? colors.background.baseInverse : undefined} />}
+                  icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
                   label="Ver todos"
                   isFocused={isVerTodosFocused}
-                  onClick={onOpenGrid}
                   focusedBackgroundColor={colors.background.primary}
+                  onClick={onOpenGrid}
                 />
               </div>
               {/* Deputies */}
