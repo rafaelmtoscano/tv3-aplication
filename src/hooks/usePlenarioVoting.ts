@@ -12,11 +12,13 @@ import type { SessaoAtiva, VotoSocial } from '../data/plenario';
 import { getCurrentProgram, tvCamaraSchedule } from '../data/schedule';
 
 const POLLING_INTERVAL = 60_000;
-const INITIAL_DELAY = 5_000;
+const INITIAL_DELAY = 30_000;
 
 export type VotingPhase =
   | 'idle'
   | 'loading'
+  | 'intro'
+  | 'details'
   | 'question'
   | 'results'
   | 'error';
@@ -28,7 +30,9 @@ export interface UsePlenarioVotingReturn {
   vote: (choice: 'sim' | 'nao') => void;
   changeVote: () => void;
   dismiss: () => void;
-  canDismiss: boolean;
+  goToQuestion: () => void;
+  goToDetails: () => void;
+  goToIntro: () => void;
 }
 
 export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
@@ -39,6 +43,8 @@ export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const delayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = useRef(true);
+  const isFirstLoadRef = useRef(true);
+  const lastVotacaoIdRef = useRef<string | null>(null);
 
   const isPlenariaNoSchedule = useCallback((): boolean => {
     const current = getCurrentProgram(tvCamaraSchedule);
@@ -61,7 +67,10 @@ export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
       return;
     }
 
-    if (isMountedRef.current) setPhase('loading');
+    // Show loading only on first run or when explicitly needed
+    if (isFirstLoadRef.current && isMountedRef.current) {
+      setPhase('loading');
+    }
 
     try {
       const data = await fetchSessaoCompleta();
@@ -78,17 +87,35 @@ export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
       const votacaoId = data.votacaoAtiva?.id ?? null;
       const saved = votacaoId ? getSavedVote(votacaoId) : null;
 
-      if (saved) {
+      // Detect new vote start
+      if (votacaoId && lastVotacaoIdRef.current && votacaoId !== lastVotacaoIdRef.current) {
+        if (!saved) {
+          setUserVote(null);
+          setPhase('intro');
+        }
+      }
+      lastVotacaoIdRef.current = votacaoId;
+
+      if (isFirstLoadRef.current) {
+        if (saved) {
+          setUserVote(saved.userVote);
+          setPhase('results');
+        } else if (data.votacaoAtiva) {
+          setUserVote(null);
+          setPhase('intro');
+        } else {
+          setPhase('idle');
+        }
+        isFirstLoadRef.current = false;
+      } else if (saved && (phase === 'intro' || phase === 'question')) {
+        // Sync if voted on another device/tab
         setUserVote(saved.userVote);
         setPhase('results');
-      } else {
-        setUserVote(null);
-        setPhase('question');
       }
     } catch {
       if (isMountedRef.current) setPhase('error');
     }
-  }, [isPlenariaNoSchedule]);
+  }, [isPlenariaNoSchedule, phase]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -97,11 +124,14 @@ export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
       setPhase('idle');
       setSessao(null);
       setUserVote(null);
+      isFirstLoadRef.current = true;
+      lastVotacaoIdRef.current = null;
       if (pollingRef.current) clearInterval(pollingRef.current);
       if (delayRef.current) clearTimeout(delayRef.current);
       return;
     }
 
+    // Initial delay before first check
     delayRef.current = setTimeout(() => {
       fetchAndUpdate();
       pollingRef.current = setInterval(fetchAndUpdate, POLLING_INTERVAL);
@@ -113,17 +143,6 @@ export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
       if (delayRef.current) clearTimeout(delayRef.current);
     };
   }, [isActive, fetchAndUpdate]);
-
-  // Reage a nova votacaoAtiva detectada no polling
-  useEffect(() => {
-    if (!sessao?.votacaoAtiva) return;
-    const votacaoId = sessao.votacaoAtiva.id;
-    const saved = getSavedVote(votacaoId);
-    if (!saved && phase === 'results') {
-      setUserVote(null);
-      setPhase('question');
-    }
-  }, [sessao?.votacaoAtiva?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const vote = useCallback(
     (choice: 'sim' | 'nao') => {
@@ -152,6 +171,10 @@ export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
     setPhase('idle');
   }, []);
 
+  const goToQuestion = useCallback(() => setPhase('question'), []);
+  const goToDetails = useCallback(() => setPhase('details'), []);
+  const goToIntro = useCallback(() => setPhase('intro'), []);
+
   return {
     phase,
     sessao,
@@ -159,6 +182,8 @@ export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
     vote,
     changeVote,
     dismiss,
-    canDismiss: phase === 'results',
+    goToQuestion,
+    goToDetails,
+    goToIntro,
   };
 }
