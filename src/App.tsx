@@ -9,6 +9,7 @@ import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
 import Camara from './pages/Camara/index';
 import DeputiesGrid from './pages/Camara/DeputiesGrid';
+import DeputyDetail from './pages/Camara/DeputyDetail';
 import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
@@ -26,6 +27,7 @@ export default function App() {
   const [livePage, setLivePage] = useState<{ channelId: string; singleChannel?: boolean } | null>(null);
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
   const [showDeputiesGrid, setShowDeputiesGrid] = useState(false);
+  const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
@@ -126,7 +128,7 @@ export default function App() {
     icon: <PersonIcon size={28} />,
   }), []);
 
-  const hasOverlay = !!(showDeputiesGrid || watchPage || livePage);
+  const hasOverlay = !!(showDeputiesGrid || selectedDeputy || watchPage || livePage);
 
   const rootStyle: React.CSSProperties = {
     position: 'fixed',
@@ -237,7 +239,18 @@ export default function App() {
           deputies={deputies}
           loading={deputiesLoading}
           onBack={() => { setShowDeputiesGrid(false); }}
-          onDeputySelect={() => { setShowDeputiesGrid(false); }}
+          onDeputySelect={(deputy) => {
+            setShowDeputiesGrid(false);
+            setSelectedDeputy(deputy);
+          }}
+        />
+      )}
+
+      {selectedDeputy && (
+        <DeputyDetail
+          deputy={selectedDeputy}
+          isActive={true}
+          onBack={() => setSelectedDeputy(null)}
         />
       )}
 
