@@ -68,19 +68,27 @@ export async function fetchSessaoAtiva(): Promise<PlenarioEvento | null> {
   const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
   const url =
     `${API_BASE}/eventos` +
-    `?tipoEvento=Sess%C3%A3o%20Deliberativa` +
-    `&dataInicio=${today}` +
+    `?dataInicio=${today}` +
     `&dataFim=${today}` +
     `&ordem=DESC` +
-    `&orderBy=dataHoraInicio` +
-    `&itens=5`;
+    `&ordenarPor=id` +
+    `&itens=20`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Erro ao buscar eventos: ${res.status}`);
   const json = await res.json();
   const eventos: PlenarioEvento[] = json.dados ?? [];
 
-  return eventos.find(e => e.situacao === 'Iniciado') ?? null;
+  // Filtra no código em vez de na URL para evitar 400
+  return eventos.find(e =>
+    e.situacao === 'Iniciado' &&
+    (
+      e.descricao?.toLowerCase().includes('deliberativ') ||
+      e.descricao?.toLowerCase().includes('plenária') ||
+      e.descricao?.toLowerCase().includes('plenario') ||
+      e.descricao?.toLowerCase().includes('extraordinária')
+    )
+  ) ?? eventos.find(e => e.situacao === 'Iniciado') ?? null;
 }
 
 /**

@@ -27,7 +27,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit }: Li
   const livePlayerRef = useRef<HTMLDivElement>(null);
   
   // Detect if it is TV Câmara channel
-  const isTvCamara = initialChannelId === 'tv-camara';
+  const isTvCamara = (initialChannelId ?? liveChannels[0]?.id) === 'tv-camara';
 
   const voting = usePlenarioVoting(isTvCamara);
 
