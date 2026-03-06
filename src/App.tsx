@@ -28,7 +28,7 @@ export default function App() {
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
   const [showDeputiesGrid, setShowDeputiesGrid] = useState(false);
   const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
-  const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
+  const { deputiesList: deputies, loading: deputiesLoading, selectDeputyData } = useCamaraAPI();
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
@@ -239,9 +239,35 @@ export default function App() {
           deputies={deputies}
           loading={deputiesLoading}
           onBack={() => { setShowDeputiesGrid(false); }}
-          onDeputySelect={(deputy) => {
+          onDeputySelect={async (deputy) => {
             setShowDeputiesGrid(false);
+            // Abre imediatamente com dados do resumo (foto, nome, partido)
+            // enquanto os dados completos são buscados em background
             setSelectedDeputy(deputy);
+            // Busca propostas, agenda e biografia da API
+            if (deputy.apiId) {
+              try {
+                const [detail, proposals, speeches, agenda] = await Promise.all([
+                  import('./data/deputies').then(m => m.fetchDeputyDetail(deputy.apiId!)),
+                  import('./data/deputies').then(m => m.fetchDeputyProposals(deputy.apiId!)),
+                  import('./data/deputies').then(m => m.fetchDeputySpeeches(deputy.apiId!)),
+                  import('./data/deputies').then(m => m.fetchDeputyAgenda(deputy.apiId!)),
+                ]);
+                const { mapAPIToDeputy } = await import('./data/deputies');
+                const apiSummary = {
+                  id: deputy.apiId!,
+                  nome: deputy.name,
+                  siglaPartido: deputy.party,
+                  siglaUf: deputy.state,
+                  urlFoto: deputy.photo,
+                  email: '',
+                };
+                const full = mapAPIToDeputy(apiSummary, detail, proposals, speeches, agenda);
+                setSelectedDeputy(full);
+              } catch (e) {
+                console.error('Erro ao buscar dados completos do deputado:', e);
+              }
+            }
           }}
         />
       )}
