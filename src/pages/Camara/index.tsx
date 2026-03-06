@@ -159,28 +159,13 @@ export default function Camara({
             }}>
               {/* Ver todos */}
               <div ref={(el) => { deputyItemRefs.current[0] = el; }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                <div style={{ position: 'relative' }}>
-                  <CircleButton
-                    icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
-                    label="Ver todos"
-                    isFocused={isVerTodosFocused}
-                    onClick={onOpenGrid}
-                  />
-                  {isVerTodosFocused && (
-                    <div style={{
-                      position: 'absolute',
-                      inset: 0,
-                      borderRadius: '50%',
-                      backgroundColor: colors.background.primary,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      pointerEvents: 'none',
-                    }}>
-                      <GridIcon size={56} color={colors.background.baseInverse} />
-                    </div>
-                  )}
-                </div>
+                <CircleButton
+                  icon={<GridIcon size={isVerTodosFocused ? 56 : 44} color={isVerTodosFocused ? colors.background.baseInverse : undefined} />}
+                  label="Ver todos"
+                  isFocused={isVerTodosFocused}
+                  onClick={onOpenGrid}
+                  focusedBackgroundColor={colors.background.primary}
+                />
               </div>
               {/* Deputies */}
               {deputies.slice(0, 10).map((dep, i) => {
