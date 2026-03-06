@@ -310,11 +310,8 @@ export default function DeputiesGrid({
               const isRailFocused = focusRegion === 'grid' && railIndex === gIdx;
               return (
                 <div key={group.label} style={{ marginBottom: 40 }}>
-                  <h2 style={{ ...typography.body.large, color: colors.text.primaryInverse, margin: '0 0 24px 0' }}>
+                  <h2 style={{ ...typography.body.large, color: colors.text.primaryInverse, margin: '0 0 40px 0' }}>
                     {group.label}
-                    <span style={{ ...typography.body.medium, color: colors.text.secondaryInverse, marginLeft: 16 }}>
-                      {group.items.length} deputados
-                    </span>
                   </h2>
 
                   {/* Two-div scroll pattern */}
