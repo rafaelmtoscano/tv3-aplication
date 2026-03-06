@@ -21,6 +21,36 @@ interface ServicesSectionProps {
 }
 
 function ServicesSection({ focusedIndex }: ServicesSectionProps) {
+  // Fixed height pattern: same as ContentRail (248px idle, 312px focused)
+  const TILES_IDLE_HEIGHT = 248;
+  const TILES_FOCUSED_HEIGHT = 312;
+  const hasFocus = focusedIndex !== undefined && focusedIndex >= 0;
+
+  const tilesOuterStyle: React.CSSProperties = {
+    position: 'relative',
+    width: '100%',
+    height: hasFocus ? `${TILES_FOCUSED_HEIGHT}px` : `${TILES_IDLE_HEIGHT}px`,
+    transition: 'height 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
+    overflow: 'visible',
+  };
+
+  const tilesInnerStyle: React.CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '24px',
+    alignItems: 'center',
+    overflowX: 'auto',
+    overflowY: 'visible',
+    paddingLeft: '64px',
+    paddingRight: '64px',
+    scrollbarWidth: 'none',
+    msOverflowStyle: 'none',
+    scrollBehavior: 'smooth',
+    boxSizing: 'border-box',
+  };
+
   return (
     <div style={{ background: colors.line.dark, paddingTop: '56px', paddingBottom: '56px' }}>
       <div style={{ padding: '0 64px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
@@ -46,29 +76,32 @@ function ServicesSection({ focusedIndex }: ServicesSectionProps) {
           <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)' }} />
         </div>
 
-        {/* Label + rail of service tiles */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <p style={{
-            fontFamily: 'Plus Jakarta Sans, sans-serif',
-            fontWeight: 500,
-            fontSize: '28px',
-            lineHeight: '120%',
-            color: 'rgba(255,255,255,0.75)',
-            margin: 0,
-          }}>
-            Serviços
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'center' }}>
+        {/* Label */}
+        <p style={{
+          fontFamily: 'Plus Jakarta Sans, sans-serif',
+          fontWeight: 500,
+          fontSize: '28px',
+          lineHeight: '120%',
+          color: 'rgba(255,255,255,0.75)',
+          margin: 0,
+        }}>
+          Serviços
+        </p>
+
+        {/* Rail of service tiles with fixed height */}
+        <div style={tilesOuterStyle}>
+          <div className="services-rail-hide-scrollbar" style={tilesInnerStyle}>
             {services.map((service, i) => (
-              <TileButton
-                key={service.id}
-                variant="image"
-                image={service.image}
-                alt={service.name}
-                isFocused={focusedIndex === i}
-                imageObjectFit="contain"
-                backgroundColor={service.backgroundColor}
-              />
+              <div key={service.id} style={{ flexShrink: 0 }}>
+                <TileButton
+                  variant="image"
+                  image={service.image}
+                  alt={service.name}
+                  isFocused={focusedIndex === i}
+                  imageObjectFit="contain"
+                  backgroundColor={service.backgroundColor}
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -86,6 +119,11 @@ function ServicesSection({ focusedIndex }: ServicesSectionProps) {
           }}
         />
 
+        <style>{`
+          .services-rail-hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
       </div>
     </div>
   );
