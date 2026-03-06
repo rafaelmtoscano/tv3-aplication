@@ -136,7 +136,7 @@ export default function Camara({
           <div style={{
             position: 'relative',
             width: '100%',
-            height: isVerTodosFocused || (mainZone === 'rail-0' && mainItemIndex > 0) ? '312px' : '248px',
+            height: isVerTodosFocused || (mainZone === 'rail-0' && mainItemIndex > 0) ? '380px' : '310px',
             transition: 'height 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
             overflow: 'visible',
           }}>
@@ -159,15 +159,31 @@ export default function Camara({
             }}>
               {/* Ver todos */}
               <div ref={(el) => { deputyItemRefs.current[0] = el; }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                <CircleButton
-                  icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
-                  label="Ver todos"
-                  isFocused={isVerTodosFocused}
-                  onClick={onOpenGrid}
-                />
+                <div style={{ position: 'relative' }}>
+                  <CircleButton
+                    icon={<GridIcon size={isVerTodosFocused ? 56 : 44} />}
+                    label="Ver todos"
+                    isFocused={isVerTodosFocused}
+                    onClick={onOpenGrid}
+                  />
+                  {isVerTodosFocused && (
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      borderRadius: '50%',
+                      backgroundColor: colors.background.primary,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      pointerEvents: 'none',
+                    }}>
+                      <GridIcon size={56} color={colors.background.baseInverse} />
+                    </div>
+                  )}
+                </div>
               </div>
               {/* Deputies */}
-              {deputies.map((dep, i) => {
+              {deputies.slice(0, 10).map((dep, i) => {
                 const isFocused = mainZone === 'rail-0' && mainItemIndex === i + 1;
                 return (
                   <div

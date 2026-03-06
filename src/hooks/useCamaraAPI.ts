@@ -22,7 +22,7 @@ export function useCamaraAPI() {
   useEffect(() => {
     async function load() {
       try {
-        const list = await fetchDeputies({ itens: 100 });
+        const list = await fetchDeputies({ itens: 10 });
         // Map initial summaries to Deputy interface
         const mapped = list.map(d => mapAPIToDeputy(d, null, [], [], []));
         setDeputiesList(mapped);
