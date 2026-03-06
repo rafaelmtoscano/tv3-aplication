@@ -79,7 +79,7 @@ export default function Camara({
   // ─── Styles ──────────────────────────────────────────────────────────────
   const pageStyle: React.CSSProperties = {
     flex: 1,
-    overflow: 'hidden',
+    overflow: 'clip',
     position: 'relative',
     height: '100vh',
     background: colors.background.baseInverse,
@@ -125,7 +125,7 @@ export default function Camara({
               paddingLeft: 64,
               gap: 32,
               overflow: 'visible',
-              alignItems: 'flex-end',
+              alignItems: 'center',
               height: '100%',
             }}>
               {/* Ver todos */}

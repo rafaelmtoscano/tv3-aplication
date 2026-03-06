@@ -49,7 +49,7 @@ function SkeletonRail() {
       <div style={{ paddingTop: 40, overflow: 'visible' }}>
         <div className="deputies-shimmer" style={{ height: 24, width: 120, borderRadius: 8, marginLeft: LEFT_OFFSET, marginBottom: 32 }} />
         <div style={{ height: 366, overflow: 'visible' }}>
-          <div style={{ display: 'flex', flexDirection: 'row', paddingLeft: LEFT_OFFSET, gap: 32, alignItems: 'flex-end', height: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', paddingLeft: LEFT_OFFSET, gap: 32, alignItems: 'center', height: '100%' }}>
             {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
                 <div className="deputies-shimmer" style={{ width: 248, height: 248, borderRadius: '50%' }} />
@@ -169,7 +169,7 @@ export default function DeputiesGrid({ isActive, isSidebarExpanded, deputies, lo
   });
 
   return (
-    <div ref={containerRef} tabIndex={0} style={{ position: 'fixed', inset: 0, background: colors.background.baseInverse, overflow: 'hidden', outline: 'none' }} onKeyDown={handleKeyDown}>
+    <div ref={containerRef} tabIndex={0} style={{ position: 'fixed', inset: 0, background: colors.background.baseInverse, overflow: 'clip', outline: 'none' }} onKeyDown={handleKeyDown}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, transform: `translateY(-${scrollY}px)`, transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
 
         <div style={{ height: HEADER_HEIGHT, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 16, paddingLeft: LEFT_OFFSET }}>
@@ -189,7 +189,7 @@ export default function DeputiesGrid({ isActive, isSidebarExpanded, deputies, lo
           <div key={group.label} style={{ paddingTop: 40, overflow: 'visible' }}>
             <h2 style={{ ...typography.headline.large, color: colors.text.primaryInverse, paddingLeft: LEFT_OFFSET, margin: '0 0 32px 0' }}>{group.label}</h2>
             <div style={{ height: 366, overflow: 'visible' }}>
-              <div style={{ display: 'flex', flexDirection: 'row', paddingLeft: LEFT_OFFSET, gap: 32, overflow: 'visible', alignItems: 'flex-end', height: '100%' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', paddingLeft: LEFT_OFFSET, gap: 32, overflow: 'visible', alignItems: 'center', height: '100%' }}>
                 {group.items.map((dep, dIdx) => {
                   const isFocused = focusRegion === 'grid' && railIndex === gIdx && itemIndex === dIdx;
                   return (
