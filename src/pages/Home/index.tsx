@@ -209,9 +209,6 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
           />
         </div>
 
-        {/* Spacing after banner */}
-        <div style={{ height: '80px' }} />
-
         {/* Content Rails */}
         {homeData.rails.map((rail, railIndex) => (
           <ContentRail
@@ -230,6 +227,9 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
         <ServicesSection
           focusedIndex={mainZone === 'rail-4' ? mainItemIndex : -1}
         />
+
+        {/* Spacing after services section */}
+        <div style={{ height: '80px' }} />
 
         {/* Espaço final para scroll */}
         <div style={{ height: RAIL_HEIGHT }} />
