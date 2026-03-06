@@ -453,7 +453,7 @@ export const tvBrasilSchedule: ChannelSchedule = {
   schedule: {
     segunda: [
       // FONTE: padrão semanal inferido — validar via API EBC
-      { time: '12:00', title: 'BRASIL NO MUNDO | Eduardo Serra, professor de Relações Internacionais', isLive: true },
+      { time: '12:00', title: 'Manual de Sobrevivência da Literatura Brasileira', isLive: true },
       { time: '01:30', title: 'Sangue Oculto' },
       { time: '02:30', title: 'Brasil no Mundo' },
       { time: '03:30', title: 'Brasil Sobre Duas Rodas' },
@@ -501,7 +501,7 @@ export const tvBrasilSchedule: ChannelSchedule = {
     ],
     terca: [
       // FONTE: padrão semanal inferido — validar via API EBC
-      { time: '12:00', title: 'BRASIL NO MUNDO | Eduardo Serra, professor de Relações Internacionais', isLive: true },
+      { time: '12:00', title: 'Manual de Sobrevivência da Literatura Brasileira', isLive: true },
       { time: '01:30', title: 'Sangue Oculto' },
       { time: '06:00', title: 'Discotoca' },
       { time: '07:00', title: 'Mundo Bita' },
@@ -543,7 +543,7 @@ export const tvBrasilSchedule: ChannelSchedule = {
     ],
     quarta: [
       // FONTE: padrão semanal inferido — validar via API EBC
-      { time: '12:00', title: 'BRASIL NO MUNDO | Eduardo Serra, professor de Relações Internacionais', isLive: true },
+      { time: '12:00', title: 'Manual de Sobrevivência da Literatura Brasileira', isLive: true },
       { time: '01:30', title: 'Sangue Oculto' },
       { time: '06:00', title: 'Univerciência' },
       { time: '07:00', title: 'Mundo Bita' },
@@ -585,7 +585,7 @@ export const tvBrasilSchedule: ChannelSchedule = {
     ],
     quinta: [
       // FONTE: padrão semanal inferido — validar via API EBC
-      { time: '12:00', title: 'BRASIL NO MUNDO | Eduardo Serra, professor de Relações Internacionais', isLive: true },
+      { time: '12:00', title: 'Manual de Sobrevivência da Literatura Brasileira', isLive: true },
       { time: '01:30', title: 'Sangue Oculto' },
       { time: '06:00', title: 'Discotoca' },
       { time: '07:00', title: 'Mundo Bita' },
@@ -626,7 +626,7 @@ export const tvBrasilSchedule: ChannelSchedule = {
       { time: '23:30', title: 'Sem Censura' },
     ],
     sexta: [
-      { time: '12:00', title: 'BRASIL NO MUNDO | Eduardo Serra, professor de Relações Internacionais', isLive: true },
+      { time: '12:00', title: 'Manual de Sobrevivência da Literatura Brasileira', isLive: true },
       { time: '01:30', title: 'Sangue Oculto' },
       { time: '06:00', title: 'Olhar Independente' },
       { time: '07:00', title: 'Mundo Bita' },
@@ -674,7 +674,7 @@ export const tvBrasilSchedule: ChannelSchedule = {
       { time: '23:30', title: 'Sem Censura' },
     ],
     sabado: [
-      { time: '12:00', title: 'BRASIL NO MUNDO | Eduardo Serra, professor de Relações Internacionais', isLive: true },
+      { time: '12:00', title: 'Manual de Sobrevivência da Literatura Brasileira', isLive: true },
       { time: '01:30', title: 'Sangue Oculto' },
       { time: '02:30', title: 'Colapso' },
       { time: '03:00', title: 'Gilberto Gil - Tempo Rei' },
@@ -725,7 +725,7 @@ export const tvBrasilSchedule: ChannelSchedule = {
       { time: '23:00', title: 'Samba na Gamboa' },
     ],
     domingo: [
-      { time: '12:00', title: 'BRASIL NO MUNDO | Eduardo Serra, professor de Relações Internacionais', isLive: true },
+      { time: '12:00', title: 'Manual de Sobrevivência da Literatura Brasileira', isLive: true },
       { time: '00:00', title: 'Cena Musical' },
       { time: '01:00', title: 'Amor Veríssimo' },
       { time: '01:30', title: 'Sangue Oculto' },
