@@ -29,10 +29,9 @@ function getRegion(state: string): string {
 }
 
 // Tab definition: index 0 = Voltar (special), 1..N = filter tabs
-type TabId = 'todos' | 'partido' | 'Norte' | 'Nordeste' | 'Centro-Oeste' | 'Sudeste' | 'Sul';
+type TabId = 'partido' | 'Norte' | 'Nordeste' | 'Centro-Oeste' | 'Sudeste' | 'Sul';
 
 const TABS: { id: TabId; label: string }[] = [
-  { id: 'todos',         label: 'Todos' },
   { id: 'partido',       label: 'Partido' },
   { id: 'Norte',         label: 'Norte' },
   { id: 'Nordeste',      label: 'Nordeste' },
@@ -40,7 +39,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'Sudeste',       label: 'Sudeste' },
   { id: 'Sul',           label: 'Sul' },
 ];
-// navIndex 0 = Voltar, navIndex 1..7 = TABS[0..6]
+// navIndex 0 = Voltar, navIndex 1..6 = TABS[0..5]
 const NAV_TOTAL = 1 + TABS.length;
 
 export interface DeputiesGridProps {
@@ -98,9 +97,9 @@ function SkeletonRail() {
 export default function DeputiesGrid({
   isActive, isSidebarExpanded, deputies, loading, onBack, onDeputySelect,
 }: DeputiesGridProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('todos');
-  const [focusRegion, setFocusRegion] = useState<'nav' | 'grid'>('grid');
-  const [navIndex, setNavIndex] = useState(0);   // 0=Voltar, 1..7=tabs
+  const [activeTab, setActiveTab] = useState<TabId>('partido');
+  const [focusRegion, setFocusRegion] = useState<'nav' | 'grid'>('nav');
+  const [navIndex, setNavIndex] = useState(1);   // 0=Voltar, 1..6=tabs — inicia na primeira tab
   const [railIndex, setRailIndex] = useState(0);
   const [itemIndex, setItemIndex] = useState(0);
   const [scrollY, setScrollY] = useState(0);
@@ -110,11 +109,6 @@ export default function DeputiesGrid({
   // ─── Groups by active tab ─────────────────────────────────────────────────
   const groups = useMemo(() => {
     if (!deputies.length) return [];
-
-    if (activeTab === 'todos') {
-      const sorted = [...deputies].sort((a, b) => a.name.localeCompare(b.name));
-      return [{ label: 'Todos os deputados', items: sorted }];
-    }
 
     if (activeTab === 'partido') {
       const grouped = groupBy(deputies, d => d.party);
@@ -152,7 +146,6 @@ export default function DeputiesGrid({
   useEffect(() => {
     setRailIndex(0);
     setItemIndex(0);
-    setFocusRegion('grid');
     itemRefs.current = [];
   }, [activeTab]);
 
@@ -180,7 +173,11 @@ export default function DeputiesGrid({
         e.preventDefault(); e.stopPropagation();
         if (focusRegion === 'grid') {
           if (railIndex > 0) { setRailIndex(r => r - 1); setItemIndex(0); }
-          else { setFocusRegion('nav'); setNavIndex(1); } // vai para primeira tab
+          else {
+            const activeTabIdx = TABS.findIndex(t => t.id === activeTab);
+            setFocusRegion('nav');
+            setNavIndex(activeTabIdx >= 0 ? activeTabIdx + 1 : 1);
+          }
         }
         break;
 
