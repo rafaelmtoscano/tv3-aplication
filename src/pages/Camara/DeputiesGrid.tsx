@@ -7,7 +7,7 @@ import type { Deputy } from '../../data/deputies';
 const SIDEBAR_WIDTH = 88;
 const CONTENT_PADDING = 64;
 const LEFT_OFFSET = SIDEBAR_WIDTH + CONTENT_PADDING;
-const HEADER_HEIGHT = 156;
+const HEADER_HEIGHT = 168;
 const RAIL_HEIGHT = 530;
 const SCROLL_OFFSET = 80;
 const SKELETON_COUNT = 8;
@@ -75,10 +75,10 @@ function SkeletonRail() {
           animation: deputies-shimmer 1.4s ease-in-out infinite;
         }
       `}</style>
-      <div style={{ paddingTop: 40 }}>
-        <div className="deputies-shimmer" style={{ height: 24, width: 140, borderRadius: 8, marginLeft: LEFT_OFFSET, marginBottom: 32 }} />
+      <div style={{ padding: '0 48px' }}>
+        <div className="deputies-shimmer" style={{ height: 24, width: 140, borderRadius: 8, marginBottom: 32 }} />
         <div style={{ height: 310, overflow: 'visible' }}>
-          <div style={{ display: 'flex', paddingLeft: LEFT_OFFSET, gap: 32, alignItems: 'center', height: '100%' }}>
+          <div style={{ display: 'flex', gap: 24, alignItems: 'center', height: '100%' }}>
             {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
                 <div className="deputies-shimmer" style={{ width: 248, height: 248, borderRadius: '50%' }} />
@@ -235,22 +235,29 @@ export default function DeputiesGrid({
 
   // ─── Styles ──────────────────────────────────────────────────────────────
   const backBtnStyle = (focused: boolean): React.CSSProperties => ({
-    display: 'flex', alignItems: 'center', gap: 8,
+    display: 'flex', alignItems: 'center', gap: 10,
     color: focused ? colors.background.brandPrimary : colors.text.primaryInverse,
-    ...typography.body.large,
+    fontFamily: 'Plus Jakarta Sans',
+    fontSize: 28,
+    fontWeight: 500,
+    lineHeight: '120%',
     background: 'none',
-    border: focused ? `2px solid ${colors.background.brandPrimary}` : '2px solid transparent',
-    borderRadius: 12, padding: '8px 20px', cursor: 'pointer', outline: 'none',
+    border: focused ? `4px solid ${colors.background.brandPrimary}` : '4px solid transparent',
+    borderRadius: 32, paddingRight: 32, paddingLeft: 0, height: 72, cursor: 'pointer', outline: 'none',
     transition: 'all 0.2s ease-out', flexShrink: 0,
   });
 
   const tabBtnStyle = (active: boolean, focused: boolean): React.CSSProperties => ({
-    ...typography.body.large,
-    color: active ? colors.background.baseInverse : colors.text.primaryInverse,
-    background: active ? colors.text.primaryInverse : 'rgba(255,255,255,0.08)',
-    border: focused ? `2px solid ${colors.background.brandPrimary}` : '2px solid transparent',
-    borderRadius: 40, padding: '10px 28px', cursor: 'pointer', outline: 'none',
+    fontFamily: 'Plus Jakarta Sans',
+    fontSize: 28,
+    fontWeight: 500,
+    lineHeight: '120%',
+    color: active ? '#11172B' : colors.text.primaryInverse,
+    background: active ? '#FFF' : 'transparent',
+    border: focused ? `4px solid ${colors.background.brandPrimary}` : (active ? '4px solid #FFF' : '4px solid transparent'),
+    borderRadius: 100, padding: '0 24px', height: 72, cursor: 'pointer', outline: 'none',
     transition: 'all 0.2s ease-out', flexShrink: 0,
+    display: 'flex', alignItems: 'center',
   });
 
   // ─── Render ──────────────────────────────────────────────────────────────
@@ -268,15 +275,18 @@ export default function DeputiesGrid({
       }}>
 
         {/* ── Header ── */}
-        <div style={{ height: HEADER_HEIGHT, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 20, paddingLeft: LEFT_OFFSET, paddingRight: 64 }}>
-          <span style={{ ...typography.headline.large, color: colors.text.primaryInverse }}>
-            TV CÂMARA — Deputados
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, overflowX: 'visible' }}>
-            {/* Voltar */}
-            <button style={backBtnStyle(focusRegion === 'nav' && navIndex === 0)} onClick={onBack}>
-              ← Voltar
-            </button>
+        <div style={{ height: HEADER_HEIGHT, display: 'flex', flexDirection: 'row', alignItems: 'center', padding: 48, gap: 180 }}>
+          {/* Voltar */}
+          <button style={backBtnStyle(focusRegion === 'nav' && navIndex === 0)} onClick={onBack}>
+            <div style={{ display: 'flex', width: 72, height: 72, justifyContent: 'center', alignItems: 'center', borderRadius: 100 }}>
+              <svg width="32" height="32" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 16L0 8L8 0L9.86667 1.93333L5.13333 6.66667H21.3333V9.33333H5.13333L9.86667 14.0667L8 16Z" fill="currentColor"/>
+              </svg>
+            </div>
+            Voltar
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 32, overflowX: 'visible' }}>
             {/* Tabs */}
             {TABS.map((tab, i) => (
               <button
@@ -294,64 +304,67 @@ export default function DeputiesGrid({
         {loading && <><SkeletonRail /><SkeletonRail /><SkeletonRail /></>}
 
         {/* ── Rails ── */}
-        {!loading && groups.map((group, gIdx) => {
-          const isRailFocused = focusRegion === 'grid' && railIndex === gIdx;
-          return (
-            <div key={group.label} style={{ paddingTop: 40 }}>
-              <h2 style={{ ...typography.headline.large, color: colors.text.primaryInverse, paddingLeft: LEFT_OFFSET, margin: '0 0 24px 0' }}>
-                {group.label}
-                <span style={{ ...typography.body.medium, color: colors.text.secondaryInverse, marginLeft: 16 }}>
-                  {group.items.length} deputados
-                </span>
-              </h2>
+        {!loading && (
+          <div style={{ padding: '16px 48px' }}>
+            {groups.map((group, gIdx) => {
+              const isRailFocused = focusRegion === 'grid' && railIndex === gIdx;
+              return (
+                <div key={group.label} style={{ marginBottom: 40 }}>
+                  <h2 style={{ ...typography.body.large, color: colors.text.primaryInverse, margin: '0 0 24px 0' }}>
+                    {group.label}
+                    <span style={{ ...typography.body.medium, color: colors.text.secondaryInverse, marginLeft: 16 }}>
+                      {group.items.length} deputados
+                    </span>
+                  </h2>
 
-              {/* Two-div scroll pattern */}
-              <div style={{
-                position: 'relative', width: '100%',
-                height: isRailFocused ? '380px' : '310px',
-                transition: 'height 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
-                overflow: 'visible',
-              }}>
-                <div
-                  className="deputy-grid-rail"
-                  style={{
-                    position: 'absolute', inset: 0,
-                    display: 'flex', paddingLeft: LEFT_OFFSET, paddingRight: 64,
-                    gap: 32, overflowX: 'auto', overflowY: 'visible',
-                    alignItems: 'center', scrollbarWidth: 'none',
-                    msOverflowStyle: 'none', scrollBehavior: 'smooth',
-                    boxSizing: 'border-box',
-                  }}
-                >
-                  {group.items.map((dep, dIdx) => {
-                    const isFocused = isRailFocused && itemIndex === dIdx;
-                    return (
-                      <div
-                        key={dep.id}
-                        ref={(el) => {
-                          if (!itemRefs.current[gIdx]) itemRefs.current[gIdx] = [];
-                          itemRefs.current[gIdx][dIdx] = el;
-                        }}
-                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}
-                      >
-                        <CircleButton
-                          image={dep.photo}
-                          label={dep.name}
-                          isFocused={isFocused}
-                          onClick={() => onDeputySelect(dep)}
-                        />
-                        <span style={{ ...typography.body.small, color: colors.text.secondaryInverse, marginTop: 4, textAlign: 'center' as const }}>
-                          {activeTab === 'partido' ? dep.state : `${dep.party} · ${dep.state}`}
-                        </span>
-                      </div>
-                    );
-                  })}
+                  {/* Two-div scroll pattern */}
+                  <div style={{
+                    position: 'relative', width: '100%',
+                    height: isRailFocused ? '380px' : '310px',
+                    transition: 'height 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
+                    overflow: 'visible',
+                  }}>
+                    <div
+                      className="deputy-grid-rail"
+                      style={{
+                        position: 'absolute', inset: 0,
+                        display: 'flex',
+                        gap: 24, overflowX: 'auto', overflowY: 'visible',
+                        alignItems: 'center', scrollbarWidth: 'none',
+                        msOverflowStyle: 'none', scrollBehavior: 'smooth',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {group.items.map((dep, dIdx) => {
+                        const isFocused = isRailFocused && itemIndex === dIdx;
+                        return (
+                          <div
+                            key={dep.id}
+                            ref={(el) => {
+                              if (!itemRefs.current[gIdx]) itemRefs.current[gIdx] = [];
+                              itemRefs.current[gIdx][dIdx] = el;
+                            }}
+                            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}
+                          >
+                            <CircleButton
+                              image={dep.photo}
+                              label={dep.name}
+                              isFocused={isFocused}
+                              onClick={() => onDeputySelect(dep)}
+                            />
+                            <span style={{ ...typography.body.small, color: colors.text.secondaryInverse, marginTop: 4, textAlign: 'center' as const }}>
+                              {activeTab === 'partido' ? dep.state : `${dep.party} · ${dep.state}`}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div style={{ height: 40 }} />
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        )}
 
         <div style={{ height: 120 }} />
       </div>
