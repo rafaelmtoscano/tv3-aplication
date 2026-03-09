@@ -66,7 +66,7 @@ export const channels: Channel[] = [
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F40e646594c6c430a94ef7b5ff7f589c0?format=webp&width=480&height=192',
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F5c8223094974421f98bc81f062e7b025?format=webp&width=800&height=450',
     backgroundColor: '#EEBE08',
-    streamUrl: 'https://tvbrasil-stream.ebc.com.br/EBC_HD-avc1_3000000=10004.m3u8',
+    streamUrl: 'https://tvbrasil-stream.ebc.com.br/EBC_HD.m3u8',
     programs: [
       { id: 'tv-brasil-manual', title: 'Manual de Sobrevivência da Literatura Brasileira', thumbnail: 'https://i.ytimg.com/vi/tu0fMZNKQQs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=tu0fMZNKQQs', category: 'Jornalismo' },
       { id: 'tv-brasil-1', title: 'BRASIL NO MUNDO | Eduardo Serra, professor de Relações Internacionais', thumbnail: 'https://i.ytimg.com/vi/tu0fMZNKQQs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=tu0fMZNKQQs', category: 'Jornalismo' },
@@ -87,7 +87,7 @@ export const channels: Channel[] = [
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F655d4a3ff4a041e490aa5ba1378906bd?format=webp&width=480&height=192',
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Fa6eaef1fb7db406593cd2e64dfafb0a5?format=webp&width=800&height=450',
     backgroundColor: '#0D448C',
-    streamUrl: 'https://canalgov-stream.ebc.com.br/GOV-avc1_1800000=10000.m3u8',
+    streamUrl: 'https://canalgov-stream.ebc.com.br/GOV.m3u8',
     programs: [
       { id: 'canal-gov-1', title: 'SUS terá novo teste de DNA para diagnóstico de doenças raras', thumbnail: 'https://i.ytimg.com/vi/mu7heQQ3ekU/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=mu7heQQ3ekU', category: 'Governo' },
       { id: 'canal-gov-2', title: 'Luz do povo garante gratuidade e desconto para milhões de famílias', thumbnail: 'https://i.ytimg.com/vi/-igsD2VQZkE/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=-igsD2VQZkE', category: 'Governo' },
