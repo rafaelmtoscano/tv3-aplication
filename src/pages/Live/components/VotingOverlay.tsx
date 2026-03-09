@@ -1,6 +1,7 @@
 // src/pages/Live/components/VotingOverlay.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { colors } from '../../../styles/colors';
+import { typography } from '../../../styles/typography';
 import type { UsePlenarioVotingReturn } from '../../../hooks/usePlenarioVoting';
 
 interface VotingOverlayProps {
@@ -94,7 +95,7 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
     bottom: '48px',
     left: '48px',
     width: '420px',
-    background: '#11172B',
+    background: colors.background.baseInverse,
     borderRadius: '32px',
     padding: '48px',
     boxSizing: 'border-box',
@@ -117,11 +118,9 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
     transform: isFocused ? 'scale(1.05)' : 'scale(1)',
     transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
     cursor: 'pointer',
-    fontFamily: 'Plus Jakarta Sans',
-    fontSize: '24px',
-    fontWeight: 500,
-    backgroundColor: type === 'primary' ? '#FFF' : 'transparent',
-    color: type === 'primary' ? '#11172B' : '#FFF',
+    ...typography.body.large,
+    backgroundColor: type === 'primary' ? colors.background.primary : 'transparent',
+    color: type === 'primary' ? colors.text.primary : colors.text.primaryInverse,
   });
 
   return (
@@ -129,11 +128,11 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
 
       {/* Header */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <h3 style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '32px', fontWeight: 500, color: '#FFF', margin: 0 }}>
+        <h3 style={{ ...typography.headline.large, color: colors.text.primaryInverse, margin: 0 }}>
           {phase === 'details' ? (pautaItem?.titulo || 'Detalhes') : 'Qual sua opinião sobre?'}
         </h3>
         {phase !== 'details' && (
-          <div style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '24px', fontWeight: 400, color: 'rgba(255,255,255,0.6)' }}>
+          <div style={{ ...typography.body.large, color: colors.text.muted }}>
             Pauta: {pautaItem?.titulo || sessao.votacaoAtiva?.descricao || 'Em andamento'}
           </div>
         )}
@@ -160,7 +159,7 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
 
         {phase === 'details' && (
           <>
-            <div style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '20px', fontWeight: 400, color: '#FFF', lineHeight: '1.5' }}>
+            <div style={{ ...typography.headline.small, color: colors.text.primaryInverse, lineHeight: '1.5' }}>
               {pautaItem?.ementa || sessao.votacaoAtiva?.descricao || 'Nenhuma descrição disponível.'}
             </div>
             <button style={btnStyle(focusedBtn === 0, 'primary')}>Voltar</button>
@@ -170,22 +169,22 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
 
         {phase === 'results' && (
           <>
-            <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px', background: 'rgba(255,255,255,0.08)', borderRadius: '24px' }}>
-              <div style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '18px', fontWeight: 500, color: 'rgba(255,255,255,0.6)' }}>Consulta popular</div>
+            <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px', background: colors.surface.overlay, borderRadius: '24px' }}>
+              <div style={{ ...typography.body.medium, color: colors.text.muted }}>Consulta popular</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Plus Jakarta Sans', fontSize: '24px', fontWeight: 500, color: '#FFF' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', ...typography.body.large, color: colors.text.primaryInverse }}>
                   <span>Concordo</span><span>80%</span>
                 </div>
-                <div style={{ height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '100px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: '80%', background: '#10B981' }} />
+                <div style={{ height: '12px', background: colors.surface.overlayMuted, borderRadius: '100px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: '80%', background: colors.feedback.success }} />
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Plus Jakarta Sans', fontSize: '24px', fontWeight: 500, color: '#FFF' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', ...typography.body.large, color: colors.text.primaryInverse }}>
                   <span>Discordo</span><span>20%</span>
                 </div>
-                <div style={{ height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '100px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: '20%', background: '#EF4444' }} />
+                <div style={{ height: '12px', background: colors.surface.overlayMuted, borderRadius: '100px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: '20%', background: colors.feedback.error }} />
                 </div>
               </div>
             </div>

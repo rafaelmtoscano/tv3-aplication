@@ -41,17 +41,9 @@ export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
   const lastVotacaoIdRef = useRef<string | null>(null);
 
   const isPlenariaNoSchedule = useCallback((): boolean => {
-    // TEMPORARY BYPASS FOR TESTING: Always return true if we are on the channel
+    // TODO: em produção, integrar com EPG real para verificar se há sessão plenária
+    // Bypass para demo — ativar overlay sempre que houver sessão na API
     return true;
-    /*
-    const current = getCurrentProgram(tvCamaraSchedule);
-    if (!current) return false;
-    const title = current.title.toLowerCase();
-    return (
-      (title.includes('sessão deliberativa') || title.includes('sessão plenária')) &&
-      (current.isLive === true)
-    );
-    */
   }, []);
 
   const fetchAndUpdate = useCallback(async () => {
@@ -75,32 +67,10 @@ export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
       if (!isMountedRef.current) return;
 
       if (!data) {
-        // TEMPORARY MOCK DATA FOR TESTING
-        data = {
-          eventId: 99999,
-          descricao: 'Sessão Deliberativa (TESTE)',
-          situacao: 'Iniciado',
-          votacaoAtiva: {
-            id: 'mock-votacao-1',
-            uri: '',
-            data: new Date().toISOString().split('T')[0],
-            dataHoraRegistro: new Date().toISOString(),
-            siglaOrgao: 'PLEN',
-            descricao: 'Qual sua opinião sobre o PL 1/2025?',
-            aprovacao: null,
-            placar: null,
-          },
-          pauta: [
-            {
-              ordem: 1,
-              regime: 'Urgência',
-              titulo: 'PL 1/2025',
-              ementa: 'Encaminha o anteprojeto de lei de criação de oito varas federais na Seção Judiciária de Santa Catarina, do Tribunal Regional Federal da 4ª Região, sem aumento de gastos com pessoal e encargos sociais.',
-              situacaoItem: 'Pendente',
-              proposicao_: null,
-            }
-          ],
-        };
+        // Nenhuma sessão ativa encontrada na API — manter idle
+        if (isMountedRef.current) setPhase('idle');
+        isFirstLoadRef.current = false;
+        return;
       }
 
       setSessao(data);

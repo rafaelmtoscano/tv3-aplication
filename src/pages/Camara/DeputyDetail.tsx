@@ -251,7 +251,7 @@ export default function DeputyDetail({ deputy, isActive, loading = false, onBack
     if (contentRef.current) {
       contentHeightRef.current = contentRef.current.scrollHeight;
     }
-  });
+  }, [activeTab, deputy.id]);
 
   const maxScroll = useCallback(() => {
     const viewportH = window.innerHeight - HEADER_HEIGHT - CONTENT_PADDING_TOP;
