@@ -35,7 +35,6 @@ export const LivePlayer = React.memo(
         initialChannelId || channels[0]?.id
       );
       const [focusedIndex, setFocusedIndex] = useState(channels.length > 0 ? 1 : 0);
-      const [sairFocused, setSairFocused] = useState(singleChannel);
       const [controlsVisible, setControlsVisible] = useState(true);
       const [showEPG, setShowEPG] = useState(false);
       const [epgFocusedIndex, setEpgFocusedIndex] = useState(0);

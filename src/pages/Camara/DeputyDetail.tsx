@@ -74,12 +74,6 @@ const valueStyle: React.CSSProperties = {
   color: colors.text.primaryInverse,
 };
 
-const sectionTitleStyle: React.CSSProperties = {
-  ...typography.headline.small,
-  color: colors.text.primaryInverse,
-  margin: '0 0 24px 0',
-};
-
 // ─── Sub-componentes das abas ─────────────────────────────────────────────────
 
 function AgendaTab({ items }: { items: AgendaItem[] }) {
@@ -167,30 +161,21 @@ function BiographyTab({ deputy }: { deputy: Deputy }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      {/* Dados pessoais */}
       <div style={cardStyle}>
         <div style={{ display: 'flex', gap: '32px' }}>
           <span style={{ ...labelStyle, width: '160px', flexShrink: 0 }}>Nome</span>
           <span style={valueStyle}>{biography.fullName}</span>
         </div>
-        <div style={{ display: 'flex', gap: '32px' }}>
-          <span style={{ ...labelStyle, width: '160px', flexShrink: 0 }}>Nascimento</span>
-          <span style={valueStyle}>{biography.birthDate}</span>
-        </div>
-        <div style={{ display: 'flex', gap: '32px' }}>
-          <span style={{ ...labelStyle, width: '160px', flexShrink: 0 }}>Nome Civil</span>
-          <span style={valueStyle}>{biography.birthplace}</span>
-        </div>
-        {biography.professions.length > 0 && (
+        {biography.birthDate && (
           <div style={{ display: 'flex', gap: '32px' }}>
-            <span style={{ ...labelStyle, width: '160px', flexShrink: 0 }}>Profissões</span>
-            <span style={valueStyle}>{biography.professions.join('; ')}</span>
+            <span style={{ ...labelStyle, width: '160px', flexShrink: 0 }}>Nascimento</span>
+            <span style={valueStyle}>{biography.birthDate}</span>
           </div>
         )}
-        {biography.parentage && (
+        {biography.birthplace && (
           <div style={{ display: 'flex', gap: '32px' }}>
-            <span style={{ ...labelStyle, width: '160px', flexShrink: 0 }}>Filiação</span>
-            <span style={valueStyle}>{biography.parentage}</span>
+            <span style={{ ...labelStyle, width: '160px', flexShrink: 0 }}>Naturalidade</span>
+            <span style={valueStyle}>{biography.birthplace}</span>
           </div>
         )}
         {biography.education && (
@@ -200,23 +185,6 @@ function BiographyTab({ deputy }: { deputy: Deputy }) {
           </div>
         )}
       </div>
-
-      {/* Mandatos */}
-      {biography.mandates.length > 0 && (
-        <div>
-          <p style={sectionTitleStyle}>Mandatos (na Câmara dos Deputados)</p>
-          <div style={cardStyle}>
-            {biography.mandates.map((m, i) => (
-              <div key={i} style={{ display: 'flex', gap: '32px' }}>
-                <span style={{ ...labelStyle, width: '200px', flexShrink: 0 }}>{m.role}</span>
-                <span style={valueStyle}>
-                  {m.period}, {m.state}, {m.party}, Dt. Posse: {m.assumedOn};
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

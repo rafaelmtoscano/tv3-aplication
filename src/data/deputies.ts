@@ -6,22 +6,11 @@
 // INTERFACES
 // ─────────────────────────────────────────────
 
-export interface Mandate {
-  role: string;                  // 'Deputado(a) Federal'
-  period: string;                // '2011-2015'
-  state: string;                 // 'AL'
-  party: string;                 // 'PP'
-  assumedOn: string;             // '01/02/2011'
-}
-
 export interface Biography {
   fullName: string;
   birthDate: string;             // 'DD/MM/YYYY'
-  birthplace: string;            // 'Cidade, BRASIL'
-  professions: string[];
-  parentage: string;             // 'Nome Pai e Nome Mãe'
+  birthplace: string;            // 'Cidade, UF' — municipioNascimento + ufNascimento da API
   education: string;             // 'Superior – Bacharel em Direito'
-  mandates: Mandate[];
 }
 
 export interface LegislativeProposal {
@@ -82,16 +71,8 @@ export const deputies: Deputy[] = [
     biography: {
       fullName: 'Arthur César Pereira de Lira',
       birthDate: '25/06/1969',
-      birthplace: 'Maceió, BRASIL',
-      professions: ['Empresário', 'Agropecuarista'],
-      parentage: 'Benedito de Lira e Ivanete Pereira de Lira',
+      birthplace: 'Maceió, AL',
       education: 'Superior – Bacharel em Direito',
-      mandates: [
-        { role: 'Deputado(a) Federal', period: '2011-2015', state: 'AL', party: 'PP', assumedOn: '01/02/2011' },
-        { role: 'Deputado(a) Federal', period: '2015-2019', state: 'AL', party: 'PP', assumedOn: '01/02/2015' },
-        { role: 'Deputado(a) Federal', period: '2019-2023', state: 'AL', party: 'PP', assumedOn: '01/02/2019' },
-        { role: 'Deputado(a) Federal', period: '2023-2027', state: 'AL', party: 'PP', assumedOn: '01/02/2023' },
-      ],
     },
     proposals: [
       {
@@ -183,16 +164,8 @@ export const deputies: Deputy[] = [
     biography: {
       fullName: 'Hugo Motta Wanderley da Nóbrega',
       birthDate: '11/09/1989',
-      birthplace: 'João Pessoa, BRASIL',
-      professions: ['Médico'],
-      parentage: 'Nabor Wanderley da Nóbrega Filho e Francisca Motta Wanderley',
+      birthplace: 'João Pessoa, PB',
       education: 'Superior – Bacharel em Medicina (UCB)',
-      mandates: [
-        { role: 'Deputado(a) Federal', period: '2011-2015', state: 'PB', party: 'PMDB', assumedOn: '01/02/2011' },
-        { role: 'Deputado(a) Federal', period: '2015-2019', state: 'PB', party: 'PMDB', assumedOn: '01/02/2015' },
-        { role: 'Deputado(a) Federal', period: '2019-2023', state: 'PB', party: 'PRB', assumedOn: '01/02/2019' },
-        { role: 'Deputado(a) Federal', period: '2023-2027', state: 'PB', party: 'REPUBLICANOS', assumedOn: '01/02/2023' },
-      ],
     },
     proposals: [
       {
@@ -278,13 +251,8 @@ export const deputies: Deputy[] = [
     biography: {
       fullName: 'Nikolas Ferreira de Oliveira',
       birthDate: '30/05/1996',
-      birthplace: 'Belo Horizonte, BRASIL',
-      professions: ['Advogado', 'Jornalista'],
-      parentage: 'Edésio de Oliveira e Ruth Ferreira',
+      birthplace: 'Belo Horizonte, MG',
       education: 'Superior – Bacharel em Direito (PUC-MG)',
-      mandates: [
-        { role: 'Deputado(a) Federal', period: '2023-2027', state: 'MG', party: 'PL', assumedOn: '01/02/2023' },
-      ],
     },
     proposals: [
       {
@@ -370,14 +338,8 @@ export const deputies: Deputy[] = [
     biography: {
       fullName: 'Tabata Claudia Amaral de Pontes',
       birthDate: '14/11/1993',
-      birthplace: 'São Paulo, BRASIL',
-      professions: ['Cientista Política'],
-      parentage: 'Aristides Pereira de Pontes e Rosemeire Claudia Amaral de Pontes',
+      birthplace: 'São Paulo, SP',
       education: 'Superior – Ciência Política (Harvard University)',
-      mandates: [
-        { role: 'Deputado(a) Federal', period: '2019-2023', state: 'SP', party: 'PDT', assumedOn: '01/02/2019' },
-        { role: 'Deputado(a) Federal', period: '2023-2027', state: 'SP', party: 'PSB', assumedOn: '01/02/2023' },
-      ],
     },
     proposals: [
       {
@@ -463,13 +425,8 @@ export const deputies: Deputy[] = [
     biography: {
       fullName: 'Erika Santos Silva',
       birthDate: '09/12/1992',
-      birthplace: 'Franco da Rocha, BRASIL',
-      professions: ['Pedagoga', 'Gerontóloga'],
-      parentage: 'Criada por mãe, tias e avós',
+      birthplace: 'Franco da Rocha, SP',
       education: 'Superior – Pedagogia (UFSCar)',
-      mandates: [
-        { role: 'Deputado(a) Federal', period: '2023-2027', state: 'SP', party: 'PSOL', assumedOn: '01/02/2023' },
-      ],
     },
     proposals: [
       {
@@ -555,18 +512,8 @@ export const deputies: Deputy[] = [
     biography: {
       fullName: 'Reginaldo Lázaro de Oliveira Lopes',
       birthDate: '02/04/1973',
-      birthplace: 'Bom Sucesso, BRASIL',
-      professions: ['Economista'],
-      parentage: 'Sebastião Lopes e Dinaura A. de Oliveira Lopes',
+      birthplace: 'Bom Sucesso, MG',
       education: 'Superior – Economia (UFSJ) · Pós-graduação em Gestão de Micro e Pequenas Empresas',
-      mandates: [
-        { role: 'Deputado(a) Federal', period: '2003-2007', state: 'MG', party: 'PT', assumedOn: '01/02/2003' },
-        { role: 'Deputado(a) Federal', period: '2007-2011', state: 'MG', party: 'PT', assumedOn: '01/02/2007' },
-        { role: 'Deputado(a) Federal', period: '2011-2015', state: 'MG', party: 'PT', assumedOn: '01/02/2011' },
-        { role: 'Deputado(a) Federal', period: '2015-2019', state: 'MG', party: 'PT', assumedOn: '01/02/2015' },
-        { role: 'Deputado(a) Federal', period: '2019-2023', state: 'MG', party: 'PT', assumedOn: '01/02/2019' },
-        { role: 'Deputado(a) Federal', period: '2023-2027', state: 'MG', party: 'PT', assumedOn: '01/02/2023' },
-      ],
     },
     proposals: [
       {
@@ -655,11 +602,6 @@ export function getDeputyById(id: string): Deputy | undefined {
   return deputies.find((d) => d.id === id);
 }
 
-/** Formata o mandato no padrão exibido na interface */
-export function formatMandate(mandate: Mandate): string {
-  return `${mandate.period}, ${mandate.state}, ${mandate.party}, Dt. Posse: ${mandate.assumedOn};`;
-}
-
 /** Retorna todos os deputados ordenados por nome */
 export function getDeputiesSorted(): Deputy[] {
   return [...deputies].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
@@ -730,19 +672,15 @@ export function mapAPIToDeputy(
     ? born.split('-').reverse().join('/')
     : '';
 
-  const mandates: Mandate[] = detail
-    ? [
-        {
-          role: 'Deputado(a) Federal',
-          period: '2023-2027',
-          state: detail.ultimoStatus.siglaUf,
-          party: detail.ultimoStatus.siglaPartido,
-          assumedOn: '01/02/2023',
-        },
-      ]
-    : [];
+  // Deduplica proposições por id numérico (API pode retornar repetidas)
+  const seen = new Set<number>();
+  const uniqueProposals = proposals.filter((p) => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
 
-  const mappedProposals: LegislativeProposal[] = proposals.map((p) => ({
+  const mappedProposals: LegislativeProposal[] = uniqueProposals.map((p) => ({
     id: `${p.siglaTipo} ${p.numero}/${p.ano}`,
     author: `${summary.nome} – ${summary.siglaPartido}/${summary.siglaUf}`,
     summary: p.ementa || 'Sem ementa disponível.',
@@ -793,12 +731,9 @@ export function mapAPIToDeputy(
       fullName: detail?.ultimoStatus.nome ?? summary.nome,
       birthDate,
       birthplace: detail
-        ? `${detail.municipioNascimento}, BRASIL`
+        ? `${detail.municipioNascimento}, ${detail.ufNascimento}`
         : '',
-      professions: [],
-      parentage: '',
       education: detail?.escolaridade ?? '',
-      mandates,
     },
     proposals: mappedProposals,
     speeches: mappedSpeeches,
