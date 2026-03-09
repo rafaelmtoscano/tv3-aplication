@@ -17,6 +17,15 @@ export const colors = {
     primaryInverse: '#FFF',
     secondaryInverse: 'rgba(255, 255, 255, 0.75)',
     disabledInverse: 'rgba(255, 255, 255, 0.50)',
+    muted: 'rgba(255, 255, 255, 0.6)',
+  },
+  feedback: {
+    success: '#10B981',
+    error: '#EF4444',
+  },
+  surface: {
+    overlay: 'rgba(255, 255, 255, 0.08)',
+    overlayMuted: 'rgba(255, 255, 255, 0.1)',
   },
 } as const;
 
