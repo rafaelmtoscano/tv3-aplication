@@ -29,6 +29,7 @@ export default function App() {
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
   const [showDeputiesGrid, setShowDeputiesGrid] = useState(false);
   const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
+  const [deputyLoading, setDeputyLoading] = useState(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
@@ -68,6 +69,7 @@ export default function App() {
     // Abre imediatamente com dados do resumo (foto, nome, partido)
     // enquanto os dados completos são buscados em background
     setSelectedDeputy(deputy);
+    setDeputyLoading(true);
     // Busca propostas, agenda e biografia da API
     if (deputy.apiId) {
       try {
@@ -90,7 +92,11 @@ export default function App() {
         setSelectedDeputy(full);
       } catch (e) {
         console.error('Erro ao buscar dados completos do deputado:', e);
+      } finally {
+        setDeputyLoading(false);
       }
+    } else {
+      setDeputyLoading(false);
     }
   }, []);
 
@@ -166,7 +172,7 @@ export default function App() {
           }
         }
       }
-    }, []),
+    }, [deputies, handleDeputySelect]),
     onSidebarSelect: handleSidebarSelect,
   });
 
@@ -295,6 +301,7 @@ export default function App() {
         <DeputyDetail
           deputy={selectedDeputy}
           isActive={true}
+          loading={deputyLoading}
           onBack={() => setSelectedDeputy(null)}
         />
       )}

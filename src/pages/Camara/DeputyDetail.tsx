@@ -21,6 +21,7 @@ const SCROLL_STEP = 220;     // px por pressão de ↑↓
 export interface DeputyDetailProps {
   deputy: Deputy;
   isActive: boolean;
+  loading?: boolean;
   onBack: () => void;
 }
 
@@ -73,6 +74,43 @@ const valueStyle: React.CSSProperties = {
   ...typography.body.medium,
   color: colors.text.primaryInverse,
 };
+
+// ─── Skeleton shimmer para loading ────────────────────────────────────────────
+
+function ContentSkeleton() {
+  return (
+    <>
+      <style>{`
+        @keyframes deputy-detail-shimmer {
+          0%   { background-position: -600px 0; }
+          100% { background-position: 600px 0; }
+        }
+        .deputy-detail-shimmer {
+          background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 75%);
+          background-size: 600px 100%;
+          animation: deputy-detail-shimmer 1.4s ease-in-out infinite;
+        }
+      `}</style>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ ...cardStyle, gap: '20px' }}>
+          <div className="deputy-detail-shimmer" style={{ height: 20, width: '40%', borderRadius: 8 }} />
+          <div className="deputy-detail-shimmer" style={{ height: 20, width: '60%', borderRadius: 8 }} />
+          <div className="deputy-detail-shimmer" style={{ height: 20, width: '50%', borderRadius: 8 }} />
+          <div className="deputy-detail-shimmer" style={{ height: 20, width: '35%', borderRadius: 8 }} />
+        </div>
+        <div style={{ ...cardStyle, gap: '20px' }}>
+          <div className="deputy-detail-shimmer" style={{ height: 20, width: '45%', borderRadius: 8 }} />
+          <div className="deputy-detail-shimmer" style={{ height: 20, width: '70%', borderRadius: 8 }} />
+          <div className="deputy-detail-shimmer" style={{ height: 20, width: '55%', borderRadius: 8 }} />
+        </div>
+        <div style={{ ...cardStyle, gap: '20px' }}>
+          <div className="deputy-detail-shimmer" style={{ height: 20, width: '50%', borderRadius: 8 }} />
+          <div className="deputy-detail-shimmer" style={{ height: 20, width: '65%', borderRadius: 8 }} />
+        </div>
+      </div>
+    </>
+  );
+}
 
 // ─── Sub-componentes das abas ─────────────────────────────────────────────────
 
@@ -191,7 +229,7 @@ function BiographyTab({ deputy }: { deputy: Deputy }) {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
-export default function DeputyDetail({ deputy, isActive, onBack }: DeputyDetailProps) {
+export default function DeputyDetail({ deputy, isActive, loading = false, onBack }: DeputyDetailProps) {
   const [activeTab, setActiveTab]   = useState<TabId>('agenda');
   const [scrollY, setScrollY]       = useState(0);
   const contentHeightRef            = useRef(0);
@@ -387,9 +425,15 @@ export default function DeputyDetail({ deputy, isActive, onBack }: DeputyDetailP
 
         {/* Conteúdo da aba com scroll virtual */}
         <div ref={contentRef} style={contentAreaStyle}>
-          {activeTab === 'agenda'    && <AgendaTab    items={deputy.agenda} />}
-          {activeTab === 'proposals' && <ProposalsTab proposals={deputy.proposals} />}
-          {activeTab === 'biography' && <BiographyTab deputy={deputy} />}
+          {loading ? (
+            <ContentSkeleton />
+          ) : (
+            <>
+              {activeTab === 'agenda'    && <AgendaTab    items={deputy.agenda} />}
+              {activeTab === 'proposals' && <ProposalsTab proposals={deputy.proposals} />}
+              {activeTab === 'biography' && <BiographyTab deputy={deputy} />}
+            </>
+          )}
         </div>
 
       </div>
