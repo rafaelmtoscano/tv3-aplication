@@ -1,5 +1,8 @@
+import { useRef } from 'react';
 import { LivePlayer } from '../../components/LivePlayer';
 import { channels } from '../../data/channels';
+import { usePlenarioVoting } from '../../hooks/usePlenarioVoting';
+import { VotingOverlay } from './components/VotingOverlay';
 
 interface LivePageProps {
   isActive?: boolean;
@@ -20,13 +23,27 @@ const liveChannels = channels
     streamUrl: ch.streamUrl!,
   }));
 
-export default function LivePage({ initialChannelId, singleChannel, onExit }: LivePageProps) {
+export default function LivePage({ initialChannelId, singleChannel, onExit, isActive }: LivePageProps) {
+  const livePlayerRef = useRef<HTMLDivElement>(null);
+
+  // Detect if it is TV Câmara channel
+  const isTvCamara = (initialChannelId ?? liveChannels[0]?.id) === 'tv-camara';
+
+  const voting = usePlenarioVoting(isTvCamara && !!isActive);
+
   return (
-    <LivePlayer
-      channels={liveChannels}
-      initialChannelId={initialChannelId}
-      singleChannel={singleChannel}
-      onExit={onExit}
-    />
+    <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+      <LivePlayer
+        ref={livePlayerRef as any}
+        channels={liveChannels}
+        initialChannelId={initialChannelId}
+        singleChannel={singleChannel}
+        onExit={onExit}
+      />
+
+      {isTvCamara && isActive && (
+        <VotingOverlay voting={voting} livePlayerRef={livePlayerRef as any} />
+      )}
+    </div>
   );
 }

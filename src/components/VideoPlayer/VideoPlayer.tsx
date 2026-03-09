@@ -5,10 +5,11 @@ export interface VideoPlayerProps {
   src: string;
   className?: string;
   style?: React.CSSProperties;
+  muted?: boolean;
 }
 
 export const VideoPlayer = React.memo(
-  forwardRef<HTMLVideoElement, VideoPlayerProps>(({ src, className, style }, ref) => {
+  forwardRef<HTMLVideoElement, VideoPlayerProps>(({ src, className, style, muted = true }, ref) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
 
@@ -32,7 +33,30 @@ export const VideoPlayer = React.memo(
         hlsRef.current = hls;
         hls.loadSource(src);
         hls.attachMedia(video);
-        
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          // Tenta play com som. Se o browser bloquear, inicia mudo
+          // e desmuta na próxima interação do usuário.
+          video.muted = muted;
+          video.play().catch(() => {
+            video.muted = true;
+            video.play().catch(() => {});
+
+            if (!muted) {
+              // Unmute após próxima interação do usuário.
+              // CRITICAL: usar capture: true para interceptar antes de
+              // handlers React que fazem stopPropagation (ex: LivePlayer).
+              const unmute = () => {
+                video.muted = false;
+                window.removeEventListener('keydown', unmute, true);
+                window.removeEventListener('click', unmute, true);
+              };
+              window.addEventListener('keydown', unmute, { capture: true, once: true });
+              window.addEventListener('click', unmute, { capture: true, once: true });
+            }
+          });
+        });
+
         hls.on(Hls.Events.ERROR, (_, data) => {
           if (data.fatal) {
             switch (data.type) {
@@ -59,7 +83,7 @@ export const VideoPlayer = React.memo(
           hlsRef.current = null;
         }
       };
-    }, [src]);
+    }, [src, muted]);
 
     const defaultStyle: React.CSSProperties = {
       width: '100%',
@@ -75,7 +99,7 @@ export const VideoPlayer = React.memo(
         className={className}
         style={defaultStyle}
         autoPlay
-        muted
+        muted={muted}
         playsInline
       />
     );

@@ -53,6 +53,9 @@ export const useFocusNavigation = ({
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      // Skip events already handled by component-level handlers
+      if (event.defaultPrevented) return;
+
       const { region, sidebarIndex, mainZone, mainItemIndex } = focusStateRef.current;
 
       // Impedir scroll padrão do browser para teclas de navegação

@@ -222,6 +222,7 @@ export const Sidebar = memo(
                   style={{ marginLeft: '4px' }}
                   isFocused={focusedItemId === 'avatar'}
                   state={activeItemId === 'avatar' ? 'selected' : 'idle'}
+                  onClick={() => onItemClick?.('avatar')}
                 />
               </div>
             )}

@@ -25,6 +25,8 @@ export interface CircleButtonProps {
   tabIndex?: number;
   /** Manual override for the focused state (useful for Storybook). */
   isFocused?: boolean;
+  /** Override the background color when the button is focused. Defaults to brandPrimary (blue). */
+  focusedBackgroundColor?: string;
 }
 
 /**
@@ -46,6 +48,7 @@ export const CircleButton = memo(
         'aria-label': ariaLabel,
         tabIndex,
         isFocused: isFocusedProp,
+        focusedBackgroundColor,
       },
       ref
     ) => {
@@ -87,7 +90,9 @@ export const CircleButton = memo(
         boxShadow: isFocused ? '0 8px 32px rgba(0, 0, 0, 0.4)' : 'none',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         transformOrigin: 'center center',
-        backgroundColor: isFocused ? colors.background.brandPrimary : 'rgba(255, 255, 255, 0.08)',
+        backgroundColor: isFocused
+          ? (focusedBackgroundColor ?? colors.background.brandPrimary)
+          : 'rgba(255, 255, 255, 0.08)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

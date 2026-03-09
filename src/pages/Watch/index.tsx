@@ -18,8 +18,15 @@ type FocusedControl = 'back' | 'rewind' | 'playpause' | 'forward';
 const CONTROL_ORDER: FocusedControl[] = ['back', 'rewind', 'playpause', 'forward'];
 
 function extractYouTubeId(url: string): string {
-  const match = url.match(/(?:v=|youtu\.be\/)([^&\s]+)/);
-  return match?.[1] ?? '';
+  // Handles:
+  // - youtube.com/watch?v=ID
+  // - youtube.com/embed/ID
+  // - youtube.com/v/ID
+  // - youtube.com/shorts/ID
+  // - youtu.be/ID
+  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?\??v=)|(shorts\/))([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[8].length === 11) ? match[8] : '';
 }
 
 function formatTime(seconds: number): string {
@@ -33,6 +40,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
   const playerRef = useRef<YouTubePlayer | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(true);
@@ -40,6 +48,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
   const [focusedControl, setFocusedControl] = useState<FocusedControl>('playpause');
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [videoError, setVideoError] = useState(false);
 
   const showControls = useCallback(() => {
     setControlsVisible(true);
@@ -48,17 +57,38 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
   }, []);
 
   const onReady = useCallback((event: YouTubeEvent) => {
+    if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
     playerRef.current = event.target;
-    event.target.playVideo();
+    setVideoError(false);
+    // playVideo pode falhar se o browser bloquear autoplay
+    try {
+      const playPromise = event.target.playVideo();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          // Autoplay bloqueado — usuário pode pressionar Enter para dar play
+          setIsPlaying(false);
+        });
+      }
+    } catch {
+      setIsPlaying(false);
+    }
     const dur = event.target.getDuration();
     if (dur) setDuration(dur);
     showControls();
   }, [showControls]);
 
+  const onError = useCallback((event: YouTubeEvent<number>) => {
+    // YouTube error codes: 2=invalid param, 5=HTML5 error, 100=not found,
+    // 101/150=not allowed to embed
+    console.error('YouTube player error:', event.data);
+    setVideoError(true);
+  }, []);
+
   const onStateChange = useCallback((event: YouTubeEvent<number>) => {
-    // YT.PlayerState: 1=PLAYING, 2=PAUSED
+    // YT.PlayerState: -1=UNSTARTED, 0=ENDED, 1=PLAYING, 2=PAUSED, 3=BUFFERING, 5=CUED
     setIsPlaying(event.data === 1);
     if (event.data === 1) {
+      setVideoError(false);
       const dur = playerRef.current?.getDuration();
       if (dur) setDuration(dur);
     }
@@ -85,10 +115,21 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
     };
   }, [showControls]);
 
-  // Focus container for keyboard events
+  // Reset error state, focus container and start loading timeout
   useEffect(() => {
+    setVideoError(false);
     containerRef.current?.focus();
-  }, []);
+
+    if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
+    // Show error if video doesn't load in 10s
+    loadingTimeoutRef.current = setTimeout(() => {
+      if (!playerRef.current) setVideoError(true);
+    }, 10000);
+
+    return () => {
+      if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
+    };
+  }, [videoId]);
 
   const togglePlayPause = useCallback(() => {
     if (!playerRef.current) return;
@@ -164,6 +205,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
   const opts = {
     width: '100%',
     height: '100%',
+    host: 'https://www.youtube-nocookie.com',
     playerVars: {
       autoplay: 1 as const,
       controls: 0 as const,
@@ -171,6 +213,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
       rel: 0 as const,
       fs: 0 as const,
       iv_load_policy: 3 as const,
+      enablejsapi: 1 as const,
     },
   };
 
@@ -332,18 +375,31 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
     >
       {/* YouTube Player */}
       <div style={playerWrapperStyle}>
-        {videoId ? (
+        {videoId && !videoError ? (
           <YouTube
             videoId={videoId}
             opts={opts}
             onReady={onReady}
+            onError={onError}
             onStateChange={onStateChange}
             style={{ width: '100%', height: '100%' }}
             iframeClassName="watch-youtube-iframe"
           />
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: colors.text.primaryInverse, ...typography.headline.medium }}>
-            Video não disponível
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            gap: '16px',
+          }}>
+            <span style={{ color: colors.text.primaryInverse, ...typography.headline.medium }}>
+              {videoError ? 'Erro ao carregar o vídeo' : 'Vídeo não disponível'}
+            </span>
+            <span style={{ color: colors.text.secondaryInverse, ...typography.body.medium }}>
+              Pressione Escape para voltar
+            </span>
           </div>
         )}
       </div>
