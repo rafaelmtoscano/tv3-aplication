@@ -43,14 +43,16 @@ export const VideoPlayer = React.memo(
             video.play().catch(() => {});
 
             if (!muted) {
-              // Unmute após próxima interação do usuário
+              // Unmute após próxima interação do usuário.
+              // CRITICAL: usar capture: true para interceptar antes de
+              // handlers React que fazem stopPropagation (ex: LivePlayer).
               const unmute = () => {
                 video.muted = false;
-                window.removeEventListener('keydown', unmute);
-                window.removeEventListener('click', unmute);
+                window.removeEventListener('keydown', unmute, true);
+                window.removeEventListener('click', unmute, true);
               };
-              window.addEventListener('keydown', unmute, { once: true });
-              window.addEventListener('click', unmute, { once: true });
+              window.addEventListener('keydown', unmute, { capture: true, once: true });
+              window.addEventListener('click', unmute, { capture: true, once: true });
             }
           });
         });
