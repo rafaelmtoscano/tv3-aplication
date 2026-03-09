@@ -18,8 +18,15 @@ type FocusedControl = 'back' | 'rewind' | 'playpause' | 'forward';
 const CONTROL_ORDER: FocusedControl[] = ['back', 'rewind', 'playpause', 'forward'];
 
 function extractYouTubeId(url: string): string {
-  const match = url.match(/(?:v=|youtu\.be\/)([^&\s]+)/);
-  return match?.[1] ?? '';
+  // Handles:
+  // - youtube.com/watch?v=ID
+  // - youtube.com/embed/ID
+  // - youtube.com/v/ID
+  // - youtube.com/shorts/ID
+  // - youtu.be/ID
+  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?\??v=)|(shorts\/))([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[8].length === 11) ? match[8] : '';
 }
 
 function formatTime(seconds: number): string {
@@ -33,6 +40,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
   const playerRef = useRef<YouTubePlayer | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(true);
@@ -49,6 +57,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
   }, []);
 
   const onReady = useCallback((event: YouTubeEvent) => {
+    if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
     playerRef.current = event.target;
     setVideoError(false);
     // playVideo pode falhar se o browser bloquear autoplay
@@ -106,10 +115,20 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
     };
   }, [showControls]);
 
-  // Reset error state and focus container
+  // Reset error state, focus container and start loading timeout
   useEffect(() => {
     setVideoError(false);
     containerRef.current?.focus();
+
+    if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
+    // Show error if video doesn't load in 10s
+    loadingTimeoutRef.current = setTimeout(() => {
+      if (!playerRef.current) setVideoError(true);
+    }, 10000);
+
+    return () => {
+      if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
+    };
   }, [videoId]);
 
   const togglePlayPause = useCallback(() => {
@@ -186,6 +205,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
   const opts = {
     width: '100%',
     height: '100%',
+    host: 'https://www.youtube-nocookie.com',
     playerVars: {
       autoplay: 1 as const,
       controls: 0 as const,
@@ -193,7 +213,7 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
       rel: 0 as const,
       fs: 0 as const,
       iv_load_policy: 3 as const,
-      origin: window.location.origin,
+      enablejsapi: 1 as const,
     },
   };
 
