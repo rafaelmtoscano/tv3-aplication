@@ -151,7 +151,14 @@ export const LivePlayer = React.memo(
               e.preventDefault();
               setEpgFocusedIndex((i) => Math.min(i + 1, 7));
             } else {
-              setFocusedIndex((i) => Math.min(i + 1, channels.length));
+              setFocusedIndex((prev) => {
+                const next = Math.min(prev + 1, channels.length);
+                // Troca canal instantaneamente ao navegar (index 0 = Sair)
+                if (next > 0 && channels[next - 1]) {
+                  setActiveChannelId(channels[next - 1].id);
+                }
+                return next;
+              });
             }
             break;
 
@@ -160,7 +167,14 @@ export const LivePlayer = React.memo(
               e.preventDefault();
               setEpgFocusedIndex((i) => Math.max(i - 1, 0));
             } else {
-              setFocusedIndex((i) => Math.max(i - 1, 0));
+              setFocusedIndex((prev) => {
+                const next = Math.max(prev - 1, 0);
+                // Troca canal instantaneamente ao navegar (index 0 = Sair)
+                if (next > 0 && channels[next - 1]) {
+                  setActiveChannelId(channels[next - 1].id);
+                }
+                return next;
+              });
             }
             break;
 
