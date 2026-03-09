@@ -39,6 +39,8 @@ export const LivePlayer = React.memo(
       const [controlsVisible, setControlsVisible] = useState(true);
       const [showEPG, setShowEPG] = useState(false);
       const [epgFocusedIndex, setEpgFocusedIndex] = useState(0);
+      // singleChannel: posição na rail unificada. -1 = botão Sair, 0..N = EPG cards
+      const [singleFocusIndex, setSingleFocusIndex] = useState(-1);
       const [reminderEntry, setReminderEntry] = useState<EPGEntry | null>(null);
 
       const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -91,13 +93,50 @@ export const LivePlayer = React.memo(
           return;
         }
 
+        // ─── singleChannel: rail unificada [Sair, EPG0, EPG1, ...] ─────────
+        if (singleChannel) {
+          switch (e.key) {
+            case 'ArrowRight':
+              setSingleFocusIndex((i) => Math.min(i + 1, 7));
+              break;
+
+            case 'ArrowLeft':
+              setSingleFocusIndex((i) => Math.max(i - 1, -1));
+              break;
+
+            case 'Enter':
+            case ' ':
+              if (singleFocusIndex === -1) {
+                // Sair
+                e.nativeEvent.stopImmediatePropagation();
+                onExit?.();
+              } else {
+                // EPG card
+                const epgEntries = getUpcomingPrograms(allSchedules[activeChannel.id], 8);
+                const entry = epgEntries[singleFocusIndex];
+                if (entry) setReminderEntry(entry);
+              }
+              break;
+
+            case 'Escape':
+            case 'Backspace':
+              e.nativeEvent.stopImmediatePropagation();
+              onExit?.();
+              break;
+
+            default:
+              break;
+          }
+          return;
+        }
+
+        // ─── multiChannel: comportamento original ──────────────────────────
         switch (e.key) {
           case 'ArrowDown':
             if (controlsVisible && !showEPG) {
               e.preventDefault();
               setShowEPG(true);
               setEpgFocusedIndex(0);
-              if (singleChannel) setSairFocused(false);
             }
             break;
 
@@ -105,7 +144,6 @@ export const LivePlayer = React.memo(
             if (showEPG) {
               e.preventDefault();
               setShowEPG(false);
-              if (singleChannel) setSairFocused(true);
             }
             break;
 
@@ -113,7 +151,7 @@ export const LivePlayer = React.memo(
             if (showEPG) {
               e.preventDefault();
               setEpgFocusedIndex((i) => Math.min(i + 1, 7));
-            } else if (!singleChannel) {
+            } else {
               setFocusedIndex((i) => Math.min(i + 1, channels.length));
             }
             break;
@@ -122,7 +160,7 @@ export const LivePlayer = React.memo(
             if (showEPG) {
               e.preventDefault();
               setEpgFocusedIndex((i) => Math.max(i - 1, 0));
-            } else if (!singleChannel) {
+            } else {
               setFocusedIndex((i) => Math.max(i - 1, 0));
             }
             break;
@@ -133,17 +171,8 @@ export const LivePlayer = React.memo(
               const epgEntries = getUpcomingPrograms(allSchedules[activeChannel.id], 8);
               const entry = epgEntries[epgFocusedIndex];
               if (entry) setReminderEntry(entry);
-            } else if (singleChannel) {
-              if (sairFocused) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.nativeEvent.stopImmediatePropagation();
-                onExit?.();
-              }
             } else {
               if (focusedIndex === 0) {
-                e.preventDefault();
-                e.stopPropagation();
                 e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
               } else if (channels[focusedIndex - 1]) {
@@ -154,16 +183,7 @@ export const LivePlayer = React.memo(
 
           case ' ':
             if (!showEPG) {
-              if (singleChannel) {
-                if (sairFocused) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  e.nativeEvent.stopImmediatePropagation();
-                  onExit?.();
-                }
-              } else if (focusedIndex === 0) {
-                e.preventDefault();
-                e.stopPropagation();
+              if (focusedIndex === 0) {
                 e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
               } else if (channels[focusedIndex - 1]) {
@@ -174,8 +194,6 @@ export const LivePlayer = React.memo(
 
           case 'Escape':
           case 'Backspace':
-            e.preventDefault();
-            e.stopPropagation();
             e.nativeEvent.stopImmediatePropagation();
             if (showEPG) {
               setShowEPG(false);
@@ -187,7 +205,7 @@ export const LivePlayer = React.memo(
           default:
             break;
         }
-      }, [controlsVisible, showEPG, singleChannel, channels, activeChannel, focusedIndex, epgFocusedIndex, sairFocused, reminderEntry, resetTimer, onExit]);
+      }, [controlsVisible, showEPG, singleChannel, singleFocusIndex, channels, activeChannel, focusedIndex, epgFocusedIndex, reminderEntry, resetTimer, onExit]);
 
       if (!activeChannel) return null;
 
@@ -351,23 +369,38 @@ export const LivePlayer = React.memo(
               </div>
 
               <div style={toggleLabelStyle}>
-                {showEPG ? 'Canais ▲' : 'Programação ▼'}
+                {singleChannel ? 'Programação' : (showEPG ? 'Canais ▲' : 'Programação ▼')}
               </div>
 
               <div style={railContainerStyle}>
-                {!showEPG ? (
-                  singleChannel ? (
-                    <div style={{ height: '312px', display: 'flex', alignItems: 'center' }}>
-                      <ActionButton
+                {singleChannel ? (
+                  /* ── singleChannel: Sair + EPG lado a lado ── */
+                  <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'center', height: '312px' }}>
+                    <div style={{ flexShrink: 0 }}>
+                      <TileButton
+                        variant="icon-label"
                         label="Sair"
-                        state={sairFocused ? 'focus' : 'idle'}
-                        isFocused={sairFocused}
+                        icon={<CloseIcon size={32} />}
+                        isFocused={singleFocusIndex === -1}
                         onClick={() => onExit?.()}
                       />
                     </div>
-                  ) : (
-                    <div style={railWrapperStyle}>
-                      <TileButton
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <EPGRail
+                        channelId={activeChannel.id}
+                        channelLogo={activeChannel.logo}
+                        channelName={activeChannel.name}
+                        focusedIndex={singleFocusIndex >= 0 ? singleFocusIndex : -1}
+                        onFocusedIndexChange={(i) => setSingleFocusIndex(i)}
+                        onItemClick={(entry) => setReminderEntry(entry)}
+                        cardBackground={colors.background.baseInverse}
+                      />
+                    </div>
+                  </div>
+                ) : !showEPG ? (
+                  /* ── multiChannel: rail de canais ── */
+                  <div style={railWrapperStyle}>
+                    <TileButton
                       variant="icon-label"
                       label="Sair"
                       icon={<CloseIcon size={32} />}
@@ -375,32 +408,32 @@ export const LivePlayer = React.memo(
                       onClick={() => onExit?.()}
                     />
 
-                      {channels.map((channel, i) => (
-                        <div
-                          key={channel.id}
-                          style={{
-                            outline: activeChannelId === channel.id && focusedIndex !== i + 1
-                              ? '3px solid rgba(255,255,255,0.4)'
-                              : 'none',
-                            transition: 'outline 0.2s ease',
-                            flexShrink: 0,
-                          }}
-                        >
-                          <TileButton
-                            variant="image"
-                            image={channel.logoFull || channel.logo || PLACEHOLDER_LOGO}
-                            label={channel.name}
-                            alt={channel.name}
-                            isFocused={focusedIndex === i + 1}
-                            onClick={() => setActiveChannelId(channel.id)}
-                            imageObjectFit="contain"
-                            backgroundColor={channel.backgroundColor}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )
+                    {channels.map((channel, i) => (
+                      <div
+                        key={channel.id}
+                        style={{
+                          outline: activeChannelId === channel.id && focusedIndex !== i + 1
+                            ? '3px solid rgba(255,255,255,0.4)'
+                            : 'none',
+                          transition: 'outline 0.2s ease',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <TileButton
+                          variant="image"
+                          image={channel.logoFull || channel.logo || PLACEHOLDER_LOGO}
+                          label={channel.name}
+                          alt={channel.name}
+                          isFocused={focusedIndex === i + 1}
+                          onClick={() => setActiveChannelId(channel.id)}
+                          imageObjectFit="contain"
+                          backgroundColor={channel.backgroundColor}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 ) : (
+                  /* ── multiChannel: EPG expandida ── */
                   <EPGRail
                     channelId={activeChannel.id}
                     channelLogo={activeChannel.logo}
