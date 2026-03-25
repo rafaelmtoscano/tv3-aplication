@@ -3,6 +3,7 @@
 // TODO: substituir mocks por chamadas à API quando em produção
 
 const API_BASE = 'https://dadosabertos.camara.leg.br/api/v2';
+const FORCE_VOTING = import.meta.env.VITE_FORCE_VOTING === 'true';
 
 // ─────────────────────────────────────────────
 // INTERFACES
@@ -131,7 +132,42 @@ export async function fetchVotacaoAtiva(eventId: number): Promise<Votacao | null
  * Orquestra as três chamadas e retorna o estado completo da sessão.
  * Usa Promise.allSettled para resiliência — falha parcial não quebra o overlay.
  */
+const MOCK_SESSAO: SessaoAtiva = {
+  eventId: 999999,
+  descricao: 'Sessão Deliberativa Ordinária — Modo Demo',
+  situacao: 'Iniciado',
+  votacaoAtiva: {
+    id: 'demo-votacao-001',
+    uri: '',
+    data: new Date().toISOString().split('T')[0],
+    dataHoraRegistro: new Date().toISOString(),
+    siglaOrgao: 'PLEN',
+    descricao: 'O Plenário deve aprovar o Projeto de Lei 1234/2024, que regulamenta o uso de inteligência artificial no serviço público brasileiro?',
+    aprovacao: null,
+    placar: { sim: 287, nao: 134, abstencao: 21 },
+  },
+  pauta: [
+    {
+      ordem: 1,
+      regime: 'Ordinária',
+      titulo: 'PL 1234/2024',
+      ementa: 'Regulamenta o uso de inteligência artificial no serviço público brasileiro, estabelecendo diretrizes de transparência, responsabilidade e proteção de dados.',
+      situacaoItem: 'Em votação',
+      proposicao_: { id: 1234, siglaTipo: 'PL', numero: '1234', ano: 2024, uri: null },
+    },
+    {
+      ordem: 2,
+      regime: 'Urgência',
+      titulo: 'PEC 45/2023',
+      ementa: 'Altera a Constituição Federal para incluir o acesso à internet como direito fundamental.',
+      situacaoItem: 'Pendente',
+      proposicao_: { id: 45, siglaTipo: 'PEC', numero: '45', ano: 2023, uri: null },
+    },
+  ],
+};
+
 export async function fetchSessaoCompleta(): Promise<SessaoAtiva | null> {
+    if (FORCE_VOTING) return MOCK_SESSAO;
   const evento = await fetchSessaoAtiva();
   if (!evento) return null;
 
