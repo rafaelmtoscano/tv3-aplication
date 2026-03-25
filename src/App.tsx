@@ -32,7 +32,7 @@ export default function App() {
   const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
   const [deputyLoading, setDeputyLoading] = useState(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
-  const { sessionCode, updateChannel } = useSecondScreen();
+  const { sessionCode, updateChannel, updateVoting } = useSecondScreen();
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
@@ -404,6 +404,8 @@ export default function App() {
             setLivePage(null);
             resetToMain();
           }}
+          onUpdateChannel={updateChannel}
+          onUpdateVoting={updateVoting}
         />
       )}
     </>
