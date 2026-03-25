@@ -75,6 +75,21 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         initialChannelId={initialChannelId}
         singleChannel={singleChannel}
         onExit={onExit}
+        onChannelChange={(channelId) => {
+          if (!onUpdateChannel) return;
+          const ch = liveChannels.find(c => c.id === channelId);
+          if (!ch) return;
+          onUpdateChannel({
+            channelId: ch.id,
+            channelName: ch.name,
+            channelColor: ch.backgroundColor ?? '',
+            channelLogo: ch.logo ?? '',
+            programTitle: '',
+            programSubtitle: '',
+            programTime: '',
+            isLive: true,
+          });
+        }}
       />
 
       {isTvCamara && isActive && (

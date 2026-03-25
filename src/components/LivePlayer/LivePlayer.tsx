@@ -155,7 +155,7 @@ export const LivePlayer = React.memo(
                 const next = Math.min(prev + 1, channels.length);
                 // Troca canal instantaneamente ao navegar (index 0 = Sair)
                 if (next > 0 && channels[next - 1]) {
-                  setActiveChannelId(channels[next - 1].id);
+                  handleChannelChange(channels[next - 1].id);
                 }
                 return next;
               });
@@ -171,7 +171,7 @@ export const LivePlayer = React.memo(
                 const next = Math.max(prev - 1, 0);
                 // Troca canal instantaneamente ao navegar (index 0 = Sair)
                 if (next > 0 && channels[next - 1]) {
-                  setActiveChannelId(channels[next - 1].id);
+                  handleChannelChange(channels[next - 1].id);
                 }
                 return next;
               });
@@ -189,7 +189,7 @@ export const LivePlayer = React.memo(
                 e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
               } else if (channels[focusedIndex - 1]) {
-                setActiveChannelId(channels[focusedIndex - 1].id);
+                handleChannelChange(channels[focusedIndex - 1].id);
               }
             }
             break;
@@ -200,7 +200,7 @@ export const LivePlayer = React.memo(
                 e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
               } else if (channels[focusedIndex - 1]) {
-                setActiveChannelId(channels[focusedIndex - 1].id);
+                handleChannelChange(channels[focusedIndex - 1].id);
               }
             }
             break;
@@ -218,7 +218,7 @@ export const LivePlayer = React.memo(
           default:
             break;
         }
-      }, [controlsVisible, showEPG, singleChannel, singleFocusIndex, channels, activeChannel, focusedIndex, epgFocusedIndex, reminderEntry, resetTimer, onExit]);
+      }, [controlsVisible, showEPG, singleChannel, singleFocusIndex, channels, activeChannel, focusedIndex, epgFocusedIndex, reminderEntry, resetTimer, onExit, handleChannelChange]);
 
       if (!activeChannel) return null;
 
@@ -439,7 +439,7 @@ export const LivePlayer = React.memo(
                           label={channel.name}
                           alt={channel.name}
                           isFocused={focusedIndex === i + 1}
-                          onClick={() => setActiveChannelId(channel.id)}
+                          onClick={() => handleChannelChange(channel.id)}
                           imageObjectFit="contain"
                           backgroundColor={channel.backgroundColor}
                         />
