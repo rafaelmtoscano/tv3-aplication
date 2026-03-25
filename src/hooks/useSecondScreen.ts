@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   doc, setDoc, updateDoc, onSnapshot,
-  serverTimestamp, deleteDoc
+  serverTimestamp, deleteDoc, getDoc
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -66,12 +66,34 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
     }).catch(console.error);
   }, [sessionCode]);
 
-  const updateVoting = useCallback((votacaoId: string | null, active: boolean) => {
+  const updateVoting = useCallback(async (votacaoId: string | null, active: boolean) => {
+    // Atualiza sessão
     updateDoc(doc(db, 'sessions', sessionCode), {
       votingActive: active,
       votacaoId,
       updatedAt: serverTimestamp(),
     }).catch(console.error);
+
+    // Se votação ativa, garante que o documento votes/{votacaoId} existe
+    if (active && votacaoId) {
+      const voteRef = doc(db, 'votes', votacaoId);
+      const snap = await getDoc(voteRef).catch(() => null);
+      if (!snap?.exists()) {
+        // Cria documento de votação para o mobile consumir via onSnapshot
+        setDoc(voteRef, {
+          question: 'O Plenário deve aprovar o Projeto de Lei 1234/2024, que regulamenta o uso de inteligência artificial no serviço público brasileiro?',
+          options: [
+            { id: 'sim', label: 'Sim', votes: 287, pct: 66 },
+            { id: 'nao', label: 'Não', votes: 134, pct: 31 },
+            { id: 'abstencao', label: 'Abstenção', votes: 21, pct: 5 },
+          ],
+          totalVotes: 442,
+          sessionCode,
+          status: 'active',
+          createdAt: serverTimestamp(),
+        }).catch(console.error);
+      }
+    }
   }, [sessionCode]);
 
   return { sessionCode, updateChannel, updateVoting };
