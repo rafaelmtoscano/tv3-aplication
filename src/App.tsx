@@ -32,7 +32,7 @@ export default function App() {
   const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
   const [deputyLoading, setDeputyLoading] = useState(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
-  const { sessionCode } = useSecondScreen();
+  const { sessionCode, updateChannel } = useSecondScreen();
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
@@ -142,8 +142,30 @@ export default function App() {
         if (state.mainZone === 'hero') {
           const slide = homeData.hero[state.mainItemIndex];
           if (slide?.isLive) {
+            const ch = channels.find(c => c.id === slide.channelId);
+            updateChannel({
+              channelId: slide.channelId,
+              channelName: ch?.name ?? slide.channelId,
+              channelColor: ch?.backgroundColor ?? '',
+              channelLogo: ch?.logo ?? '',
+              programTitle: slide.title ?? '',
+              programSubtitle: slide.description ?? '',
+              programTime: '',
+              isLive: true,
+            });
             setLivePage({ channelId: slide.channelId, singleChannel: true });
           } else if (slide?.videoUrl) {
+            const ch = channels.find(c => c.id === slide.channelId);
+            updateChannel({
+              channelId: slide.channelId,
+              channelName: ch?.name ?? slide.channelId,
+              channelColor: ch?.backgroundColor ?? '',
+              channelLogo: ch?.logo ?? '',
+              programTitle: slide.title ?? '',
+              programSubtitle: slide.description ?? '',
+              programTime: '',
+              isLive: false,
+            });
             setWatchPage({ videoUrl: slide.videoUrl, title: slide.title, logo: slide.logo, channelName: slide.channelId });
           }
         }
@@ -151,6 +173,17 @@ export default function App() {
           // rail-0 = TV ao vivo
           const card = homeData.rails[0].cards[state.mainItemIndex];
           if (card?.streamUrl) {
+            const ch = channels.find(c => c.id === card.channelId);
+            updateChannel({
+              channelId: card.channelId,
+              channelName: card.channelName ?? ch?.name ?? '',
+              channelColor: ch?.backgroundColor ?? '',
+              channelLogo: card.logo ?? ch?.logo ?? '',
+              programTitle: card.title ?? '',
+              programSubtitle: '',
+              programTime: '',
+              isLive: true,
+            });
             setLivePage({ channelId: card.channelId });
           }
         }
@@ -161,6 +194,17 @@ export default function App() {
           if (railIndex >= 1 && railIndex < homeData.rails.length) {
             const card = homeData.rails[railIndex]?.cards[state.mainItemIndex];
             if (card?.videoUrl) {
+              const ch = channels.find(c => c.id === card.channelId);
+              updateChannel({
+                channelId: card.channelId,
+                channelName: card.channelName ?? ch?.name ?? '',
+                channelColor: ch?.backgroundColor ?? '',
+                channelLogo: card.logo ?? ch?.logo ?? '',
+                programTitle: card.title ?? '',
+                programSubtitle: '',
+                programTime: '',
+                isLive: false,
+              });
               setWatchPage({ videoUrl: card.videoUrl, title: card.title, logo: card.logo, channelName: card.channelName });
             }
           }
@@ -174,7 +218,7 @@ export default function App() {
           }
         }
       }
-    }, [deputies, handleDeputySelect]),
+    }, [deputies, handleDeputySelect, updateChannel]),
     onSidebarSelect: handleSidebarSelect,
   });
 
