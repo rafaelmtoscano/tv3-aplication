@@ -23,6 +23,7 @@ export interface LivePlayerProps {
   initialChannelId?: string;
   singleChannel?: boolean;
   onExit?: () => void;
+  onChannelChange?: (channelId: string) => void;
   className?: string;
 }
 
@@ -30,7 +31,7 @@ const PLACEHOLDER_LOGO = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/
 
 export const LivePlayer = React.memo(
   forwardRef<HTMLDivElement, LivePlayerProps>(
-    ({ channels = [], initialChannelId, singleChannel = false, onExit, className }, ref) => {
+    ({ channels = [], initialChannelId, singleChannel = false, onExit, onChannelChange, className }, ref) => {
       const [activeChannelId, setActiveChannelId] = useState(
         initialChannelId || channels[0]?.id
       );
@@ -71,6 +72,11 @@ export const LivePlayer = React.memo(
           }
         };
       }, [resetTimer]);
+
+      const handleChannelChange = useCallback((id: string) => {
+        setActiveChannelId(id);
+        onChannelChange?.(id);
+      }, [onChannelChange]);
 
       const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         resetTimer();
