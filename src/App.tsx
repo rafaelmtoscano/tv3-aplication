@@ -15,6 +15,7 @@ import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
 import type { FocusState } from './hooks/useFocusNavigation';
 import { useCamaraAPI } from './hooks/useCamaraAPI';
+import { useSecondScreen } from './hooks/useSecondScreen';
 import { homeData } from './data/home';
 import { services } from './data/services';
 import { channels } from './data/channels';
@@ -31,6 +32,7 @@ export default function App() {
   const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
   const [deputyLoading, setDeputyLoading] = useState(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
+  const { sessionCode } = useSecondScreen();
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
@@ -267,6 +269,39 @@ export default function App() {
 
   return (
     <>
+      {/* Badge segunda tela — código de sessão */}
+      <div style={{
+        position: 'fixed',
+        bottom: 48,
+        right: 56,
+        zIndex: 200,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        gap: 6,
+        pointerEvents: 'none',
+      }}>
+        <span style={{
+          fontSize: 13,
+          fontFamily: 'Plus Jakarta Sans, sans-serif',
+          color: 'rgba(255,255,255,0.45)',
+          letterSpacing: 1,
+          textTransform: 'uppercase',
+        }}>
+          Segunda tela
+        </span>
+        <span style={{
+          fontSize: 36,
+          fontFamily: 'Plus Jakarta Sans, sans-serif',
+          fontWeight: 600,
+          color: 'rgba(255,255,255,0.90)',
+          letterSpacing: 8,
+          lineHeight: 1,
+        }}>
+          {sessionCode}
+        </span>
+      </div>
+
       <div style={rootStyle}>
         <Sidebar
           logoName="Plataforma"
