@@ -176,6 +176,7 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
       const railMatch = mainZone.match(/^rail-(\d+)$/);
       if (railMatch) {
         const railIdx = parseInt(railMatch[1]);
+        // rail-0 is the services rail right below hero
         setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * railIdx - RAIL_SCROLL_OFFSET);
       }
     }
@@ -209,14 +210,66 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
           />
         </div>
 
-        {/* Content Rails */}
+        {/* Services Rail (rail-0) */}
+        <div style={{ padding: '32px 0 0 0' }}>
+          <p style={{
+            fontFamily: 'Plus Jakarta Sans, sans-serif',
+            fontWeight: 500,
+            fontSize: '28px',
+            lineHeight: '120%',
+            color: 'rgba(255,255,255,0.75)',
+            margin: 0,
+            padding: '0 64px 16px',
+          }}>
+            Serviços
+          </p>
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            height: mainZone === 'rail-0' ? '312px' : '248px',
+            transition: 'height 0.35s cubic-bezier(0.34, 1.1, 0.64, 1)',
+            overflow: 'visible',
+          }}>
+            <div className="services-rail-hide-scrollbar" style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '24px',
+              alignItems: 'center',
+              overflowX: 'auto',
+              overflowY: 'visible',
+              paddingLeft: '64px',
+              paddingRight: '64px',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              scrollBehavior: 'smooth',
+              boxSizing: 'border-box',
+            }}>
+              {services.map((service, i) => (
+                <div key={service.id} style={{ flexShrink: 0 }}>
+                  <TileButton
+                    variant="image"
+                    image={service.image}
+                    alt={service.name}
+                    isFocused={mainZone === 'rail-0' && mainItemIndex === i}
+                    imageObjectFit="contain"
+                    backgroundColor={service.backgroundColor}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Content Rails (rail-1 through rail-N) */}
         {homeData.rails.map((rail, railIndex) => (
           <ContentRail
             key={rail.id}
             title={rail.title}
             variant={rail.variant}
             items={railItems(rail.cards)}
-            focusedIndex={mainZone === `rail-${railIndex}` ? mainItemIndex : -1}
+            focusedIndex={mainZone === `rail-${railIndex + 1}` ? mainItemIndex : -1}
             onFocusedIndexChange={() => {}}
             onNavigateUp={() => {}}
             onNavigateDown={() => {}}
@@ -225,7 +278,7 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
 
         {/* Seção Serviços + Banner gov.br */}
         <ServicesSection
-          focusedIndex={mainZone === 'rail-4' ? mainItemIndex : -1}
+          focusedIndex={mainZone === 'rail-5' ? mainItemIndex : -1}
         />
 
         {/* Spacing after services section */}

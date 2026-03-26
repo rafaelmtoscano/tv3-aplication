@@ -47,7 +47,7 @@ export default function App() {
   const railLengths = useMemo(() =>
     currentPage === 'apps-camara'
       ? [deputies.length + 1, 10] // +1 for "Ver todos"
-      : [...homeData.rails.map((r) => r.cards.length), services.length],
+      : [services.length, ...homeData.rails.map((r) => r.cards.length), services.length],
     [currentPage, deputies.length]
   );
 
@@ -169,8 +169,15 @@ export default function App() {
             setWatchPage({ videoUrl: slide.videoUrl, title: slide.title, logo: slide.logo, channelName: slide.channelId });
           }
         }
+        // rail-0 = Serviços (new)
         if (state.mainZone === 'rail-0') {
-          // rail-0 = TV ao vivo
+          const service = services[state.mainItemIndex];
+          if (service?.id === 'camara-deputados') {
+            setCurrentPage('apps-camara');
+          }
+        }
+        if (state.mainZone === 'rail-1') {
+          // rail-1 = TV ao vivo
           const card = homeData.rails[0].cards[state.mainItemIndex];
           if (card?.streamUrl) {
             const ch = channels.find(c => c.id === card.channelId);
@@ -187,12 +194,12 @@ export default function App() {
             setLivePage({ channelId: card.channelId });
           }
         }
-        // Video rails (rail-1, rail-2, rail-3, etc.)
+        // Video rails (rail-2, rail-3, rail-4, etc.)
         const zoneMatch = state.mainZone.match(/^rail-(\d+)$/);
         if (zoneMatch) {
           const railIndex = parseInt(zoneMatch[1]);
-          if (railIndex >= 1 && railIndex < homeData.rails.length) {
-            const card = homeData.rails[railIndex]?.cards[state.mainItemIndex];
+          if (railIndex >= 2 && railIndex < homeData.rails.length + 1) {
+            const card = homeData.rails[railIndex - 1]?.cards[state.mainItemIndex];
             if (card?.videoUrl) {
               const ch = channels.find(c => c.id === card.channelId);
               updateChannel({
@@ -210,8 +217,8 @@ export default function App() {
           }
         }
 
-        // rail-4 = Serviços
-        if (state.mainZone === 'rail-4') {
+        // rail-5 = Serviços (Gov.br section)
+        if (state.mainZone === 'rail-5') {
           const service = services[state.mainItemIndex];
           if (service?.id === 'camara-deputados') {
             setCurrentPage('apps-camara');
