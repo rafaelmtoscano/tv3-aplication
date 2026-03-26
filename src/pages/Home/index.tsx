@@ -7,6 +7,7 @@ import type { MainZone } from '../../hooks/useFocusNavigation';
 import { homeData } from '../../data/home';
 import type { Rail } from '../../data/home';
 import { colors } from '../../styles/colors';
+import { typography } from '../../styles/typography';
 import { TileButton } from '../../components/TileButton';
 import { services } from '../../data/services';
 
@@ -211,18 +212,23 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
         </div>
 
         {/* Services Rail (rail-0) */}
-        <div style={{ padding: '32px 0 0 0' }}>
-          <p style={{
-            fontFamily: 'Plus Jakarta Sans, sans-serif',
-            fontWeight: 500,
-            fontSize: '28px',
-            lineHeight: '120%',
-            color: 'rgba(255,255,255,0.75)',
+        <div style={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '48px',
+          marginBottom: '64px',
+          overflowX: 'visible',
+          overflowY: 'visible',
+        }}>
+          <h2 style={{
+            ...typography.display.small,
+            color: colors.text.primaryInverse,
+            paddingLeft: '64px',
             margin: 0,
-            padding: '0 64px 16px',
           }}>
             Serviços
-          </p>
+          </h2>
           <div style={{
             position: 'relative',
             width: '100%',
@@ -234,13 +240,11 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
               position: 'absolute',
               inset: 0,
               display: 'flex',
-              flexDirection: 'row',
-              gap: '24px',
+              gap: '48px',
               alignItems: 'center',
               overflowX: 'auto',
               overflowY: 'visible',
-              paddingLeft: '64px',
-              paddingRight: '64px',
+              padding: '0 64px',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
               scrollBehavior: 'smooth',
