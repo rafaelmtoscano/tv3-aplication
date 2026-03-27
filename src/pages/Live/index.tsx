@@ -1,8 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { LivePlayer } from '../../components/LivePlayer';
 import { channels } from '../../data/channels';
 import { usePlenarioVoting } from '../../hooks/usePlenarioVoting';
 import { VotingOverlay } from './components/VotingOverlay';
+import { ResourcesPanel } from '../../components/ResourcesPanel';
+import type { ResourceType } from '../../components/ResourcesPanel';
+import { VotingOverlay as ParliamentVotingOverlay } from '../../components/VotingOverlay';
+import { PollOverlay } from '../../components/PollOverlay';
+import { HearingOverlay } from '../../components/HearingOverlay';
+import { mockVotingResult } from '../../data/votingMock';
+import { activePoll } from '../../data/polls';
+import { activeHearing } from '../../data/hearings';
 
 interface LivePageProps {
   isActive?: boolean;
@@ -36,11 +44,65 @@ const liveChannels = channels
 
 export default function LivePage({ initialChannelId, singleChannel, onExit, isActive, onUpdateChannel, onUpdateVoting }: LivePageProps) {
   const livePlayerRef = useRef<HTMLDivElement>(null);
+  const resourcesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showResourcesPanel, setShowResourcesPanel] = useState(false);
+  const [activeOverlay, setActiveOverlay] = useState<ResourceType | null>(null);
+  const [isAuthenticated] = useState(false); // TODO: conectar ao estado real de auth
+
+  // Recursos disponíveis para demo
+  const availableResources = [
+    {
+      id: 'voting',
+      icon: <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.8)' }}>🗳️</span>,
+      title: 'Painel de Votação',
+      description: 'Acompanhe a votação dos parlamentares',
+      type: 'voting' as ResourceType,
+    },
+    {
+      id: 'poll',
+      icon: <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.8)' }}>👤</span>,
+      title: 'Votar em enquetes',
+      description: 'Dê sua opinião sobre a pauta',
+      type: 'poll' as ResourceType,
+    },
+    {
+      id: 'hearing',
+      icon: <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.8)' }}>👥</span>,
+      title: 'Audiências públicas',
+      description: 'Envie dúvidas, comentários ou sugestões',
+      type: 'hearing' as ResourceType,
+    },
+  ];
+
+  const handleResourceSelect = useCallback((type: ResourceType) => {
+    setShowResourcesPanel(false);
+    setActiveOverlay(type);
+  }, []);
+
+  const handleCloseOverlay = useCallback(() => {
+    setActiveOverlay(null);
+  }, []);
 
   // Detect if it is TV Câmara channel
   const isTvCamara = (initialChannelId ?? liveChannels[0]?.id) === 'tv-camara';
 
   const voting = usePlenarioVoting(isTvCamara && !!isActive);
+
+  // Timer de 15s para exibir ResourcesPanel automaticamente
+  useEffect(() => {
+    if (!isActive) {
+      if (resourcesTimerRef.current) clearTimeout(resourcesTimerRef.current);
+      return;
+    }
+    resourcesTimerRef.current = setTimeout(() => {
+      if (!showResourcesPanel && !activeOverlay) {
+        setShowResourcesPanel(true);
+      }
+    }, 15000);
+    return () => {
+      if (resourcesTimerRef.current) clearTimeout(resourcesTimerRef.current);
+    };
+  }, [isActive, showResourcesPanel, activeOverlay]);
 
   // Sincroniza canal ativo com segunda tela ao montar
   useEffect(() => {
@@ -94,6 +156,40 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
 
       {isTvCamara && isActive && (
         <VotingOverlay voting={voting} livePlayerRef={livePlayerRef as any} />
+      )}
+
+      {showResourcesPanel && !activeOverlay && (
+        <ResourcesPanel
+          resources={availableResources}
+          onSelect={handleResourceSelect}
+          onClose={() => setShowResourcesPanel(false)}
+        />
+      )}
+
+      {activeOverlay === 'voting' && (
+        <ParliamentVotingOverlay
+          data={mockVotingResult}
+          onClose={handleCloseOverlay}
+        />
+      )}
+
+      {activeOverlay === 'poll' && (
+        <PollOverlay
+          poll={activePoll}
+          isAuthenticated={isAuthenticated}
+          onClose={handleCloseOverlay}
+          onGovAuth={() => setActiveOverlay(null)}
+        />
+      )}
+
+      {activeOverlay === 'hearing' && (
+        <HearingOverlay
+          title={activeHearing.title}
+          comments={activeHearing.comments}
+          isAuthenticated={isAuthenticated}
+          onClose={handleCloseOverlay}
+          onGovAuth={() => setActiveOverlay(null)}
+        />
       )}
     </div>
   );
