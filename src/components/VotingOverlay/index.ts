@@ -1,0 +1,1 @@
+export { VotingOverlay } from './VotingOverlay';
