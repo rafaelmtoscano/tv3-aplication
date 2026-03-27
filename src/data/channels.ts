@@ -1,4 +1,5 @@
 // TODO: substituir por chamada à API
+import { supabase } from '../lib/supabase';
 
 export interface Program {
   id: string;
@@ -140,3 +141,35 @@ export const channels: Channel[] = [
     ],
   },
 ];
+
+/**
+ * Sincroniza logo, backgroundColor e streamUrl dos canais
+ * com os dados do Supabase. Preserva os programs locais.
+ * Chamado uma vez na inicialização do app (App.tsx).
+ * TODO: mover programs para o Supabase em produção.
+ */
+export async function syncChannelsFromSupabase(): Promise<void> {
+  try {
+    const { data, error } = await supabase
+      .from('channels')
+      .select('id, name, logo, logo_full, background_color, stream_url');
+
+    if (error || !data?.length) {
+      console.warn('[Supabase TV] channels fallback:', error?.message);
+      return;
+    }
+
+    data.forEach(row => {
+      const local = channels.find(ch => ch.id === row.id);
+      if (!local) return;
+      if (row.logo)             local.logo             = row.logo;
+      if (row.logo_full)        local.logoFull         = row.logo_full;
+      if (row.background_color) local.backgroundColor  = row.background_color;
+      if (row.stream_url != null) local.streamUrl      = row.stream_url;
+    });
+
+    console.log('[Supabase TV] channels sincronizados:', data.length);
+  } catch (err) {
+    console.warn('[Supabase TV] erro ao sincronizar channels');
+  }
+}
