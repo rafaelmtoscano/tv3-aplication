@@ -6,10 +6,8 @@ import { VotingOverlay } from './components/VotingOverlay';
 import { ResourcesPanel } from '../../components/ResourcesPanel';
 import type { ResourceType } from '../../components/ResourcesPanel';
 import { VotingOverlay as ParliamentVotingOverlay } from '../../components/VotingOverlay';
-import { PollOverlay } from '../../components/PollOverlay';
 import { HearingOverlay } from '../../components/HearingOverlay';
 import { mockVotingResult } from '../../data/votingMock';
-import { activePoll } from '../../data/polls';
 import { activeHearing } from '../../data/hearings';
 
 interface LivePageProps {
@@ -57,13 +55,6 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
       title: 'Painel de Votação',
       description: 'Acompanhe a votação dos parlamentares',
       type: 'voting' as ResourceType,
-    },
-    {
-      id: 'poll',
-      icon: <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.8)' }}>👤</span>,
-      title: 'Votar em enquetes',
-      description: 'Dê sua opinião sobre a pauta',
-      type: 'poll' as ResourceType,
     },
     {
       id: 'hearing',
@@ -208,15 +199,6 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         <ParliamentVotingOverlay
           data={mockVotingResult}
           onClose={handleCloseOverlay}
-        />
-      )}
-
-      {activeOverlay === 'poll' && (
-        <PollOverlay
-          poll={activePoll}
-          isAuthenticated={isAuthenticated}
-          onClose={handleCloseOverlay}
-          onGovAuth={() => setActiveOverlay(null)}
         />
       )}
 

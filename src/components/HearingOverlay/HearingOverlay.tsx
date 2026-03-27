@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import type { HearingComment } from '../../data/hearings';
@@ -11,9 +11,50 @@ interface HearingOverlayProps {
   onGovAuth: () => void;
 }
 
+type DisplayComment = HearingComment & {
+  isFresh?: boolean;
+};
+
+const MAX_VISIBLE_COMMENTS = 4;
+
+const demoIncomingComments: Omit<HearingComment, 'id'>[] = [
+  {
+    text: 'Boa tarde, gostaria de reforçar a importância do tema para as famílias da minha região.',
+    author: 'A. Souza',
+    state: 'PE',
+    time: 'agora',
+  },
+  {
+    text: 'Esse debate precisa considerar acessibilidade digital desde o início da proposta.',
+    author: 'M. Alves',
+    state: 'SP',
+    time: 'agora',
+  },
+  {
+    text: 'A solução precisa chegar de forma prática para quem está acompanhando de casa.',
+    author: 'R. Lima',
+    state: 'BA',
+    time: 'agora',
+  },
+  {
+    text: 'Excelente iniciativa. Estou acompanhando e espero que isso avance para novas audiências.',
+    author: 'C. Ferreira',
+    state: 'CE',
+    time: 'agora',
+  },
+];
+
 export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGovAuth }: HearingOverlayProps) {
   const closeRef = useRef(onClose);
+  const liveIndexRef = useRef(0);
+  const clearTimersRef = useRef<ReturnType<typeof window.setTimeout>[]>([]);
+  const [visibleComments, setVisibleComments] = useState<DisplayComment[]>(() => comments.map(comment => ({ ...comment })));
+
   closeRef.current = onClose;
+
+  useEffect(() => {
+    setVisibleComments(comments.map(comment => ({ ...comment })));
+  }, [comments]);
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') { e.stopImmediatePropagation(); closeRef.current(); }
@@ -23,6 +64,37 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGo
     window.addEventListener('keydown', handleKey, { capture: true });
     return () => window.removeEventListener('keydown', handleKey, { capture: true });
   }, [handleKey]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      const template = demoIncomingComments[liveIndexRef.current % demoIncomingComments.length];
+      liveIndexRef.current += 1;
+      const nextId = `hearing-live-${Date.now()}-${liveIndexRef.current}`;
+
+      setVisibleComments(current => [
+        {
+          id: nextId,
+          ...template,
+          isFresh: true,
+        },
+        ...current.map(comment => ({ ...comment, isFresh: false })),
+      ].slice(0, MAX_VISIBLE_COMMENTS));
+
+      const timer = window.setTimeout(() => {
+        setVisibleComments(current => current.map(comment => (
+          comment.id === nextId ? { ...comment, isFresh: false } : comment
+        )));
+      }, 1200);
+
+      clearTimersRef.current.push(timer);
+    }, 4200);
+
+    return () => {
+      window.clearInterval(interval);
+      clearTimersRef.current.forEach(clearTimeout);
+      clearTimersRef.current = [];
+    };
+  }, []);
 
   const panelStyle: React.CSSProperties = {
     position: 'fixed',
@@ -64,31 +136,55 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGo
 
       {/* Lista de comentários */}
       <div style={{ flex: 1, overflow: 'hidden', padding: '0 12px' }}>
-        {comments.map((comment, i) => (
-          <div key={comment.id} style={{
+        {visibleComments.map((comment, i) => {
+          const isFresh = Boolean(comment.isFresh);
+          const rowStyle: React.CSSProperties = {
             display: 'flex',
             alignItems: 'flex-start',
             gap: 16,
             padding: '16px 20px',
-            borderBottom: i < comments.length - 1 ? `1px solid ${colors.line.dark}` : 'none',
-          }}>
-            <div style={{
-              width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-              background: colors.background.primaryInverse,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ fontSize: 20, color: colors.text.secondaryInverse }}>👤</span>
+            borderBottom: i < visibleComments.length - 1 ? `1px solid ${colors.line.dark}` : 'none',
+            animation: isFresh ? 'hearingMessageIn 0.35s ease' : 'none',
+          };
+
+          const textStyle: React.CSSProperties = {
+            ...typography.body.medium,
+            color: colors.text.primaryInverse,
+            margin: 0,
+            filter: isFresh ? 'blur(2px)' : 'none',
+            opacity: isFresh ? 0.88 : 1,
+            transition: 'filter 0.25s ease, opacity 0.25s ease',
+          };
+
+          const metaStyle: React.CSSProperties = {
+            ...typography.body.small,
+            color: colors.text.secondaryInverse,
+            margin: '4px 0 0',
+            filter: isFresh ? 'blur(1px)' : 'none',
+            opacity: isFresh ? 0.84 : 1,
+            transition: 'filter 0.25s ease, opacity 0.25s ease',
+          };
+
+          return (
+            <div key={comment.id} style={rowStyle}>
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+                background: colors.background.primaryInverse,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontSize: 20, color: colors.text.secondaryInverse }}>👤</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={textStyle}>
+                  {comment.text}
+                </p>
+                <p style={metaStyle}>
+                  {comment.author} · {comment.state} · {comment.time}
+                </p>
+              </div>
             </div>
-            <div style={{ flex: 1 }}>
-              <p style={{ ...typography.body.medium, color: colors.text.primaryInverse, margin: 0 }}>
-                {comment.text}
-              </p>
-              <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: '4px 0 0' }}>
-                {comment.author} · {comment.state} · {comment.time}
-              </p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Gate gov.br (se não autenticado) */}
@@ -120,6 +216,13 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGo
           Fechar
         </button>
       </div>
+
+      <style>{`
+        @keyframes hearingMessageIn {
+          from { opacity: 0; transform: translateY(-8px) scale(0.985); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </div>
   );
 }
