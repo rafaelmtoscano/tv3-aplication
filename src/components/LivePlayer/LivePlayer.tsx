@@ -101,18 +101,24 @@ export const LivePlayer = React.memo(
 
         // ─── singleChannel: rail unificada [Sair, EPG0, EPG1, ...] ─────────
         if (singleChannel) {
+          // índices: -2 = Recursos (se disponível), -1 = Sair, 0..7 = EPG cards
+          const minIndex = onOpenResources ? -2 : -1;
           switch (e.key) {
             case 'ArrowRight':
               setSingleFocusIndex((i) => Math.min(i + 1, 7));
               break;
 
             case 'ArrowLeft':
-              setSingleFocusIndex((i) => Math.max(i - 1, -1));
+              setSingleFocusIndex((i) => Math.max(i - 1, minIndex));
               break;
 
             case 'Enter':
             case ' ':
-              if (singleFocusIndex === -1) {
+              if (singleFocusIndex === -2 && onOpenResources) {
+                // Recursos
+                e.nativeEvent.stopImmediatePropagation();
+                onOpenResources();
+              } else if (singleFocusIndex === -1) {
                 // Sair
                 e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
@@ -397,6 +403,17 @@ export const LivePlayer = React.memo(
                 {singleChannel ? (
                   /* ── singleChannel: Sair + EPG lado a lado ── */
                   <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'center', height: '312px' }}>
+                    {onOpenResources && (
+                      <div style={{ flexShrink: 0 }}>
+                        <TileButton
+                          variant="icon-label"
+                          label="Recursos"
+                          icon={<span style={{ fontSize: 28 }}>☰</span>}
+                          isFocused={singleFocusIndex === -2}
+                          onClick={() => onOpenResources?.()}
+                        />
+                      </div>
+                    )}
                     <div style={{ flexShrink: 0 }}>
                       <TileButton
                         variant="icon-label"
@@ -406,17 +423,6 @@ export const LivePlayer = React.memo(
                         onClick={() => onExit?.()}
                       />
                     </div>
-                    {onOpenResources && (
-                      <div style={{ flexShrink: 0 }}>
-                        <TileButton
-                          variant="icon-label"
-                          label="Recursos"
-                          icon={<span style={{ fontSize: 28 }}>☰</span>}
-                          isFocused={false}
-                          onClick={() => onOpenResources?.()}
-                        />
-                      </div>
-                    )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <EPGRail
                         channelId={activeChannel.id}
@@ -439,16 +445,6 @@ export const LivePlayer = React.memo(
                       isFocused={focusedIndex === 0}
                       onClick={() => onExit?.()}
                     />
-                    {onOpenResources && (
-                      <TileButton
-                        variant="icon-label"
-                        label="Recursos"
-                        icon={<span style={{ fontSize: 28 }}>☰</span>}
-                        isFocused={false}
-                        onClick={() => onOpenResources?.()}
-                      />
-                    )}
-
                     {channels.map((channel, i) => (
                       <div
                         key={channel.id}
