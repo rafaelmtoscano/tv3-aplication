@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import Home from './pages/Home/index';
 import Live from './pages/Live/index';
 import WatchPage from './pages/Watch/index';
@@ -18,7 +18,7 @@ import { useCamaraAPI } from './hooks/useCamaraAPI';
 import { useSecondScreen } from './hooks/useSecondScreen';
 import { homeData } from './data/home';
 import { services } from './data/services';
-import { channels } from './data/channels';
+import { channels, syncChannelsFromSupabase } from './data/channels';
 import { colors } from './styles/colors';
 import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
 
@@ -33,6 +33,12 @@ export default function App() {
   const [deputyLoading, setDeputyLoading] = useState(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const { sessionCode, updateChannel, updateVoting } = useSecondScreen();
+
+  // Sincroniza canais com o Supabase na inicialização
+  useEffect(() => {
+    syncChannelsFromSupabase();
+  }, []);
+
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
