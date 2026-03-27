@@ -154,6 +154,44 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         }}
       />
 
+      {/* Botão fixo "Programação e recursos extras" — sempre visível */}
+      {isActive && !showResourcesPanel && !activeOverlay && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 200,
+            left: 88,
+            zIndex: 200,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '10px 24px',
+            background: 'rgba(0,0,0,0.55)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: 100,
+            cursor: 'pointer',
+            backdropFilter: 'blur(8px)',
+          }}
+          onClick={() => setShowResourcesPanel(true)}
+        >
+          <span style={{
+            fontFamily: 'Plus Jakarta Sans, sans-serif',
+            fontSize: 20,
+            fontWeight: 500,
+            color: 'rgba(255,255,255,0.85)',
+          }}>
+            Programação e recursos extras
+          </span>
+          <span style={{
+            fontFamily: 'Plus Jakarta Sans, sans-serif',
+            fontSize: 20,
+            color: 'rgba(255,255,255,0.6)',
+          }}>
+            ˅
+          </span>
+        </div>
+      )}
+
       {isTvCamara && isActive && (
         <VotingOverlay voting={voting} livePlayerRef={livePlayerRef as any} />
       )}
