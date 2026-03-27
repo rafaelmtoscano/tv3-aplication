@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import type { VotingResult } from '../../data/votingMock';
@@ -24,6 +25,8 @@ const VOTE_LABELS = {
 
 export function VotingOverlay({ data, onClose }: VotingOverlayProps) {
   const [page, setPage] = useState(0);
+  const [pageTransitionKey, setPageTransitionKey] = useState(0);
+  const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
 
@@ -33,11 +36,18 @@ export function VotingOverlay({ data, onClose }: VotingOverlayProps) {
     (page + 1) * ITEMS_PER_PAGE
   );
 
+  const goToPage = useCallback((nextPage: number) => {
+    if (nextPage === page) return;
+    setTransitionDirection(nextPage > page ? 'forward' : 'backward');
+    setPage(nextPage);
+    setPageTransitionKey(key => key + 1);
+  }, [page]);
+
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') { e.stopImmediatePropagation(); closeRef.current(); }
-    if (e.key === 'ArrowRight') { e.stopImmediatePropagation(); setPage(p => Math.min(p + 1, totalPages - 1)); }
-    if (e.key === 'ArrowLeft')  { e.stopImmediatePropagation(); setPage(p => Math.max(p - 1, 0)); }
-  }, [totalPages]);
+    if (e.key === 'ArrowRight') { e.stopImmediatePropagation(); goToPage(Math.min(page + 1, totalPages - 1)); }
+    if (e.key === 'ArrowLeft')  { e.stopImmediatePropagation(); goToPage(Math.max(page - 1, 0)); }
+  }, [goToPage, page, totalPages]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey, { capture: true });
@@ -63,12 +73,27 @@ export function VotingOverlay({ data, onClose }: VotingOverlayProps) {
     overflow: 'hidden',
   };
 
+  const pageListStyle: React.CSSProperties = {
+    flex: 1,
+    overflow: 'hidden',
+    padding: '8px 12px',
+    animation: `${transitionDirection === 'forward' ? 'votePageInForward' : 'votePageInBackward'} 240ms ease`,
+  };
+
   return (
     <>
       <style>{`
         @keyframes overlaySlideIn {
           from { opacity: 0; transform: translateX(32px) scale(0.97); }
           to   { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        @keyframes votePageInForward {
+          from { opacity: 0; transform: translateX(18px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes votePageInBackward {
+          from { opacity: 0; transform: translateX(-18px); }
+          to   { opacity: 1; transform: translateX(0); }
         }
       `}</style>
       <div style={panelStyle}>
@@ -92,7 +117,7 @@ export function VotingOverlay({ data, onClose }: VotingOverlayProps) {
         </div>
 
         {/* Lista de deputados */}
-        <div style={{ flex: 1, overflow: 'hidden', padding: '8px 12px' }}>
+        <div key={pageTransitionKey} style={pageListStyle}>
           {pageDeputies.map((dep, i) => (
             <div key={dep.id} style={{
               display: 'flex',
@@ -128,7 +153,7 @@ export function VotingOverlay({ data, onClose }: VotingOverlayProps) {
         {/* Paginação */}
         {totalPages > 1 && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '16px 0' }}>
-            <button onClick={() => setPage(p => Math.max(p - 1, 0))}
+            <button onClick={() => goToPage(Math.max(page - 1, 0))}
               style={{ background: 'none', border: 'none', color: colors.text.secondaryInverse, fontSize: 20, cursor: 'pointer' }}>
               ‹
             </button>
@@ -138,7 +163,7 @@ export function VotingOverlay({ data, onClose }: VotingOverlayProps) {
                 background: i === page ? colors.text.primaryInverse : colors.text.disabledInverse,
               }} />
             ))}
-            <button onClick={() => setPage(p => Math.min(p + 1, totalPages - 1))}
+            <button onClick={() => goToPage(Math.min(page + 1, totalPages - 1))}
               style={{ background: 'none', border: 'none', color: colors.text.secondaryInverse, fontSize: 20, cursor: 'pointer' }}>
               ›
             </button>

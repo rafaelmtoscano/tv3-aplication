@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import type { HearingComment } from '../../data/hearings';
@@ -47,7 +48,6 @@ const demoIncomingComments: Omit<HearingComment, 'id'>[] = [
 export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGovAuth }: HearingOverlayProps) {
   const closeRef = useRef(onClose);
   const liveIndexRef = useRef(0);
-  const clearTimersRef = useRef<ReturnType<typeof window.setTimeout>[]>([]);
   const [visibleComments, setVisibleComments] = useState<DisplayComment[]>(() => comments.map(comment => ({ ...comment })));
 
   closeRef.current = onClose;
@@ -79,20 +79,10 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGo
         },
         ...current.map(comment => ({ ...comment, isFresh: false })),
       ].slice(0, MAX_VISIBLE_COMMENTS));
-
-      const timer = window.setTimeout(() => {
-        setVisibleComments(current => current.map(comment => (
-          comment.id === nextId ? { ...comment, isFresh: false } : comment
-        )));
-      }, 1200);
-
-      clearTimersRef.current.push(timer);
     }, 4200);
 
     return () => {
       window.clearInterval(interval);
-      clearTimersRef.current.forEach(clearTimeout);
-      clearTimersRef.current = [];
     };
   }, []);
 
@@ -151,8 +141,8 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGo
             ...typography.body.medium,
             color: colors.text.primaryInverse,
             margin: 0,
-            filter: isFresh ? 'blur(2px)' : 'none',
-            opacity: isFresh ? 0.88 : 1,
+            filter: 'blur(2px)',
+            opacity: 0.88,
             transition: 'filter 0.25s ease, opacity 0.25s ease',
           };
 
@@ -160,8 +150,8 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGo
             ...typography.body.small,
             color: colors.text.secondaryInverse,
             margin: '4px 0 0',
-            filter: isFresh ? 'blur(1px)' : 'none',
-            opacity: isFresh ? 0.84 : 1,
+            filter: 'blur(1px)',
+            opacity: 0.84,
             transition: 'filter 0.25s ease, opacity 0.25s ease',
           };
 
