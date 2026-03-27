@@ -1,5 +1,4 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { colors } from '../../styles/colors';
 import './NotificationPanel.css';
 
 // ─── NotificationCard ───────────────────────────────────────────

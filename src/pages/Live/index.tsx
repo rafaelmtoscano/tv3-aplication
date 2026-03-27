@@ -5,8 +5,10 @@ import { usePlenarioVoting } from '../../hooks/usePlenarioVoting';
 import { ResourcesPanel } from '../../components/ResourcesPanel';
 import type { ResourceType } from '../../components/ResourcesPanel';
 import { VotingOverlay as ParliamentVotingOverlay } from '../../components/VotingOverlay';
+import { PollOverlay } from '../../components/PollOverlay';
 import { HearingOverlay } from '../../components/HearingOverlay';
 import { mockVotingResult } from '../../data/votingMock';
+import { activePoll } from '../../data/polls';
 import { activeHearing } from '../../data/hearings';
 
 interface LivePageProps {
@@ -42,6 +44,7 @@ const liveChannels = channels
 export default function LivePage({ initialChannelId, singleChannel, onExit, isActive, onUpdateChannel, onUpdateVoting }: LivePageProps) {
   const livePlayerRef = useRef<HTMLDivElement>(null);
   const resourcesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resourcesShownRef = useRef(false);
   const [showResourcesPanel, setShowResourcesPanel] = useState(false);
   const [activeOverlay, setActiveOverlay] = useState<ResourceType | null>(null);
   const [isAuthenticated] = useState(false); // TODO: conectar ao estado real de auth
@@ -54,6 +57,13 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
       title: 'Painel de Votação',
       description: 'Acompanhe a votação dos parlamentares',
       type: 'voting' as ResourceType,
+    },
+    {
+      id: 'poll',
+      icon: <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.8)' }}>👤</span>,
+      title: 'Votar em enquetes',
+      description: 'Dê sua opinião sobre a pauta',
+      type: 'poll' as ResourceType,
     },
     {
       id: 'hearing',
@@ -75,24 +85,29 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
 
   // Detect if it is TV Câmara channel
   const isTvCamara = (initialChannelId ?? liveChannels[0]?.id) === 'tv-camara';
+  const hasOverlay = showResourcesPanel || !!activeOverlay;
 
   const voting = usePlenarioVoting(isTvCamara && !!isActive);
 
-  // Timer de 15s para exibir ResourcesPanel automaticamente
+  // Timer de 15s — dispara UMA vez por sessão quando isActive=true
+  // Só abre se a rail de controles já tiver fechado (usuário parou de interagir)
   useEffect(() => {
     if (!isActive) {
       if (resourcesTimerRef.current) clearTimeout(resourcesTimerRef.current);
+      resourcesShownRef.current = false;
       return;
     }
+    if (resourcesShownRef.current) return;
     resourcesTimerRef.current = setTimeout(() => {
-      if (!showResourcesPanel && !activeOverlay) {
+      if (!resourcesShownRef.current) {
+        resourcesShownRef.current = true;
         setShowResourcesPanel(true);
       }
     }, 15000);
     return () => {
       if (resourcesTimerRef.current) clearTimeout(resourcesTimerRef.current);
     };
-  }, [isActive, showResourcesPanel, activeOverlay]);
+  }, [isActive]);
 
   // Sincroniza canal ativo com segunda tela ao montar
   useEffect(() => {
@@ -127,7 +142,8 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         initialChannelId={initialChannelId}
         singleChannel={singleChannel}
         onExit={onExit}
-        onOpenResources={() => setShowResourcesPanel(true)}
+        disabled={hasOverlay}
+        onOpenResources={hasOverlay ? undefined : () => setShowResourcesPanel(true)}
         onChannelChange={(channelId) => {
           if (!onUpdateChannel) return;
           const ch = liveChannels.find(c => c.id === channelId);
@@ -157,6 +173,15 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         <ParliamentVotingOverlay
           data={mockVotingResult}
           onClose={handleCloseOverlay}
+        />
+      )}
+
+      {activeOverlay === 'poll' && (
+        <PollOverlay
+          poll={activePoll}
+          isAuthenticated={isAuthenticated}
+          onClose={handleCloseOverlay}
+          onGovAuth={() => setActiveOverlay(null)}
         />
       )}
 
