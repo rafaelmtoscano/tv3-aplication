@@ -24,14 +24,15 @@ export interface LivePlayerProps {
   singleChannel?: boolean;
   onExit?: () => void;
   onChannelChange?: (channelId: string) => void;
-  className?: string;
+    onOpenResources?: () => void;
+    className?: string;
 }
 
 const PLACEHOLDER_LOGO = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80"><rect width="120" height="80" rx="8" fill="%23334155"/><rect x="40" y="28" width="40" height="24" rx="4" fill="%2364748b"/><circle cx="60" cy="40" r="8" fill="%2394a3b8"/></svg>';
 
 export const LivePlayer = React.memo(
   forwardRef<HTMLDivElement, LivePlayerProps>(
-    ({ channels = [], initialChannelId, singleChannel = false, onExit, onChannelChange, className }, ref) => {
+    ({ channels = [], initialChannelId, singleChannel = false, onExit, onChannelChange, onOpenResources, className }, ref) => {
       const [activeChannelId, setActiveChannelId] = useState(
         initialChannelId || channels[0]?.id
       );
@@ -405,6 +406,17 @@ export const LivePlayer = React.memo(
                         onClick={() => onExit?.()}
                       />
                     </div>
+                    {onOpenResources && (
+                      <div style={{ flexShrink: 0 }}>
+                        <TileButton
+                          variant="icon-label"
+                          label="Recursos"
+                          icon={<span style={{ fontSize: 28 }}>☰</span>}
+                          isFocused={false}
+                          onClick={() => onOpenResources?.()}
+                        />
+                      </div>
+                    )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <EPGRail
                         channelId={activeChannel.id}
@@ -427,6 +439,15 @@ export const LivePlayer = React.memo(
                       isFocused={focusedIndex === 0}
                       onClick={() => onExit?.()}
                     />
+                    {onOpenResources && (
+                      <TileButton
+                        variant="icon-label"
+                        label="Recursos"
+                        icon={<span style={{ fontSize: 28 }}>☰</span>}
+                        isFocused={false}
+                        onClick={() => onOpenResources?.()}
+                      />
+                    )}
 
                     {channels.map((channel, i) => (
                       <div
