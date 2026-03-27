@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { LivePlayer } from '../../components/LivePlayer';
 import { channels } from '../../data/channels';
 import { usePlenarioVoting } from '../../hooks/usePlenarioVoting';
-import { VotingOverlay } from './components/VotingOverlay';
 import { ResourcesPanel } from '../../components/ResourcesPanel';
 import type { ResourceType } from '../../components/ResourcesPanel';
 import { VotingOverlay as ParliamentVotingOverlay } from '../../components/VotingOverlay';
@@ -145,10 +144,6 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
           });
         }}
       />
-
-      {isTvCamara && isActive && (
-        <VotingOverlay voting={voting} livePlayerRef={livePlayerRef as any} />
-      )}
 
       {showResourcesPanel && !activeOverlay && (
         <ResourcesPanel
