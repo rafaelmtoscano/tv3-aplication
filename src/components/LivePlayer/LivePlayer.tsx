@@ -24,15 +24,16 @@ export interface LivePlayerProps {
   singleChannel?: boolean;
   onExit?: () => void;
   onChannelChange?: (channelId: string) => void;
-    onOpenResources?: () => void;
-    className?: string;
+  onOpenResources?: () => void;
+  disabled?: boolean;
+  className?: string;
 }
 
 const PLACEHOLDER_LOGO = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80"><rect width="120" height="80" rx="8" fill="%23334155"/><rect x="40" y="28" width="40" height="24" rx="4" fill="%2364748b"/><circle cx="60" cy="40" r="8" fill="%2394a3b8"/></svg>';
 
 export const LivePlayer = React.memo(
   forwardRef<HTMLDivElement, LivePlayerProps>(
-    ({ channels = [], initialChannelId, singleChannel = false, onExit, onChannelChange, onOpenResources, className }, ref) => {
+    ({ channels = [], initialChannelId, singleChannel = false, onExit, onChannelChange, onOpenResources, disabled = false, className }, ref) => {
       const [activeChannelId, setActiveChannelId] = useState(
         initialChannelId || channels[0]?.id
       );
@@ -80,6 +81,12 @@ export const LivePlayer = React.memo(
       }, [onChannelChange]);
 
       const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (disabled) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+
         resetTimer();
 
         // Prevent navigation keys from leaking to global handler
@@ -165,9 +172,10 @@ export const LivePlayer = React.memo(
               setEpgFocusedIndex((i) => Math.min(i + 1, 7));
             } else {
               setFocusedIndex((prev) => {
-                const next = Math.min(prev + 1, channels.length);
+                const maxIndex = onOpenResources ? channels.length + 1 : channels.length;
+                const next = Math.min(prev + 1, maxIndex);
                 // Troca canal instantaneamente ao navegar (index 0 = Sair)
-                if (next > 0 && channels[next - 1]) {
+                if (next > 0 && next <= channels.length && channels[next - 1]) {
                   handleChannelChange(channels[next - 1].id);
                 }
                 return next;
@@ -201,6 +209,9 @@ export const LivePlayer = React.memo(
               if (focusedIndex === 0) {
                 e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
+              } else if (onOpenResources && focusedIndex === channels.length + 1) {
+                e.nativeEvent.stopImmediatePropagation();
+                onOpenResources();
               } else if (channels[focusedIndex - 1]) {
                 handleChannelChange(channels[focusedIndex - 1].id);
               }
@@ -231,7 +242,7 @@ export const LivePlayer = React.memo(
           default:
             break;
         }
-      }, [controlsVisible, showEPG, singleChannel, singleFocusIndex, channels, activeChannel, focusedIndex, epgFocusedIndex, reminderEntry, resetTimer, onExit, handleChannelChange]);
+      }, [controlsVisible, showEPG, singleChannel, singleFocusIndex, channels, activeChannel, focusedIndex, epgFocusedIndex, reminderEntry, resetTimer, onExit, handleChannelChange, onOpenResources, disabled]);
 
       if (!activeChannel) return null;
 
@@ -468,6 +479,15 @@ export const LivePlayer = React.memo(
                         />
                       </div>
                     ))}
+                    {onOpenResources && (
+                      <TileButton
+                        variant="icon-label"
+                        label="Recursos"
+                        icon={<span style={{ fontSize: 28 }}>☰</span>}
+                        isFocused={focusedIndex === channels.length + 1}
+                        onClick={() => onOpenResources?.()}
+                      />
+                    )}
                   </div>
                 ) : (
                   /* ── multiChannel: EPG expandida ── */
