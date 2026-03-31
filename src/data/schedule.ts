@@ -892,8 +892,10 @@ export function getCurrentProgram(
   if (!entries?.length) return null;
 
   const currentMinutes = brasiliaDate.getHours() * 60 + brasiliaDate.getMinutes();
+  const sorted = [...entries].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
   let current: ScheduleEntry | null = null;
-  for (const entry of entries) {
+  for (const entry of sorted) {
     if (timeToMinutes(entry.time) <= currentMinutes) current = entry;
     else break;
   }
@@ -907,9 +909,11 @@ export function buildEPG(
   const entries = channelSchedule.schedule[day];
   if (!entries?.length) return [];
 
-  return entries.map((entry, i): EPGEntry => {
+  const sorted = [...entries].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+  return sorted.map((entry, i): EPGEntry => {
     const startMin = timeToMinutes(entry.time);
-    const nextEntry = entries[i + 1];
+    const nextEntry = sorted[i + 1];
     const endMin = nextEntry ? timeToMinutes(nextEntry.time) : 1440;
     const duration = endMin > startMin ? endMin - startMin : 1440 - startMin + endMin;
 
@@ -924,10 +928,11 @@ export function buildEPG(
 }
 
 export function getUpcomingPrograms(
-  channelSchedule: ChannelSchedule,
+  channelSchedule: ChannelSchedule | undefined,
   count: number = 3,
   now: Date = new Date()
 ): EPGEntry[] {
+  if (!channelSchedule) return [];
   const brasiliaDate = getBrasiliaDate(now);
   const day = DAY_MAP[brasiliaDate.getDay()];
   const epg = buildEPG(channelSchedule, day);
