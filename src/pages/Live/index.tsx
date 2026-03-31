@@ -48,6 +48,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
   const livePlayerRef = useRef<HTMLDivElement>(null);
   const resourcesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resourcesShownRef = useRef(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const [showResourcesPanel, setShowResourcesPanel] = useState(false);
   const [activeOverlay, setActiveOverlay] = useState<ResourceType | null>(null);
   const [isAuthenticated] = useState(false); // TODO: conectar ao estado real de auth
@@ -94,14 +95,20 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
   const voting = usePlenarioVoting(isTvCamara && !!isActive);
   const senadoVoting = useSenadoVoting(isTvSenado && !!isActive);
 
-  // Timer de 15s — dispara UMA vez por sessão quando isActive=true
-  // Só abre se a rail de controles já tiver fechado (usuário parou de interagir)
+  // Timer de 15s — dispara UMA vez por sessão de canal
+  // Só inicia quando os controles do player são ocultados (controlsVisible = false)
   useEffect(() => {
     if (!isActive) {
       if (resourcesTimerRef.current) clearTimeout(resourcesTimerRef.current);
       resourcesShownRef.current = false;
       return;
     }
+    // Se os controles ainda estão visíveis, não inicia o timer
+    if (controlsVisible) {
+      if (resourcesTimerRef.current) clearTimeout(resourcesTimerRef.current);
+      return;
+    }
+    // Se já mostrou nesta sessão de canal, não mostra de novo
     if (resourcesShownRef.current) return;
     resourcesTimerRef.current = setTimeout(() => {
       if (!resourcesShownRef.current) {
@@ -112,7 +119,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
     return () => {
       if (resourcesTimerRef.current) clearTimeout(resourcesTimerRef.current);
     };
-  }, [isActive]);
+  }, [isActive, controlsVisible]);
 
   // Sincroniza canal ativo com segunda tela ao montar
   useEffect(() => {
@@ -153,7 +160,12 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         onExit={onExit}
         disabled={hasOverlay}
         onOpenResources={hasOverlay ? undefined : () => setShowResourcesPanel(true)}
+        onControlsVisibilityChange={(visible) => setControlsVisible(visible)}
         onChannelChange={(channelId) => {
+          // Fechar overlays ao trocar de canal
+          setShowResourcesPanel(false);
+          setActiveOverlay(null);
+          resourcesShownRef.current = false; // permitir novo timer no novo canal
           if (!onUpdateChannel) return;
           const ch = liveChannels.find(c => c.id === channelId);
           if (!ch) return;

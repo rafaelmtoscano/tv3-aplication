@@ -25,6 +25,7 @@ export interface LivePlayerProps {
   onExit?: () => void;
   onChannelChange?: (channelId: string) => void;
   onOpenResources?: () => void;
+  onControlsVisibilityChange?: (visible: boolean) => void;
   disabled?: boolean;
   className?: string;
 }
@@ -33,7 +34,7 @@ const PLACEHOLDER_LOGO = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/
 
 export const LivePlayer = React.memo(
   forwardRef<HTMLDivElement, LivePlayerProps>(
-    ({ channels = [], initialChannelId, singleChannel = false, onExit, onChannelChange, onOpenResources, disabled = false, className }, ref) => {
+    ({ channels = [], initialChannelId, singleChannel = false, onExit, onChannelChange, onOpenResources, onControlsVisibilityChange, disabled = false, className }, ref) => {
       const [activeChannelId, setActiveChannelId] = useState(
         initialChannelId || channels[0]?.id
       );
@@ -64,8 +65,10 @@ export const LivePlayer = React.memo(
           clearTimeout(timeoutRef.current);
         }
         setControlsVisible(true);
+        onControlsVisibilityChange?.(true);
         timeoutRef.current = setTimeout(() => {
           setControlsVisible(false);
+          onControlsVisibilityChange?.(false);
         }, 5000);
       }, []);
 
@@ -175,13 +178,13 @@ export const LivePlayer = React.memo(
           case 'ArrowRight':
             if (showEPG) {
               e.preventDefault();
-              setEpgFocusedIndex((i) => Math.min(i + 1, 7));
+              const epgMax = onOpenResources ? 8 : 7; // 0..7 = EPG cards, 8 = Recursos
+              setEpgFocusedIndex((i) => Math.min(i + 1, epgMax));
             } else {
               setFocusedIndex((prev) => {
-                const maxIndex = onOpenResources ? channels.length + 1 : channels.length;
-                const next = Math.min(prev + 1, maxIndex);
+                const next = Math.min(prev + 1, channels.length);
                 // Troca canal instantaneamente ao navegar (index 0 = Sair)
-                if (next > 0 && next <= channels.length && channels[next - 1]) {
+                if (next > 0 && channels[next - 1]) {
                   handleChannelChange(channels[next - 1].id);
                 }
                 return next;
@@ -208,16 +211,18 @@ export const LivePlayer = React.memo(
           case 'Enter':
             if (showEPG) {
               e.preventDefault();
-              const epgEntries = getUpcomingPrograms(allSchedules[activeChannel.id], 8);
-              const entry = epgEntries[epgFocusedIndex];
-              if (entry) setReminderEntry(entry);
+              if (onOpenResources && epgFocusedIndex === 8) {
+                e.nativeEvent.stopImmediatePropagation();
+                onOpenResources();
+              } else {
+                const epgEntries = getUpcomingPrograms(allSchedules[activeChannel.id], 8);
+                const entry = epgEntries[epgFocusedIndex];
+                if (entry) setReminderEntry(entry);
+              }
             } else {
               if (focusedIndex === 0) {
                 e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
-              } else if (onOpenResources && focusedIndex === channels.length + 1) {
-                e.nativeEvent.stopImmediatePropagation();
-                onOpenResources();
               } else if (channels[focusedIndex - 1]) {
                 handleChannelChange(channels[focusedIndex - 1].id);
               }
@@ -494,28 +499,34 @@ export const LivePlayer = React.memo(
                         />
                       </div>
                     ))}
-                    {onOpenResources && (
-                      <TileButton
-                        variant="icon-label"
-                        label="Recursos"
-                        icon={<span style={{ fontSize: 28 }}>☰</span>}
-                        isFocused={focusedIndex === channels.length + 1}
-                        onClick={() => onOpenResources?.()}
-                      />
-                    )}
                   </div>
                 ) : (
                   /* ── multiChannel: EPG expandida ── */
-                  <EPGRail
-                    channelId={activeChannel.id}
-                    channelLogo={activeChannel.logo}
-                    channelName={activeChannel.name}
-                    focusedIndex={epgFocusedIndex}
-                    onFocusedIndexChange={setEpgFocusedIndex}
-                    onNavigateUp={() => setShowEPG(false)}
-                    onItemClick={(entry) => setReminderEntry(entry)}
-                    cardBackground={colors.background.baseInverse}
-                  />
+                  <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'center', height: '312px' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <EPGRail
+                        channelId={activeChannel.id}
+                        channelLogo={activeChannel.logo}
+                        channelName={activeChannel.name}
+                        focusedIndex={epgFocusedIndex <= 7 ? epgFocusedIndex : -1}
+                        onFocusedIndexChange={setEpgFocusedIndex}
+                        onNavigateUp={() => setShowEPG(false)}
+                        onItemClick={(entry) => setReminderEntry(entry)}
+                        cardBackground={colors.background.baseInverse}
+                      />
+                    </div>
+                    {onOpenResources && (
+                      <div style={{ flexShrink: 0 }}>
+                        <TileButton
+                          variant="icon-label"
+                          label="Recursos"
+                          icon={<span style={{ fontSize: 28 }}>☰</span>}
+                          isFocused={epgFocusedIndex === 8}
+                          onClick={() => onOpenResources?.()}
+                        />
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
