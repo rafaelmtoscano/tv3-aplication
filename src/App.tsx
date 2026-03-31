@@ -7,6 +7,7 @@ import Schedule from './pages/Schedule/index';
 import Apps from './pages/Apps/index';
 import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
+import AccountPage from './pages/Account';
 import Camara from './pages/Camara/index';
 import DeputiesGrid from './pages/Camara/DeputiesGrid';
 import DeputyDetail from './pages/Camara/DeputyDetail';
@@ -23,7 +24,7 @@ import { colors } from './styles/colors';
 import { typography } from './styles/typography';
 import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
 
-type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'settings' | 'help' | 'apps-camara' | 'my-channels';
+type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'settings' | 'help' | 'apps-camara' | 'my-channels' | 'account';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
@@ -73,7 +74,10 @@ export default function App() {
   currentPageRef.current = currentPage;
 
   const handleSidebarSelect = useCallback((id: string) => {
-    if (id === 'avatar') return;
+    if (id === 'avatar') {
+      setCurrentPage('account');
+      return;
+    }
     if (id === 'live') {
       const firstLiveChannel = channels.find(ch => ch.streamUrl && ch.streamUrl.length > 0);
       if (firstLiveChannel) setLivePage({ channelId: firstLiveChannel.id });
@@ -439,6 +443,15 @@ export default function App() {
           }}
           onUpdateChannel={updateChannel}
           onUpdateVoting={updateVoting}
+        />
+      )}
+
+      {currentPage === 'account' && (
+        <AccountPage
+          sessionCode={sessionCode}
+          isConnected={false}
+          isAuthenticated={false}
+          onBack={() => setCurrentPage('home')}
         />
       )}
 
