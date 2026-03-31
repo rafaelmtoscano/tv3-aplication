@@ -41,6 +41,7 @@ interface AuthContextValue {
   connectGovBrMock: () => void;
   disconnectGovBr: () => void;
   logout: () => void;
+  publishActiveFeature: (feature: string | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -130,6 +131,16 @@ export function AuthProvider({ children, sessionCode }: { children: ReactNode; s
     }
   }, [sessionCode]);
 
+  const publishActiveFeature = useCallback(async (feature: string | null) => {
+    const code = sessionCode || (appUser?.sessionCode ?? null);
+    if (!code) return;
+    try {
+      await updateDoc(doc(db, 'sessions', code), { activeFeature: feature });
+    } catch (err) {
+      console.warn('[AuthContext] Firestore activeFeature update falhou:', err);
+    }
+  }, [sessionCode, appUser]);
+
   const logout = useCallback(() => {
     setAppUser(null);
     setGovBrUser(null);
@@ -146,6 +157,7 @@ export function AuthProvider({ children, sessionCode }: { children: ReactNode; s
         connectGovBrMock,
         disconnectGovBr,
         logout,
+        publishActiveFeature,
       }}
     >
       {children}

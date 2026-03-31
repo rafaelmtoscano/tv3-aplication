@@ -19,7 +19,7 @@ export interface SecondScreenChannelData {
 interface UseSecondScreenReturn {
   sessionCode: string;
   isMobileConnected: boolean;
-  govBrConnected: boolean;
+  isMobileGovBrConnected: boolean;
   updateChannel: (data: Partial<SecondScreenChannelData>) => void;
   updateVoting: (votacaoId: string | null, active: boolean) => void;
 }
@@ -31,7 +31,7 @@ function generateCode(): string {
 export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
   const [sessionCode] = useState<string>(generateCode);
   const [isMobileConnected, setIsMobileConnected] = useState(false);
-  const [govBrConnected, setGovBrConnected] = useState(false);
+  const [isMobileGovBrConnected, setIsMobileGovBrConnected] = useState(false);
   const unsubRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
       if (data.mobileConnected === true) {
         setIsMobileConnected(true);
       }
-      setGovBrConnected((data.govBrConnected as boolean) ?? false);
+      setIsMobileGovBrConnected((data.govBrConnected as boolean) ?? false);
     });
 
     return () => {
@@ -107,5 +107,5 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
     }
   }, [sessionCode]);
 
-  return { sessionCode, isMobileConnected, govBrConnected, updateChannel, updateVoting };
+  return { sessionCode, isMobileConnected, isMobileGovBrConnected, updateChannel, updateVoting };
 }

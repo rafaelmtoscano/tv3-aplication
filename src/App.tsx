@@ -22,10 +22,11 @@ import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
 import type { FocusState } from './hooks/useFocusNavigation';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { useCamaraAPI } from './hooks/useCamaraAPI';
 import { useSenadoAPI } from './hooks/useSenadoAPI';
 import { useSecondScreen } from './hooks/useSecondScreen';
+import type { SecondScreenChannelData } from './hooks/useSecondScreen';
 import { homeData } from './data/home';
 import { services } from './data/services';
 import { nationalStories } from './data/stories';
@@ -37,7 +38,27 @@ import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpI
 
 type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'pharmacies' | 'settings' | 'help' | 'apps-camara' | 'apps-senado' | 'my-channels' | 'account';
 
-export default function App() {
+// ── AppContent ─────────────────────────────────────────────────────────────
+// Contains all app logic. Mounted inside AuthProvider so it can call useAuth().
+
+interface AppContentProps {
+  isMobileGovBrConnected: boolean;
+  sessionCode: string;
+  isMobileConnected: boolean;
+  updateChannel: (data: Partial<SecondScreenChannelData>) => void;
+  updateVoting: (votacaoId: string | null, active: boolean) => void;
+}
+
+function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, updateChannel, updateVoting }: AppContentProps) {
+  const { connectGovBrMock } = useAuth();
+
+  // Bridge: when mobile authenticates gov.br, mirror it into the TV AuthContext
+  useEffect(() => {
+    if (isMobileGovBrConnected) {
+      connectGovBrMock();
+    }
+  }, [isMobileGovBrConnected, connectGovBrMock]);
+
   const [currentPage, setCurrentPage] = useState<PageId>('home');
   const [livePage, setLivePage] = useState<{ channelId: string; singleChannel?: boolean } | null>(null);
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
@@ -49,7 +70,6 @@ export default function App() {
   const [showConnectionNotif, setShowConnectionNotif] = useState(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const { senatorsList: senators, loading: senatorsLoading } = useSenadoAPI();
-  const { sessionCode, isMobileConnected, govBrConnected, updateChannel, updateVoting } = useSecondScreen();
 
   // Detecta quando mobile conecta e exibe notificação
   useEffect(() => {
@@ -472,7 +492,6 @@ export default function App() {
   };
 
   return (
-    <AuthProvider sessionCode={sessionCode}>
     <>
       {/* Badge segunda tela — código de sessão */}
       <div style={{
@@ -620,6 +639,24 @@ export default function App() {
         </div>
       )}
     </>
+  );
+}
+
+// ── App (thin shell) ───────────────────────────────────────────────────────
+// Calls useSecondScreen, mounts AuthProvider with sessionCode, renders AppContent.
+
+export default function App() {
+  const { sessionCode, isMobileConnected, isMobileGovBrConnected, updateChannel, updateVoting } = useSecondScreen();
+
+  return (
+    <AuthProvider sessionCode={sessionCode}>
+      <AppContent
+        isMobileGovBrConnected={isMobileGovBrConnected}
+        sessionCode={sessionCode}
+        isMobileConnected={isMobileConnected}
+        updateChannel={updateChannel}
+        updateVoting={updateVoting}
+      />
     </AuthProvider>
   );
 }
