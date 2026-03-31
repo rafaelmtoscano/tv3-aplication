@@ -8,6 +8,8 @@ import Apps from './pages/Apps/index';
 import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
 import AccountPage from './pages/Account';
+import { NotificationPanel } from './components/NotificationPanel';
+import type { NotificationItem } from './components/NotificationPanel';
 import Camara from './pages/Camara/index';
 import DeputiesGrid from './pages/Camara/DeputiesGrid';
 import DeputyDetail from './pages/Camara/DeputyDetail';
@@ -34,8 +36,19 @@ export default function App() {
   const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
   const [deputyLoading, setDeputyLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showConnectionNotif, setShowConnectionNotif] = useState(false);
+  const prevConnectedRef = useRef(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const { sessionCode, updateChannel, updateVoting } = useSecondScreen();
+
+  // Detecta quando mobile conecta e exibe notificação
+  useEffect(() => {
+    // sessionCode vem do useSecondScreen — quando ele muda,
+    // precisamos escutar o Firestore para saber se alguém conectou.
+    // Por ora, usamos uma simulação via onSnapshot já existente no hook.
+    // TODO: conectar ao estado real de isConnected do Firestore
+    prevConnectedRef.current = false;
+  }, []);
 
   // Sincroniza canais com o Supabase na inicialização
   useEffect(() => {
@@ -268,6 +281,20 @@ export default function App() {
 
   const hasOverlay = !!(showDeputiesGrid || selectedDeputy || watchPage || livePage);
 
+  const connectionNotifItems: NotificationItem[] = [
+    {
+      id: 'device-connected',
+      icon: <span style={{ fontSize: 28 }}>📱</span>,
+      title: 'Dispositivo encontrado',
+      description: `Um celular quer se conectar. Código: ${sessionCode}`,
+      timestamp: 'agora',
+      onEnter: () => {
+        setShowConnectionNotif(false);
+        setCurrentPage('account');
+      },
+    },
+  ];
+
   const rootStyle: React.CSSProperties = {
     position: 'fixed',
     inset: 0,
@@ -452,6 +479,16 @@ export default function App() {
           isConnected={false}
           isAuthenticated={false}
           onBack={() => setCurrentPage('home')}
+          onSimulateConnection={() => setShowConnectionNotif(true)}
+        />
+      )}
+
+      {showConnectionNotif && (
+        <NotificationPanel
+          items={connectionNotifItems}
+          showHeader={false}
+          onClose={() => setShowConnectionNotif(false)}
+          autoHide={15000}
         />
       )}
 

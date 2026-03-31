@@ -7,6 +7,7 @@ interface AccountPageProps {
   isConnected: boolean;
   isAuthenticated: boolean;
   onBack: () => void;
+  onSimulateConnection?: () => void;
 }
 
 interface StepCardProps {
@@ -84,7 +85,7 @@ function StepCard({ number, title, description, icon, status, content }: StepCar
   );
 }
 
-export default function AccountPage({ sessionCode, isConnected, isAuthenticated, onBack }: AccountPageProps) {
+export default function AccountPage({ sessionCode, isConnected, isAuthenticated, onBack, onSimulateConnection }: AccountPageProps) {
   const onBackRef = useRef(onBack);
   onBackRef.current = onBack;
   const [backFocused, setBackFocused] = useState(true);
@@ -107,6 +108,12 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
 
   const step2Status: 'done' | 'active' | 'pending' = isConnected ? 'done' : 'active';
   const step3Status: 'done' | 'active' | 'pending' = isAuthenticated ? 'done' : isConnected ? 'active' : 'pending';
+  const connectedStyle = `
+    @keyframes connectedPulse {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  `;
 
   return (
     <div style={{
@@ -125,6 +132,7 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
         <h1 style={{ ...typography.display.medium, color: colors.text.primaryInverse, margin: 0 }}>
           Minha conta
         </h1>
+        <style>{connectedStyle}</style>
         <p style={{ ...typography.body.large, color: colors.text.secondaryInverse, margin: 0 }}>
           Conecte seu celular e entre com gov.br para acessar todos os recursos
         </p>
@@ -161,6 +169,23 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
           status={step2Status}
           content={
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {isConnected && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '10px 16px',
+                  borderRadius: 12,
+                  background: 'rgba(30,167,253,0.12)',
+                  border: '1px solid rgba(30,167,253,0.3)',
+                  animation: 'connectedPulse 0.4s ease',
+                }}>
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#1ea7fd', flexShrink: 0, display: 'inline-block' }} />
+                  <span style={{ ...typography.body.medium, color: '#1ea7fd', fontWeight: 600 }}>
+                    Celular conectado com sucesso
+                  </span>
+                </div>
+              )}
               <div style={{ display: 'flex', gap: 12 }}>
                 {sessionCode.split('').map((digit, i) => (
                   <div key={i} style={{
@@ -226,6 +251,25 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
       >
         Voltar
       </button>
+
+      {onSimulateConnection && (
+        <button
+          onClick={onSimulateConnection}
+          style={{
+            marginTop: 8,
+            padding: '10px 32px',
+            borderRadius: 100,
+            border: '1px dashed rgba(255,255,255,0.2)',
+            background: 'transparent',
+            color: 'rgba(255,255,255,0.4)',
+            fontFamily: 'inherit',
+            fontSize: 14,
+            cursor: 'pointer',
+          }}
+        >
+          [Demo] Simular conexão do celular
+        </button>
+      )}
     </div>
   );
 }
