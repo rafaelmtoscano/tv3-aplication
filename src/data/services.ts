@@ -18,7 +18,7 @@ export const services: Service[] = [
   {
     id: 'senado-federal',
     name: 'Senado Federal',
-    image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Fefb11e9bb9114a46b23813f61e4f1df8',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Fe7a36c5af61249fe89306f2d8b7e027f',
     backgroundColor: '#1A1A2E',
     available: true,
   },
