@@ -122,7 +122,7 @@ export const Sidebar = memo(
       const gradientOverlayStyle: React.CSSProperties = {
         position: 'absolute',
         top: 0,
-        left: isExpanded ? '280px' : '80px', // Animates with sidebar
+        left: isExpanded ? '300px' : '120px', // Animates with sidebar
         height: '100%',
         width: isExpanded ? '50vw' : '0',
         background: 'linear-gradient(270deg, rgba(17, 23, 43, 0) 0%, #11172B 100%)',
@@ -134,7 +134,7 @@ export const Sidebar = memo(
       const sidebarPanelStyle: React.CSSProperties = {
         position: 'relative',
         zIndex: 1,
-        width: isExpanded ? '280px' : '80px',
+        width: isExpanded ? '300px' : '120px',
         height: '100vh',
         background: colors.background.baseInverse,
         display: 'flex',
@@ -150,10 +150,9 @@ export const Sidebar = memo(
 
       const logoAreaStyle: React.CSSProperties = {
         display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
+        alignItems: 'flex-start',
         width: '100%',
-        padding: '0 4px 0 12px',
+        padding: '0 10px',
         boxSizing: 'border-box',
       };
 
@@ -209,13 +208,13 @@ export const Sidebar = memo(
                 <img
                   src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F680bef2f7f7c478aa70cb7cb92870b4d"
                   alt="Plataforma Comum"
-                  style={{ height: '48px', width: 'auto', display: 'block', objectFit: 'contain' }}
+                  style={{ height: '100px', width: 'auto', display: 'block', objectFit: 'contain' }}
                 />
               ) : (
                 <img
                   src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F70849a385e8142a190c2aad42c525fcb"
                   alt="Plataforma Comum"
-                  style={{ height: '48px', width: '48px', display: 'block', objectFit: 'contain' }}
+                  style={{ height: '100px', width: '100px', display: 'block', objectFit: 'contain' }}
                 />
               )}
             </div>

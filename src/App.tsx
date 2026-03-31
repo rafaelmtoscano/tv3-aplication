@@ -426,7 +426,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
 
   const sidebarSpacerStyle: React.CSSProperties = {
     flexShrink: 0,
-    width: '88px',
+    width: '120px',
     transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   };
 
