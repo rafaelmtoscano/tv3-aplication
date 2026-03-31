@@ -22,6 +22,7 @@ import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
 import type { FocusState } from './hooks/useFocusNavigation';
+import { AuthProvider } from './context/AuthContext';
 import { useCamaraAPI } from './hooks/useCamaraAPI';
 import { useSenadoAPI } from './hooks/useSenadoAPI';
 import { useSecondScreen } from './hooks/useSecondScreen';
@@ -48,7 +49,7 @@ export default function App() {
   const [showConnectionNotif, setShowConnectionNotif] = useState(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const { senatorsList: senators, loading: senatorsLoading } = useSenadoAPI();
-  const { sessionCode, isMobileConnected, updateChannel, updateVoting } = useSecondScreen();
+  const { sessionCode, isMobileConnected, govBrConnected, updateChannel, updateVoting } = useSecondScreen();
 
   // Detecta quando mobile conecta e exibe notificação
   useEffect(() => {
@@ -471,6 +472,7 @@ export default function App() {
   };
 
   return (
+    <AuthProvider sessionCode={sessionCode}>
     <>
       {/* Badge segunda tela — código de sessão */}
       <div style={{
@@ -618,5 +620,6 @@ export default function App() {
         </div>
       )}
     </>
+    </AuthProvider>
   );
 }

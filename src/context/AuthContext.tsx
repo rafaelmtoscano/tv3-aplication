@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-// TODO: importar instância do Firestore quando Firebase estiver configurado no projeto
-// import { db } from '../lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export interface Dispensacao {
   id: string;
@@ -101,7 +101,7 @@ const MOCK_APP_USER: AppUser = {
 };
 // ── FIM MOCK DATA ──────────────────────────────────────────────────────────
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children, sessionCode }: { children: ReactNode; sessionCode: string }) {
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [govBrUser, setGovBrUser] = useState<GovBrUser | null>(null);
 
@@ -111,28 +111,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const connectGovBrMock = useCallback(async () => {
     setGovBrUser(MOCK_GOVBR_USER);
-    // Publica no Firestore para que a segunda tela saiba que gov.br foi autenticado
-    // A segunda tela escuta sessions/{sessionCode} via onSnapshot
-    // TODO: descomentar quando Firebase estiver configurado
-    // if (MOCK_APP_USER.sessionCode) {
-    //   await updateDoc(doc(db, 'sessions', MOCK_APP_USER.sessionCode), {
-    //     govBrConnected: true,
-    //     govBrUserName: MOCK_GOVBR_USER.name,
-    //     govBrConnectedAt: new Date().toISOString(),
-    //   });
-    // }
-  }, []);
+    if (sessionCode) {
+      await updateDoc(doc(db, 'sessions', sessionCode), {
+        govBrConnected: true,
+        govBrUserName: MOCK_GOVBR_USER.name,
+        govBrConnectedAt: new Date().toISOString(),
+      });
+    }
+  }, [sessionCode]);
 
   const disconnectGovBr = useCallback(async () => {
     setGovBrUser(null);
-    // TODO: descomentar quando Firebase estiver configurado
-    // if (appUser?.sessionCode) {
-    //   await updateDoc(doc(db, 'sessions', appUser.sessionCode), {
-    //     govBrConnected: false,
-    //     govBrUserName: null,
-    //   });
-    // }
-  }, []);
+    if (sessionCode) {
+      await updateDoc(doc(db, 'sessions', sessionCode), {
+        govBrConnected: false,
+        govBrUserName: null,
+      });
+    }
+  }, [sessionCode]);
 
   const logout = useCallback(() => {
     setAppUser(null);
