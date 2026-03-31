@@ -11,7 +11,6 @@ export interface StoryCardProps {
   title?: string;
   duration?: number;
   isFocused: boolean;
-  isActive: boolean;
   onEnded?: () => void;
   onClick?: () => void;
 }
@@ -29,7 +28,6 @@ export function StoryCard({
   title,
   duration = 30,
   isFocused,
-  isActive,
   onEnded,
 }: StoryCardProps) {
   const youtubeIntervalRef = useRef<number | null>(null);

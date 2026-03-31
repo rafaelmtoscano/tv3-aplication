@@ -1,6 +1,4 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
-
 // TODO: importar instância do Firestore quando Firebase estiver configurado no projeto
 // import { db } from '../lib/firebase';
 

@@ -27,7 +27,7 @@ export const services: Service[] = [
     name: 'Meu SUS Digital',
     image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F1559b2a74c06497f890a54d658b867cd',
     backgroundColor: '#FFFFFF',
-    available: false,
+    available: true,
   },
   {
     id: 'bolsa-familia',

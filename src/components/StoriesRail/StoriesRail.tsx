@@ -129,7 +129,6 @@ export function StoriesRail({
               title={item.title}
               duration={item.duration}
               isFocused={focusedIndex === i}
-              isActive={activeIndex === i}
               onEnded={() => handleEnded(i)}
             />
           ))}

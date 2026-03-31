@@ -7,6 +7,7 @@ import Schedule from './pages/Schedule/index';
 import Apps from './pages/Apps/index';
 import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
+import Pharmacies from './pages/Pharmacies';
 import AccountPage from './pages/Account';
 import { NotificationPanel } from './components/NotificationPanel';
 import type { NotificationItem } from './components/NotificationPanel';
@@ -25,12 +26,13 @@ import { useSecondScreen } from './hooks/useSecondScreen';
 import { homeData } from './data/home';
 import { services } from './data/services';
 import { nationalStories } from './data/stories';
+import { mockPharmacies } from './data/pharmacies';
 import { channels, syncChannelsFromSupabase } from './data/channels';
 import { colors } from './styles/colors';
 import { typography } from './styles/typography';
 import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
 
-type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'settings' | 'help' | 'apps-camara' | 'apps-senado' | 'my-channels' | 'account';
+type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'pharmacies' | 'settings' | 'help' | 'apps-camara' | 'apps-senado' | 'my-channels' | 'account';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
@@ -76,7 +78,7 @@ export default function App() {
     { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
   ], []);
 
-  const heroLength = currentPage === 'apps-camara' || currentPage === 'apps-senado' ? 1 : homeData.hero.length;
+  const heroLength = currentPage === 'apps-camara' || currentPage === 'apps-senado' ? 1 : currentPage === 'pharmacies' ? 0 : homeData.hero.length;
   const railLengths = useMemo(() => {
     if (currentPage === 'apps-camara') {
       return [deputies.length + 1, 10]; // +1 for "Ver todos"
@@ -84,6 +86,9 @@ export default function App() {
     if (currentPage === 'apps-senado') {
       const tvSenado = channels.find((ch) => ch.id === 'tv-senado');
       return [senators.length + 1, tvSenado?.programs?.length ?? 0];
+    }
+    if (currentPage === 'pharmacies') {
+      return [mockPharmacies.length];
     }
     return [services.length, ...homeData.rails.map((r) => r.cards.length), services.length];
   }, [currentPage, deputies.length, senators.length]);
@@ -159,6 +164,13 @@ export default function App() {
     if (service.id === 'senado-federal') {
       setCurrentPage('apps-senado');
     }
+    if (service.id === 'meu-sus') {
+      setCurrentPage('pharmacies');
+    }
+  }, []);
+
+  const handlePharmaciesEscape = useCallback(() => {
+    setCurrentPage('apps');
   }, []);
 
   const {
@@ -173,9 +185,12 @@ export default function App() {
     railLengths,
     sidebarItemIds,
     sidebarLength: sidebarItems.length + 1,
-    activeSidebarId: currentPage,
+    activeSidebarId: currentPage === 'pharmacies' ? 'apps' : currentPage,
     onEnter: useCallback((state: FocusState) => {
       const currentPage = currentPageRef.current;
+      if (currentPage === 'pharmacies') {
+        return;
+      }
       if (currentPage === 'apps-camara') {
         if (state.mainZone === 'hero') {
           const tvCamara = channels.find(ch => ch.id === 'tv-camara');
@@ -313,6 +328,7 @@ export default function App() {
       }
     }, [deputies, handleDeputySelect, handleSenatorSelect, handleServiceSelect, senators, updateChannel]),
     onSidebarSelect: handleSidebarSelect,
+    onEscape: currentPage === 'pharmacies' ? handlePharmaciesEscape : undefined,
   });
 
   const sidebarSign: SidebarSign = useMemo(() => ({
@@ -394,6 +410,15 @@ export default function App() {
             onServiceSelect={handleServiceSelect}
           />
         );
+      case 'pharmacies':
+        return (
+          <Pharmacies
+            mainZone={mainZone}
+            mainItemIndex={mainItemIndex}
+            isActive={currentPage === 'pharmacies'}
+            onExit={() => setCurrentPage('apps')}
+          />
+        );
       case 'apps-camara':
         return (
           <Camara
@@ -469,7 +494,7 @@ export default function App() {
           items={sidebarItems}
           sign={sidebarSign}
           expanded={isSidebarExpanded}
-          activeItemId={currentPage}
+          activeItemId={currentPage === 'pharmacies' ? 'apps' : currentPage}
           focusedItemId={isSidebarExpanded ? (sidebarIndex === 0 ? 'avatar' : sidebarItems[sidebarIndex - 1]?.id) : undefined}
           onItemClick={handleSidebarSelect}
         />
