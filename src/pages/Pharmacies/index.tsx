@@ -140,7 +140,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     overflow: 'hidden',
     background: colors.background.baseInverse,
     display: 'grid',
-    gridTemplateColumns: '88px 380px 1fr',
+    gridTemplateColumns: '88px 1fr 1fr',
   };
 
   const leftColumnStyle: CSSProperties = {
@@ -420,11 +420,12 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
               center={[activePharmacy.latitude, activePharmacy.longitude]}
               zoom={15}
               scrollWheelZoom={false}
+              zoomControl={false}
+              attributionControl={false}
               style={{ width: '100%', height: '220px' }}
             >
               <MapController activePharmacy={activePharmacy} mapRef={mapRef} markersRef={markerRefs} />
               <TileLayer
-                attribution="&copy; OpenStreetMap contributors &copy; CARTO"
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
               />
               {orderedPharmacies.map((pharmacy, index) => (

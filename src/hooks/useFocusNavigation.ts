@@ -19,6 +19,7 @@ export interface UseFocusNavigationOptions {
   onEnter?: (state: FocusState) => void;
   onSidebarSelect?: (id: string) => void;
   onEscape?: (state: FocusState) => void;
+  verticalNavigation?: boolean;
 }
 
 export interface UseFocusNavigationReturn {
@@ -42,6 +43,7 @@ export const useFocusNavigation = ({
   onEnter,
   onSidebarSelect,
   onEscape,
+  verticalNavigation = false,
 }: UseFocusNavigationOptions): UseFocusNavigationReturn => {
   const [focusState, setFocusState] = useState<FocusState>({
     region: 'main',
@@ -69,6 +71,50 @@ export const useFocusNavigation = ({
       }
 
       if (region === 'main') {
+        // Vertical navigation mode: ArrowUp/ArrowDown move within the rail
+        if (verticalNavigation && mainZone.startsWith('rail-')) {
+          const railMatch = mainZone.match(/^rail-(\d+)$/);
+          const railIdx = railMatch ? parseInt(railMatch[1]) : 0;
+          const limit = (railLengths[railIdx] || 0) - 1;
+
+          switch (event.key) {
+            case 'ArrowDown':
+              if (mainItemIndex < limit) {
+                setFocusState((prev) => ({ ...prev, mainItemIndex: mainItemIndex + 1 }));
+              }
+              break;
+            case 'ArrowUp':
+              if (mainItemIndex > 0) {
+                setFocusState((prev) => ({ ...prev, mainItemIndex: mainItemIndex - 1 }));
+              }
+              break;
+            case 'ArrowLeft':
+              if (mainItemIndex === 0) {
+                const activeIdx = sidebarItemIds.indexOf(activeSidebarId);
+                const targetSidebarIndex = activeIdx !== -1 ? activeIdx + 1 : 1;
+                setFocusState((prev) => ({
+                  ...prev,
+                  region: 'sidebar',
+                  sidebarIndex: targetSidebarIndex,
+                }));
+              }
+              break;
+            case 'ArrowRight':
+              break;
+            case 'Escape':
+              if (onEscape) {
+                onEscape(focusStateRef.current);
+              } else {
+                setFocusState((prev) => ({ ...prev, mainZone: heroLength === 0 ? 'rail-0' : 'hero', mainItemIndex: 0 }));
+              }
+              break;
+            case 'Enter':
+              onEnter?.(focusStateRef.current);
+              break;
+          }
+          return;
+        }
+
         switch (event.key) {
           case 'ArrowLeft':
             if (mainItemIndex > 0) {
@@ -225,7 +271,7 @@ export const useFocusNavigation = ({
         }
       }
     },
-    [heroLength, storiesLength, railLengths, sidebarItemIds, sidebarLength, activeSidebarId, onEnter, onSidebarSelect, onEscape]
+    [heroLength, storiesLength, railLengths, sidebarItemIds, sidebarLength, activeSidebarId, onEnter, onSidebarSelect, onEscape, verticalNavigation]
   );
 
   useEffect(() => {

@@ -329,6 +329,7 @@ export default function App() {
     }, [deputies, handleDeputySelect, handleSenatorSelect, handleServiceSelect, senators, updateChannel]),
     onSidebarSelect: handleSidebarSelect,
     onEscape: currentPage === 'pharmacies' ? handlePharmaciesEscape : undefined,
+    verticalNavigation: currentPage === 'pharmacies',
   });
 
   const sidebarSign: SidebarSign = useMemo(() => ({
