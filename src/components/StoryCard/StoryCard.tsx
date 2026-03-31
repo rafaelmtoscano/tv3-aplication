@@ -14,10 +14,10 @@ export interface StoryCardProps {
   onClick?: () => void;
 }
 
-const IDLE_WIDTH = 160;
-const IDLE_HEIGHT = 240;
-const ACTIVE_WIDTH = 280;
-const ACTIVE_HEIGHT = 420;
+const IDLE_WIDTH = 248;
+const IDLE_HEIGHT = 440;
+const ACTIVE_WIDTH = 312;
+const ACTIVE_HEIGHT = 554;
 const TRANSITION = '0.35s cubic-bezier(0.34, 1.1, 0.64, 1)';
 
 export function StoryCard({
@@ -31,16 +31,19 @@ export function StoryCard({
 }: StoryCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Inicia reprodução quando fica em foco (sem precisar pressionar Enter)
   useEffect(() => {
-    if (isActive && videoRef.current) {
+    if (isFocused && videoRef.current) {
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
     }
-    if (!isActive) {
+    if (!isFocused && !isActive) {
+      videoRef.current?.pause();
       setProgress(0);
     }
-  }, [isActive]);
+  }, [isFocused, isActive]);
 
   const handleTimeUpdate = () => {
     const video = videoRef.current;
@@ -51,7 +54,11 @@ export function StoryCard({
 
   const handleEnded = () => {
     setProgress(100);
-    onEnded?.();
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setIsTransitioning(false);
+      onEnded?.();
+    }, 300);
   };
 
   const width = isActive ? ACTIVE_WIDTH : IDLE_WIDTH;
@@ -65,8 +72,10 @@ export function StoryCard({
     overflow: 'hidden',
     flexShrink: 0,
     transition: `width ${TRANSITION}, height ${TRANSITION}, transform ${TRANSITION}, border ${TRANSITION}`,
-    border: isFocused && !isActive ? `4px solid ${colors.background.primary}` : '4px solid transparent',
-    transform: isFocused && !isActive ? 'scale(1.05)' : 'scale(1)',
+    border: isFocused ? `4px solid ${colors.background.primary}` : '4px solid transparent',
+    transform: isFocused ? 'scale(1.05)' : 'scale(1)',
+    opacity: isTransitioning ? 0.4 : 1,
+    filter: isTransitioning ? 'blur(2px)' : 'none',
     cursor: 'pointer',
     boxSizing: 'border-box',
   };

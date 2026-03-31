@@ -20,8 +20,8 @@ export interface StoriesRailProps {
   onNavigateDown?: () => void;
 }
 
-const IDLE_HEIGHT = 240;
-const ACTIVE_HEIGHT = 420;
+const IDLE_HEIGHT = 440;
+const FOCUSED_HEIGHT = 554; // altura quando qualquer item está em foco
 const TRANSITION = '0.4s cubic-bezier(0.4, 0, 0.2, 1)';
 
 export function StoriesRail({
@@ -32,8 +32,8 @@ export function StoriesRail({
   const [activeIndex, setActiveIndex] = useState(-1);
   const railRef = useRef<HTMLDivElement>(null);
 
-  const hasActive = activeIndex >= 0;
-  const railHeight = hasActive ? ACTIVE_HEIGHT : IDLE_HEIGHT;
+  const hasFocused = focusedIndex >= 0;
+  const railHeight = hasFocused ? FOCUSED_HEIGHT : IDLE_HEIGHT;
 
   // Handle Enter key to start playback
   useEffect(() => {
@@ -49,13 +49,6 @@ export function StoriesRail({
 
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [focusedIndex]);
-
-  // Stop playback when focus leaves the rail
-  useEffect(() => {
-    if (focusedIndex < 0) {
-      setActiveIndex(-1);
-    }
   }, [focusedIndex]);
 
   const handleEnded = (index: number) => {

@@ -14,7 +14,7 @@ import { TileButton } from '../../components/TileButton';
 import { services } from '../../data/services';
 
 const HERO_HEIGHT = 680;
-const STORIES_HEIGHT = 320;
+const STORIES_HEIGHT = 554; // altura máxima (focused)
 const RAIL_HEIGHT = 408;
 const RAIL_SCROLL_OFFSET = 160;
 
@@ -175,14 +175,18 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
     if (mainZone === 'hero') {
       setMainScrollY(0);
     } else if (mainZone === 'stories') {
-      setMainScrollY(HERO_HEIGHT - RAIL_SCROLL_OFFSET);
+      setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT - RAIL_SCROLL_OFFSET);
     } else if (mainZone === 'my-space') {
       setMainScrollY(HERO_HEIGHT + STORIES_HEIGHT + RAIL_HEIGHT * homeData.rails.length - RAIL_SCROLL_OFFSET);
     } else {
       const railMatch = mainZone.match(/^rail-(\d+)$/);
       if (railMatch) {
         const railIdx = parseInt(railMatch[1]);
-        setMainScrollY(HERO_HEIGHT + STORIES_HEIGHT + RAIL_HEIGHT * railIdx - RAIL_SCROLL_OFFSET);
+        if (railIdx === 0) {
+          setMainScrollY(HERO_HEIGHT - RAIL_SCROLL_OFFSET);
+        } else {
+          setMainScrollY(HERO_HEIGHT + STORIES_HEIGHT + RAIL_HEIGHT * railIdx - RAIL_SCROLL_OFFSET);
+        }
       }
     }
   }, [mainZone, isActive]);
@@ -212,15 +216,6 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
           <HeroBanner
             slides={bannerSlides}
             activeIndex={mainZone === 'hero' ? mainItemIndex : undefined}
-          />
-        </div>
-
-        {/* Stories Rail */}
-        <div style={{ marginTop: '48px', marginBottom: '48px' }}>
-          <StoriesRail
-            title="Stories"
-            items={nationalStories}
-            focusedIndex={mainZone === 'stories' ? mainItemIndex : -1}
           />
         </div>
 
@@ -277,6 +272,18 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Stories Rail */}
+        <div style={{ marginTop: '48px', marginBottom: '48px' }}>
+          <StoriesRail
+            title="Em destaque agora"
+            items={nationalStories}
+            focusedIndex={mainZone === 'stories' ? mainItemIndex : -1}
+            onFocusedIndexChange={() => {}}
+            onNavigateUp={() => {}}
+            onNavigateDown={() => {}}
+          />
         </div>
 
         {/* Content Rails (rail-1 through rail-N) */}
