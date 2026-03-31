@@ -1,6 +1,7 @@
 // TODO: substituir por chamada à API
 
 import { channels } from './channels';
+import { allSchedules, getCurrentProgram } from './schedule';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -90,6 +91,7 @@ const heroSlides: HeroSlide[] = [
   // Slide 2 — TV Brasil ao vivo
   (() => {
     const ch = getChannel('tv-brasil');
+    const currentProg = allSchedules[ch.id] ? getCurrentProgram(allSchedules[ch.id]) : null;
     return {
       id: 'hero-live-tv-brasil',
       mediaType: 'video' as const,
@@ -98,7 +100,7 @@ const heroSlides: HeroSlide[] = [
       isLive: true,
       signal: 'HD' as const,
       classification: 'L' as const,
-      title: ch.programs![0].title,
+      title: currentProg?.title ?? ch.programs![0].title,
       description: 'Acompanhe ao vivo a programação da TV Brasil com conteúdo jornalístico de qualidade.',
       buttonLabel: 'Assistir ao vivo',
       channelId: ch.id,
@@ -147,6 +149,7 @@ const heroSlides: HeroSlide[] = [
   (() => {
     const ch = getChannel('tv-senado');
     const prog = ch.programs![0];
+    const currentProg = allSchedules[ch.id] ? getCurrentProgram(allSchedules[ch.id]) : null;
     return {
       id: 'hero-tv-senado',
       mediaType: 'image' as const,
@@ -155,7 +158,7 @@ const heroSlides: HeroSlide[] = [
       isLive: true,
       signal: 'HD' as const,
       classification: 'L' as const,
-      title: prog?.title ?? 'TV Senado',
+      title: currentProg?.title ?? prog?.title ?? 'TV Senado',
       description: 'Acompanhe ao vivo as votações e sessões do Senado Federal.',
       buttonLabel: 'Assistir ao vivo',
       channelId: ch.id,

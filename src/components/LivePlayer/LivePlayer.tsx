@@ -5,7 +5,7 @@ import { ActionButton } from '../ActionButton';
 import { EPGRail } from '../EPGRail';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
-import { allSchedules, getUpcomingPrograms } from '../../data/schedule';
+import { allSchedules, getUpcomingPrograms, getCurrentProgram } from '../../data/schedule';
 import { CloseIcon } from '../../icons';
 import type { EPGEntry } from '../../data/schedule';
 
@@ -52,6 +52,12 @@ export const LivePlayer = React.memo(
         () => channels.find((c) => c.id === activeChannelId) || channels[0],
         [channels, activeChannelId]
       );
+
+      const currentProgram = useMemo(() => {
+        const schedule = allSchedules[activeChannelId];
+        if (!schedule) return null;
+        return getCurrentProgram(schedule);
+      }, [activeChannelId]);
 
       const resetTimer = useCallback(() => {
         if (timeoutRef.current) {
@@ -404,6 +410,15 @@ export const LivePlayer = React.memo(
             <div style={bottomSectionStyle}>
               <div style={nowWatchingStyle}>
                 Assistindo {activeChannel.name}
+                {currentProgram && (
+                  <div style={{
+                    ...typography.body.medium,
+                    color: colors.text.secondaryInverse,
+                    marginTop: 4,
+                  }}>
+                    {currentProgram.title}
+                  </div>
+                )}
               </div>
 
               <div style={toggleLabelStyle}>
