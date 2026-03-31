@@ -181,14 +181,14 @@ const recentRail: Rail = {
 
 // ─── Rail 3 — Política & Democracia ──────────────────────────────────────────
 
-// Categorias: Política (TV Câmara, TV Senado) + Governo (Canal Gov) + Direito (TV Justiça)
+// Categorias: Política (TV Câmara, TV Senado) + Governo (Canal Gov)
 // TODO: substituir por chamada à API com tag 'politica-democracia'
 const politicsRail: Rail = {
   id: 'politics',
   title: 'Política & Democracia',
   variant: 'image-text',
   cards: channels
-    .filter(ch => ['tv-camara', 'tv-senado', 'canal-gov', 'tv-justica'].includes(ch.id))
+    .filter(ch => ['tv-camara', 'tv-senado', 'canal-gov'].includes(ch.id))
     .flatMap(ch => {
       const prog = ch.programs?.[2];
       if (!prog) return [];
