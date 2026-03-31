@@ -141,7 +141,7 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
       <div style={{ display: 'flex', gap: 32, width: '100%', maxWidth: 1400 }}>
         <StepCard
           number={1}
-          icon="📱"
+          icon="App"
           title="Baixe o app"
           description="Disponível para Android e iOS. Escaneie o QR code para baixar a segunda tela."
           status="done"
@@ -163,7 +163,7 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
 
         <StepCard
           number={2}
-          icon="📡"
+          icon="Celular"
           title="Conecte seu celular"
           description="Abra o app e digite o código exibido abaixo para sincronizar com esta TV."
           status={step2Status}
@@ -213,7 +213,7 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
 
         <StepCard
           number={3}
-          icon="🏛️"
+          icon="gov.br"
           title="Entre com gov.br"
           description="Faça login pelo celular para participar de enquetes, petições e personalizar sua experiência."
           status={step3Status}
