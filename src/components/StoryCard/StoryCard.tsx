@@ -38,35 +38,63 @@ export function StoryCard({
   const [progress, setProgress] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  const startPlayback = () => {
+    if (videoType === 'youtube') {
+      const player = youtubePlayerRef.current;
+      if (!player) return;
+
+      if (youtubeIntervalRef.current) {
+        clearInterval(youtubeIntervalRef.current);
+        youtubeIntervalRef.current = null;
+      }
+
+      setProgress(0);
+      player.seekTo?.(0, true);
+      player.unMute?.();
+      player.playVideo?.();
+      return;
+    }
+
+    if (!videoRef.current) return;
+
+    videoRef.current.currentTime = 0;
+    setProgress(0);
+    videoRef.current.play().catch(() => {});
+  };
+
   useEffect(() => {
     return () => {
       if (youtubeIntervalRef.current) {
         clearInterval(youtubeIntervalRef.current);
+        youtubeIntervalRef.current = null;
       }
     };
   }, []);
 
   // Inicia reprodução quando fica em foco (sem precisar pressionar Enter)
   useEffect(() => {
-    if (videoType === 'youtube') {
-      if (isFocused && youtubePlayerRef.current) {
-        youtubePlayerRef.current.unMute?.();
-        youtubePlayerRef.current.seekTo?.(0, true);
-        youtubePlayerRef.current.playVideo();
-      } else if (!isFocused && youtubePlayerRef.current) {
-        youtubePlayerRef.current.pauseVideo();
-        setProgress(0);
-      }
+    if (isFocused) {
+      startPlayback();
       return;
     }
 
-    if (isFocused && videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {});
+    if (videoType === 'youtube') {
+      youtubePlayerRef.current?.pauseVideo?.();
     } else {
       videoRef.current?.pause();
-      setProgress(0);
     }
+    setProgress(0);
+  }, [isFocused, videoType]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isFocused || event.key !== 'Enter') return;
+      event.preventDefault();
+      startPlayback();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFocused, videoType]);
 
   const handleTimeUpdate = () => {
@@ -207,9 +235,10 @@ export function StoryCard({
             onReady={(e) => {
               youtubePlayerRef.current = e.target;
               if (isFocused) {
-                e.target.unMute?.();
+                setProgress(0);
                 e.target.seekTo?.(0, true);
-                e.target.playVideo();
+                e.target.unMute?.();
+                e.target.playVideo?.();
               }
             }}
             onEnd={() => {
