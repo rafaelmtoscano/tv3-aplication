@@ -193,7 +193,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     gridColumn: '2',
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
+    gap: '24px',
     padding: '48px 16px 24px 48px',
     minHeight: 0,
     overflow: 'hidden',
@@ -209,59 +209,82 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     overflow: 'hidden',
   };
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    // Escape/Backspace always exits
-    if (e.key === 'Escape' || e.key === 'Backspace') {
-      e.preventDefault();
-      e.nativeEvent.stopImmediatePropagation();
-      onExit();
-      return;
-    }
+  // Refs for capture-phase keyboard handler (avoid re-registering on every state change)
+  const navSectionRef = useRef(navSection);
+  navSectionRef.current = navSection;
+  const mainItemIndexRef = useRef(mainItemIndex);
+  mainItemIndexRef.current = mainItemIndex;
+  const focusedIndexRef = useRef(focusedIndex);
+  focusedIndexRef.current = focusedIndex;
+  const onExitRef = useRef(onExit);
+  onExitRef.current = onExit;
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
 
-    // Zone transitions: list → chips → back (ArrowUp) and back → chips → list (ArrowDown)
-    if (e.key === 'ArrowUp') {
-      if (navSection === 'list' && (mainItemIndex === 0 || focusedIndex <= 0)) {
-        e.preventDefault();
-        e.nativeEvent.stopImmediatePropagation();
-        setNavSection('chips');
-        return;
-      }
-      if (navSection === 'chips') {
-        e.preventDefault();
-        e.nativeEvent.stopImmediatePropagation();
-        setNavSection('back');
-        return;
-      }
-    }
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!isActiveRef.current) return;
 
-    if (e.key === 'ArrowDown') {
-      if (navSection === 'back') {
+      // Escape/Backspace always exits
+      if (e.key === 'Escape' || e.key === 'Backspace') {
         e.preventDefault();
-        e.nativeEvent.stopImmediatePropagation();
-        setNavSection('chips');
+        e.stopImmediatePropagation();
+        onExitRef.current();
         return;
       }
-      if (navSection === 'chips') {
-        e.preventDefault();
-        e.nativeEvent.stopImmediatePropagation();
-        setNavSection('list');
-        return;
-      }
-    }
 
-    // Enter/Space actions per zone
-    if (e.key === 'Enter' || e.key === ' ') {
-      if (navSection === 'back') {
-        e.preventDefault();
-        e.nativeEvent.stopImmediatePropagation();
-        onExit();
-        return;
+      const section = navSectionRef.current;
+      const itemIdx = mainItemIndexRef.current;
+      const focIdx = focusedIndexRef.current;
+
+      // Zone transitions: list → chips → back (ArrowUp) and back → chips → list (ArrowDown)
+      if (e.key === 'ArrowUp') {
+        if (section === 'list' && (itemIdx === 0 || focIdx <= 0)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          setNavSection('chips');
+          return;
+        }
+        if (section === 'chips') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          setNavSection('back');
+          return;
+        }
       }
-    }
-  }, [navSection, mainItemIndex, focusedIndex, onExit]);
+
+      if (e.key === 'ArrowDown') {
+        if (section === 'back') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          setNavSection('chips');
+          return;
+        }
+        if (section === 'chips') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          setNavSection('list');
+          return;
+        }
+      }
+
+      // Enter/Space actions per zone
+      if (e.key === 'Enter' || e.key === ' ') {
+        if (section === 'back') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          onExitRef.current();
+          return;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handler, { capture: true });
+    return () => window.removeEventListener('keydown', handler, { capture: true });
+  }, []);
 
   return (
-    <main style={pageStyle} onKeyDown={handleKeyDown} tabIndex={-1}>
+    <main style={pageStyle}>
       <style>{`.pharmacy-list::-webkit-scrollbar { display: none; }`}</style>
       <div style={{ gridColumn: '1', gridRow: '1 / -1' }} />
 
@@ -299,7 +322,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', width: 'fit-content' }}>
+        <div style={{ display: 'flex', gap: '8px', width: 'fit-content', marginTop: '8px' }}>
           <button
             type="button"
             onClick={() => setActiveTab('farmacias')}
@@ -319,7 +342,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
         </div>
 
         {activeTab === 'farmacias' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: 0, overflow: 'hidden', marginTop: '4px' }}>
             {isFullMode && habitualPharmacy && (
               <div style={{ ...typography.label.small, color: colors.text.disabledInverse, textTransform: 'uppercase', letterSpacing: '0.07em', flexShrink: 0 }}>
                 Sua farmácia habitual
