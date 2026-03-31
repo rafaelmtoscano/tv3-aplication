@@ -169,7 +169,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
 
       <div style={leftColumnStyle}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingTop: '4px' }}>
-          <h1 style={{ ...typography.headline.medium, color: colors.text.primaryInverse, margin: 0 }}>
+          <h1 style={{ ...typography.display.medium, color: colors.text.primaryInverse, margin: 0, lineHeight: 1 }}>
             Retirada de Medicamentos
           </h1>
           <span style={{ ...typography.label.small, color: colors.text.disabledInverse }}>
@@ -269,14 +269,14 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
         </div>
 
         {activeTab === 'farmacias' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: 0, overflow: 'hidden' }}>
             {isFullMode && habitualPharmacy && (
               <div style={{ ...typography.label.small, color: colors.text.disabledInverse, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                 Sua farmácia habitual
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden', minHeight: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', overflow: 'hidden', minHeight: 0 }}>
               {orderedPharmacies.map((pharmacy, index) => {
                 const focused = focusedIndex === index;
                 const isHabitual = isFullMode && habitualPharmacy?.pharmacy.id === pharmacy.id;
@@ -330,7 +330,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
         )}
 
         {activeTab === 'historico' && isFullMode && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: 0, overflow: 'hidden' }}>
             {alerts.map((alert) => (
               <div key={alert.dispensacao.id} style={{ ...cardStyle(), padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
