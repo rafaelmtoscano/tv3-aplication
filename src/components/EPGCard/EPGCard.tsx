@@ -237,6 +237,20 @@ export const EPGCard = memo(
                 {title}
               </span>
             </div>
+            {channelName && (
+              <span style={{
+                ...typography.body.small,
+                color: 'inherit',
+                opacity: 0.6,
+                marginTop: 4,
+                display: 'block',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {channelName}
+              </span>
+            )}
             {variant === 'now' && (
               <div style={progressTrackStyle}>
                 <div style={progressFillStyle} />
