@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 
@@ -87,13 +87,18 @@ function StepCard({ number, title, description, icon, status, content }: StepCar
 export default function AccountPage({ sessionCode, isConnected, isAuthenticated, onBack }: AccountPageProps) {
   const onBackRef = useRef(onBack);
   onBackRef.current = onBack;
+  const [backFocused, setBackFocused] = useState(true);
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape' || e.key === 'Backspace') {
       e.stopImmediatePropagation();
       onBackRef.current();
     }
-  }, []);
+    if (e.key === 'Enter' && backFocused) {
+      e.stopImmediatePropagation();
+      onBackRef.current();
+    }
+  }, [backFocused]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey, { capture: true });
@@ -203,15 +208,20 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
 
       <button
         onClick={onBack}
+        onFocus={() => setBackFocused(true)}
+        onBlur={() => setBackFocused(false)}
         style={{
           padding: '18px 64px',
           borderRadius: 100,
           border: 'none',
-          background: colors.background.primaryInverse,
-          color: colors.text.primaryInverse,
+          background: backFocused ? colors.background.primary : colors.background.primaryInverse,
+          color: backFocused ? colors.text.primary : colors.text.primaryInverse,
           ...typography.body.large,
           fontWeight: 600,
           cursor: 'pointer',
+          transform: backFocused ? 'scale(1.05)' : 'scale(1)',
+          transition: 'background 0.2s ease, transform 0.2s ease, color 0.2s ease',
+          boxShadow: backFocused ? '0 8px 24px rgba(0,0,0,0.4)' : 'none',
         }}
       >
         Voltar
