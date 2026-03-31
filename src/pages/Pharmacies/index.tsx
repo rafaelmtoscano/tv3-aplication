@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MutableRefObject } from 'react';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
@@ -20,6 +20,7 @@ interface PharmaciesProps {
 }
 
 type ViewTab = 'farmacias' | 'historico';
+type NavSection = 'back' | 'chips' | 'list';
 
 function formatDays(days: number) {
   if (days === 0) return 'vence hoje';
@@ -58,12 +59,14 @@ function MapController({
 }
 
 export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }: PharmaciesProps) {
-  const { govBrUser, isLoggedIn, isGovBrConnected, loginMock, connectGovBrMock } = useAuth();
+  const { govBrUser, isGovBrConnected } = useAuth();
   const { location } = usePharmacyLocation(govBrUser?.cep);
   const alerts = usePharmacyRenovationAlerts(govBrUser?.dispensacoes ?? []);
   const [activeTab, setActiveTab] = useState<ViewTab>('farmacias');
+  const [navSection, setNavSection] = useState<NavSection>('list');
   const mapRef = useRef<L.Map | null>(null);
   const markerRefs = useRef<Record<string, L.Marker | null>>({});
+  const listRef = useRef<HTMLDivElement>(null);
 
   const habitualPharmacy = useMemo(() => {
     if (!govBrUser) return null;
@@ -94,24 +97,45 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     return [habitualPharmacy.pharmacy, ...mockPharmacies.filter((item) => item.id !== habitualPharmacy.pharmacy.id)];
   }, [habitualPharmacy, isGovBrConnected]);
 
-  const isBackFocused = mainZone !== 'rail-0';
-  const focusedIndex = mainZone === 'rail-0' ? mainItemIndex : -1;
-  const activePharmacy = orderedPharmacies[focusedIndex] ?? orderedPharmacies[0];
+  const focusedIndex = navSection === 'list' && mainZone === 'rail-0' ? mainItemIndex : -1;
+  const activePharmacy = orderedPharmacies[focusedIndex >= 0 ? focusedIndex : 0];
   const mostUrgentAlert = alerts[0] ?? null;
   const locationLabel = location ? `${location.city}/${location.state}` : 'João Pessoa/PB';
-  const isFullMode = isLoggedIn && isGovBrConnected;
+  const isFullMode = isGovBrConnected;
 
+  // Reset to list focus when page becomes active
   useEffect(() => {
     if (isActive) {
       setActiveTab('farmacias');
+      setNavSection('list');
     }
   }, [isActive]);
+
+  // Sync navSection back to list when parent navigation returns to rail-0
+  useEffect(() => {
+    if (mainZone === 'rail-0' && navSection !== 'list') {
+      // Only auto-sync if mainItemIndex changed (real navigation happened)
+    }
+  }, [mainZone, mainItemIndex, navSection]);
 
   useEffect(() => {
     if (!isFullMode && activeTab === 'historico') {
       setActiveTab('farmacias');
     }
   }, [activeTab, isFullMode]);
+
+  // Scroll focused item into view
+  useEffect(() => {
+    if (focusedIndex >= 0 && listRef.current) {
+      const items = listRef.current.children;
+      if (items[focusedIndex]) {
+        (items[focusedIndex] as HTMLElement).scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }
+    }
+  }, [focusedIndex]);
 
   const cardStyle = (focused = false): CSSProperties => ({
     borderRadius: '16px',
@@ -128,16 +152,24 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     ...typography.label.small,
   });
 
-  const tabChipStyle = (active: boolean): CSSProperties => ({
-    border: 'none',
+  const tabChipStyle = (active: boolean, focused: boolean): CSSProperties => ({
+    border: focused ? `2px solid ${colors.background.primary}` : '2px solid transparent',
     borderRadius: '100px',
-    padding: '12px 24px',
-    background: active ? colors.background.primary : 'rgba(255,255,255,0.08)',
-    color: active ? colors.text.primary : colors.text.secondaryInverse,
+    padding: '10px 22px',
+    background: focused
+      ? colors.background.primary
+      : active
+        ? 'rgba(255,255,255,0.20)'
+        : 'rgba(255,255,255,0.08)',
+    color: focused
+      ? colors.text.primary
+      : active
+        ? colors.text.primaryInverse
+        : colors.text.secondaryInverse,
     ...typography.headline.small,
     cursor: 'pointer',
     fontFamily: 'inherit',
-    transition: 'background 0.2s ease, color 0.2s ease',
+    transition: 'all 0.2s ease',
   });
 
   const markerIcon = (focused: boolean) =>
@@ -161,7 +193,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     gridColumn: '2',
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '16px',
     padding: '48px 16px 24px 48px',
     minHeight: 0,
     overflow: 'hidden',
@@ -177,19 +209,60 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     overflow: 'hidden',
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Escape/Backspace always exits
     if (e.key === 'Escape' || e.key === 'Backspace') {
       e.preventDefault();
+      e.nativeEvent.stopImmediatePropagation();
       onExit();
+      return;
     }
-    if (isBackFocused && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      onExit();
+
+    // Zone transitions: list → chips → back (ArrowUp) and back → chips → list (ArrowDown)
+    if (e.key === 'ArrowUp') {
+      if (navSection === 'list' && (mainItemIndex === 0 || focusedIndex <= 0)) {
+        e.preventDefault();
+        e.nativeEvent.stopImmediatePropagation();
+        setNavSection('chips');
+        return;
+      }
+      if (navSection === 'chips') {
+        e.preventDefault();
+        e.nativeEvent.stopImmediatePropagation();
+        setNavSection('back');
+        return;
+      }
     }
-  };
+
+    if (e.key === 'ArrowDown') {
+      if (navSection === 'back') {
+        e.preventDefault();
+        e.nativeEvent.stopImmediatePropagation();
+        setNavSection('chips');
+        return;
+      }
+      if (navSection === 'chips') {
+        e.preventDefault();
+        e.nativeEvent.stopImmediatePropagation();
+        setNavSection('list');
+        return;
+      }
+    }
+
+    // Enter/Space actions per zone
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (navSection === 'back') {
+        e.preventDefault();
+        e.nativeEvent.stopImmediatePropagation();
+        onExit();
+        return;
+      }
+    }
+  }, [navSection, mainItemIndex, focusedIndex, onExit]);
 
   return (
     <main style={pageStyle} onKeyDown={handleKeyDown} tabIndex={-1}>
+      <style>{`.pharmacy-list::-webkit-scrollbar { display: none; }`}</style>
       <div style={{ gridColumn: '1', gridRow: '1 / -1' }} />
 
       <div style={leftColumnStyle}>
@@ -202,22 +275,22 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
             alignItems: 'center',
             gap: '8px',
             alignSelf: 'flex-start',
-            background: isBackFocused ? 'rgba(255,255,255,0.12)' : 'none',
-            border: isBackFocused ? `2px solid ${colors.background.primary}` : '2px solid transparent',
+            background: navSection === 'back' ? 'rgba(255,255,255,0.12)' : 'none',
+            border: navSection === 'back' ? `2px solid ${colors.background.primary}` : '2px solid transparent',
             color: colors.text.primaryInverse,
             cursor: 'pointer',
             padding: '8px 16px 8px 10px',
             borderRadius: '100px',
             ...typography.body.medium,
             fontFamily: 'inherit',
-            transition: 'background 0.2s ease, border-color 0.2s ease',
+            transition: 'all 0.2s ease',
           }}
         >
           <ChevronLeftIcon size={24} color={colors.text.primaryInverse} />
           Voltar
         </button>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <h1 style={{ ...typography.display.medium, color: colors.text.primaryInverse, margin: 0, lineHeight: 1 }}>
             Retirada de Medicamentos
           </h1>
@@ -226,43 +299,11 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {!isLoggedIn && (
-            <div style={{ ...cardStyle(), padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>
-                Entre para acompanhar suas retiradas
-              </div>
-              <div style={{ ...typography.body.small, color: colors.text.disabledInverse }}>
-                Veja histórico, farmácia habitual e alertas de renovação em um só lugar.
-              </div>
-              <button
-                type="button"
-                onClick={loginMock}
-                style={{
-                  alignSelf: 'flex-start',
-                  border: 'none',
-                  borderRadius: '999px',
-                  background: colors.background.brandPrimary,
-                  color: colors.text.primaryInverse,
-                  padding: '8px 18px',
-                  ...typography.label.small,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                Entrar agora
-              </button>
-            </div>
-          )}
-
-          {/* gov.br banner temporarily hidden */}
-        </div>
-
         <div style={{ display: 'flex', gap: '8px', width: 'fit-content' }}>
           <button
             type="button"
             onClick={() => setActiveTab('farmacias')}
-            style={tabChipStyle(activeTab === 'farmacias')}
+            style={tabChipStyle(activeTab === 'farmacias', navSection === 'chips' && activeTab === 'farmacias')}
           >
             Próximas
           </button>
@@ -270,7 +311,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
             <button
               type="button"
               onClick={() => setActiveTab('historico')}
-              style={tabChipStyle(activeTab === 'historico')}
+              style={tabChipStyle(activeTab === 'historico', navSection === 'chips' && activeTab === 'historico')}
             >
               Meu histórico
             </button>
@@ -278,14 +319,26 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
         </div>
 
         {activeTab === 'farmacias' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minHeight: 0, overflow: 'hidden' }}>
             {isFullMode && habitualPharmacy && (
-              <div style={{ ...typography.label.small, color: colors.text.disabledInverse, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              <div style={{ ...typography.label.small, color: colors.text.disabledInverse, textTransform: 'uppercase', letterSpacing: '0.07em', flexShrink: 0 }}>
                 Sua farmácia habitual
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', overflow: 'hidden', minHeight: 0 }}>
+            <div
+              ref={listRef}
+              className="pharmacy-list"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                overflowY: 'auto',
+                minHeight: 0,
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
               {orderedPharmacies.map((pharmacy, index) => {
                 const focused = focusedIndex === index;
                 const isHabitual = isFullMode && habitualPharmacy?.pharmacy.id === pharmacy.id;
@@ -301,7 +354,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
                       cursor: 'pointer',
                       fontFamily: 'inherit',
                       borderRadius: '16px',
-                      padding: '14px 16px',
+                      padding: '12px 14px',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
@@ -309,9 +362,10 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
                       flexShrink: 0,
                       border: focused ? 'none' : isHabitual ? '1px solid rgba(30,167,253,0.2)' : '1px solid transparent',
                       background: focused ? colors.background.primary : isHabitual ? 'rgba(30,167,253,0.06)' : 'transparent',
+                      transition: 'all 0.15s ease',
                     }}
                   >
-                    <div style={{ width: '7px', height: '7px', borderRadius: '999px', flexShrink: 0, background: focused ? colors.background.brandPrimary : colors.text.disabledInverse }} />
+                    <div style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: focused ? colors.background.brandPrimary : colors.text.disabledInverse }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ ...typography.body.medium, color: focused ? colors.text.primary : colors.text.primaryInverse, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {pharmacy.name}
@@ -339,7 +393,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
         )}
 
         {activeTab === 'historico' && isFullMode && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minHeight: 0, overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {alerts.map((alert) => (
               <div key={alert.dispensacao.id} style={{ ...cardStyle(), padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
@@ -405,7 +459,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
           <div style={{ height: '48px' }} />
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', minHeight: 0 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', minHeight: 0, overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           <div style={{ ...cardStyle(), padding: 0, overflow: 'hidden' }}>
             <MapContainer
               center={[activePharmacy.latitude, activePharmacy.longitude]}
