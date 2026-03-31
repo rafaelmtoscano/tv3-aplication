@@ -1,6 +1,5 @@
 import React, { useState, useRef, forwardRef, memo, useCallback } from 'react';
 import { colors } from '../../styles/colors';
-import { typography } from '../../styles/typography';
 import { MenuItem } from '../MenuItem';
 import { Sign } from '../Sign';
 
@@ -65,8 +64,6 @@ export const Sidebar = memo(
   forwardRef<HTMLDivElement, SidebarProps>(
     (
       {
-        logoName,
-        logoSubtitle,
         items,
         sign,
         expanded: externalExpanded,
@@ -155,22 +152,6 @@ export const Sidebar = memo(
         width: '100%',
         padding: '0 10px',
         boxSizing: 'border-box',
-      };
-
-      const logoTextStyle: React.CSSProperties = {
-        fontFamily: typography.body.large.fontFamily,
-        fontWeight: 300,
-        fontSize: '18px',
-        lineHeight: '100%',
-        color: colors.text.primaryInverse,
-        whiteSpace: 'nowrap',
-        opacity: 0.7,
-      };
-
-      const logoSubtitleStyle: React.CSSProperties = {
-        ...logoTextStyle,
-        fontWeight: 700,
-        opacity: 1,
       };
 
       const navbarStyle: React.CSSProperties = {

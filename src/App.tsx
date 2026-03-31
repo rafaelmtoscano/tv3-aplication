@@ -386,7 +386,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
     if (isGovBrConnected) {
       return {
         variant: 'image' as const,
-        image: 'https://i.pravatar.cc/150?img=33',
+        image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F16c0a867110f4acdb55cbc0e28831f6d?format=webp&width=800&height=1200',
       };
     }
     return {

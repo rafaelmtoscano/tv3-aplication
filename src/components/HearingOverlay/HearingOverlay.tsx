@@ -151,8 +151,8 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onBa
             ...typography.body.medium,
             color: colors.text.primaryInverse,
             margin: 0,
-            filter: 'blur(2px)',
-            opacity: 0.88,
+            filter: isAuthenticated ? 'none' : 'blur(2px)',
+            opacity: isAuthenticated ? 1 : 0.88,
             transition: 'filter 0.25s ease, opacity 0.25s ease',
           };
 
@@ -160,8 +160,8 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onBa
             ...typography.body.small,
             color: colors.text.secondaryInverse,
             margin: '4px 0 0',
-            filter: 'blur(1px)',
-            opacity: 0.84,
+            filter: isAuthenticated ? 'none' : 'blur(1px)',
+            opacity: isAuthenticated ? 1 : 0.84,
             transition: 'filter 0.25s ease, opacity 0.25s ease',
           };
 
