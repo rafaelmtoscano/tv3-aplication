@@ -11,13 +11,16 @@ import AccountPage from './pages/Account';
 import { NotificationPanel } from './components/NotificationPanel';
 import type { NotificationItem } from './components/NotificationPanel';
 import Camara from './pages/Camara/index';
+import Senado from './pages/Senado/index';
 import DeputiesGrid from './pages/Camara/DeputiesGrid';
+import SenatorsGrid from './pages/Senado/SenatorsGrid';
 import DeputyDetail from './pages/Camara/DeputyDetail';
 import { Sidebar } from './components/Sidebar';
 import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
 import type { FocusState } from './hooks/useFocusNavigation';
 import { useCamaraAPI } from './hooks/useCamaraAPI';
+import { useSenadoAPI } from './hooks/useSenadoAPI';
 import { useSecondScreen } from './hooks/useSecondScreen';
 import { homeData } from './data/home';
 import { services } from './data/services';
@@ -26,18 +29,20 @@ import { colors } from './styles/colors';
 import { typography } from './styles/typography';
 import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
 
-type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'settings' | 'help' | 'apps-camara' | 'my-channels' | 'account';
+type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'settings' | 'help' | 'apps-camara' | 'apps-senado' | 'my-channels' | 'account';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
   const [livePage, setLivePage] = useState<{ channelId: string; singleChannel?: boolean } | null>(null);
   const [watchPage, setWatchPage] = useState<{ videoUrl: string; title?: string; logo?: string; channelName?: string } | null>(null);
   const [showDeputiesGrid, setShowDeputiesGrid] = useState(false);
+  const [showSenatorsGrid, setShowSenatorsGrid] = useState(false);
   const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
   const [deputyLoading, setDeputyLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showConnectionNotif, setShowConnectionNotif] = useState(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
+  const { senatorsList: senators, loading: senatorsLoading } = useSenadoAPI();
   const { sessionCode, isMobileConnected, updateChannel, updateVoting } = useSecondScreen();
 
   // Detecta quando mobile conecta e exibe notificação
@@ -70,13 +75,17 @@ export default function App() {
     { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
   ], []);
 
-  const heroLength = currentPage === 'apps-camara' ? 1 : homeData.hero.length;
-  const railLengths = useMemo(() =>
-    currentPage === 'apps-camara'
-      ? [deputies.length + 1, 10] // +1 for "Ver todos"
-      : [services.length, ...homeData.rails.map((r) => r.cards.length), services.length],
-    [currentPage, deputies.length]
-  );
+  const heroLength = currentPage === 'apps-camara' || currentPage === 'apps-senado' ? 1 : homeData.hero.length;
+  const railLengths = useMemo(() => {
+    if (currentPage === 'apps-camara') {
+      return [deputies.length + 1, 10]; // +1 for "Ver todos"
+    }
+    if (currentPage === 'apps-senado') {
+      const tvSenado = channels.find((ch) => ch.id === 'tv-senado');
+      return [senators.length + 1, tvSenado?.programs?.length ?? 0];
+    }
+    return [services.length, ...homeData.rails.map((r) => r.cards.length), services.length];
+  }, [currentPage, deputies.length, senators.length]);
 
   const sidebarItemIds = useMemo(() => sidebarItems.map((i) => i.id), [sidebarItems]);
 
@@ -132,6 +141,10 @@ export default function App() {
     }
   }, []);
 
+  const handleSenatorSelect = useCallback(() => {
+    setShowSenatorsGrid(false);
+  }, []);
+
   const handleServiceSelect = useCallback((serviceId: string) => {
     const service = services.find((item) => item.id === serviceId);
     if (!service) return;
@@ -141,6 +154,9 @@ export default function App() {
     }
     if (service.id === 'camara-deputados') {
       setCurrentPage('apps-camara');
+    }
+    if (service.id === 'senado-federal') {
+      setCurrentPage('apps-senado');
     }
   }, []);
 
@@ -177,6 +193,28 @@ export default function App() {
           const prog = tvCamara?.programs?.[state.mainItemIndex];
           if (prog?.videoUrl) {
             setWatchPage({ videoUrl: prog.videoUrl, title: prog.title, logo: tvCamara?.logo, channelName: 'TV Câmara' });
+          }
+        }
+      }
+      if (currentPage === 'apps-senado') {
+        if (state.mainZone === 'hero') {
+          const tvSenado = channels.find(ch => ch.id === 'tv-senado');
+          if (tvSenado?.streamUrl) setLivePage({ channelId: 'tv-senado', singleChannel: true });
+        }
+        if (state.mainZone === 'rail-0') {
+          if (state.mainItemIndex === 0) {
+            setShowSenatorsGrid(true);
+          } else {
+            const senator = senators[state.mainItemIndex - 1];
+            if (senator) handleSenatorSelect();
+          }
+        }
+        const zoneMatchSenado = state.mainZone.match(/^rail-(\d+)$/);
+        if (zoneMatchSenado && parseInt(zoneMatchSenado[1]) === 1) {
+          const tvSenado = channels.find(ch => ch.id === 'tv-senado');
+          const prog = tvSenado?.programs?.[state.mainItemIndex];
+          if (prog?.videoUrl) {
+            setWatchPage({ videoUrl: prog.videoUrl, title: prog.title, logo: tvSenado?.logo, channelName: 'TV Senado' });
           }
         }
       }
@@ -271,7 +309,7 @@ export default function App() {
           }
         }
       }
-    }, [deputies, handleDeputySelect, handleServiceSelect, updateChannel]),
+    }, [deputies, handleDeputySelect, handleSenatorSelect, handleServiceSelect, senators, updateChannel]),
     onSidebarSelect: handleSidebarSelect,
   });
 
@@ -280,7 +318,7 @@ export default function App() {
     icon: <PersonIcon size={28} />,
   }), []);
 
-  const hasOverlay = !!(showDeputiesGrid || selectedDeputy || watchPage || livePage);
+  const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || watchPage || livePage);
 
   const connectionNotifItems: NotificationItem[] = [
     {
@@ -365,6 +403,17 @@ export default function App() {
             onDeputySelect={handleDeputySelect}
           />
         );
+      case 'apps-senado':
+        return (
+          <Senado
+            mainZone={mainZone}
+            mainItemIndex={mainItemIndex}
+            isActive={currentPage === 'apps-senado'}
+            senators={senators}
+            onOpenGrid={() => setShowSenatorsGrid(true)}
+            onSenatorSelect={handleSenatorSelect}
+          />
+        );
       case 'settings':
         return <Settings isActive={currentPage === 'settings'} />;
       case 'help':
@@ -438,6 +487,16 @@ export default function App() {
           loading={deputiesLoading}
           onBack={() => { setShowDeputiesGrid(false); }}
           onDeputySelect={handleDeputySelect}
+        />
+      )}
+
+      {showSenatorsGrid && (
+        <SenatorsGrid
+          isActive={true}
+          senators={senators}
+          loading={senatorsLoading}
+          onBack={() => { setShowSenatorsGrid(false); }}
+          onSenatorSelect={handleSenatorSelect}
         />
       )}
 

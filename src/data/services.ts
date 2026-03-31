@@ -16,6 +16,13 @@ export const services: Service[] = [
     available: true,
   },
   {
+    id: 'senado-federal',
+    name: 'Senado Federal',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Fefb11e9bb9114a46b23813f61e4f1df8',
+    backgroundColor: '#1A1A2E',
+    available: true,
+  },
+  {
     id: 'meu-sus',
     name: 'Meu SUS Digital',
     image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F1559b2a74c06497f890a54d658b867cd',

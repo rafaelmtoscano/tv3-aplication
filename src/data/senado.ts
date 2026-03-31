@@ -3,7 +3,7 @@
 // Espelho de src/data/plenario.ts — adaptado para a API do Senado
 // TODO: substituir mocks por chamadas à API quando em produção
 
-import type { SessaoAtiva, Votacao, PautaItem } from './plenario';
+import type { SessaoAtiva, Votacao } from './plenario';
 
 const API_BASE = 'https://legis.senado.leg.br/dadosabertos';
 const FORCE_VOTING = import.meta.env.VITE_FORCE_SENADO_VOTING === 'true';
