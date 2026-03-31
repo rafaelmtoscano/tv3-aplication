@@ -31,6 +31,7 @@ export default function App() {
   const [showDeputiesGrid, setShowDeputiesGrid] = useState(false);
   const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
   const [deputyLoading, setDeputyLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const { sessionCode, updateChannel, updateVoting } = useSecondScreen();
 
@@ -38,6 +39,14 @@ export default function App() {
   useEffect(() => {
     syncChannelsFromSupabase();
   }, []);
+
+  useEffect(() => {
+    if (!toastMessage) return;
+    const timer = setTimeout(() => {
+      setToastMessage(null);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [toastMessage]);
 
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
@@ -105,6 +114,18 @@ export default function App() {
       }
     } else {
       setDeputyLoading(false);
+    }
+  }, []);
+
+  const handleServiceSelect = useCallback((serviceId: string) => {
+    const service = services.find((item) => item.id === serviceId);
+    if (!service) return;
+    if (!service.available) {
+      setToastMessage('Conteúdo indisponível no momento');
+      return;
+    }
+    if (service.id === 'camara-deputados') {
+      setCurrentPage('apps-camara');
     }
   }, []);
 
@@ -178,8 +199,8 @@ export default function App() {
         // rail-0 = Serviços (new)
         if (state.mainZone === 'rail-0') {
           const service = services[state.mainItemIndex];
-          if (service?.id === 'camara-deputados') {
-            setCurrentPage('apps-camara');
+          if (service) {
+            handleServiceSelect(service.id);
           }
         }
         if (state.mainZone === 'rail-1') {
@@ -226,12 +247,12 @@ export default function App() {
         // rail-5 = Serviços (Gov.br section)
         if (state.mainZone === 'rail-5') {
           const service = services[state.mainItemIndex];
-          if (service?.id === 'camara-deputados') {
-            setCurrentPage('apps-camara');
+          if (service) {
+            handleServiceSelect(service.id);
           }
         }
       }
-    }, [deputies, handleDeputySelect, updateChannel]),
+    }, [deputies, handleDeputySelect, handleServiceSelect, updateChannel]),
     onSidebarSelect: handleSidebarSelect,
   });
 
@@ -297,9 +318,7 @@ export default function App() {
           <Apps
             isActive={currentPage === 'apps'}
             isSidebarExpanded={isSidebarExpanded}
-            onServiceSelect={(serviceId) => {
-              if (serviceId === 'camara-deputados') setCurrentPage('apps-camara');
-            }}
+            onServiceSelect={handleServiceSelect}
           />
         );
       case 'apps-camara':
@@ -420,6 +439,27 @@ export default function App() {
           onUpdateChannel={updateChannel}
           onUpdateVoting={updateVoting}
         />
+      )}
+
+      {toastMessage && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '80px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 250,
+            background: 'rgba(17, 23, 43, 0.95)',
+            borderRadius: '16px',
+            padding: '20px 32px',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            ...typography.body.large,
+            color: colors.text.primaryInverse,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {toastMessage}
+        </div>
       )}
     </>
   );
