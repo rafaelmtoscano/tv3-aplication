@@ -183,6 +183,10 @@ export default function App() {
       if (currentPage === 'home') {
         if (state.mainZone === 'hero') {
           const slide = homeData.hero[state.mainItemIndex];
+          if (slide?.channelId === 'segunda-tela') {
+            setCurrentPage('account');
+            return;
+          }
           if (slide?.isLive) {
             const ch = channels.find(c => c.id === slide.channelId);
             updateChannel({

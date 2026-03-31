@@ -57,6 +57,17 @@ function getChannel(id: string) {
 // TODO: substituir por chamada à API — ordenar por audiência/destaque
 // Ordenado alfabeticamente por canal (A-Z)
 const heroSlides: HeroSlide[] = [
+  // Slide 0 — Banner Segunda Tela
+  {
+    id: 'hero-segunda-tela',
+    mediaType: 'image' as const,
+    mediaSrc: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Ffd273fb300054a77885c0668c9998da6',
+    isLive: false,
+    title: 'TV e serviços públicos que respondem a você',
+    description: 'Conteúdo público, participação cidadã e serviços gov.br. Tudo conectado ao seu celular.',
+    buttonLabel: 'Saiba como',
+    channelId: 'segunda-tela',
+  },
   // Slide 1 — Canal Gov destaque
   (() => {
     const ch = getChannel('canal-gov');
