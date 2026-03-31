@@ -148,7 +148,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-    padding: '20px 16px 24px 24px',
+    padding: '48px 16px 24px 48px',
     minHeight: 0,
     overflow: 'hidden',
   };
@@ -158,7 +158,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     display: 'flex',
     flexDirection: 'column',
     gap: '16px',
-    padding: '20px 32px 24px 16px',
+    padding: '48px 64px 24px 16px',
     minHeight: 0,
     overflow: 'hidden',
   };
