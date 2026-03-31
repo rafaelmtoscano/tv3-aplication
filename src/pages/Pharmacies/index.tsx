@@ -94,6 +94,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     return [habitualPharmacy.pharmacy, ...mockPharmacies.filter((item) => item.id !== habitualPharmacy.pharmacy.id)];
   }, [habitualPharmacy, isGovBrConnected]);
 
+  const isBackFocused = mainZone !== 'rail-0';
   const focusedIndex = mainZone === 'rail-0' ? mainItemIndex : -1;
   const activePharmacy = orderedPharmacies[focusedIndex] ?? orderedPharmacies[0];
   const mostUrgentAlert = alerts[0] ?? null;
@@ -129,11 +130,11 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
 
   const tabChipStyle = (active: boolean): CSSProperties => ({
     border: 'none',
-    borderRadius: '999px',
-    padding: '8px 14px',
-    background: active ? colors.background.brandPrimary : 'rgba(255,255,255,0.08)',
-    color: active ? colors.text.primaryInverse : colors.text.secondaryInverse,
-    ...typography.label.small,
+    borderRadius: '100px',
+    padding: '12px 24px',
+    background: active ? colors.background.primary : 'rgba(255,255,255,0.08)',
+    color: active ? colors.text.primary : colors.text.secondaryInverse,
+    ...typography.headline.small,
     cursor: 'pointer',
     fontFamily: 'inherit',
     transition: 'background 0.2s ease, color 0.2s ease',
@@ -176,27 +177,40 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     overflow: 'hidden',
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' || e.key === 'Backspace') {
+      e.preventDefault();
+      onExit();
+    }
+    if (isBackFocused && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onExit();
+    }
+  };
+
   return (
-    <main style={pageStyle}>
+    <main style={pageStyle} onKeyDown={handleKeyDown} tabIndex={-1}>
       <div style={{ gridColumn: '1', gridRow: '1 / -1' }} />
 
       <div style={leftColumnStyle}>
         <button
           type="button"
           onClick={onExit}
+          tabIndex={0}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             alignSelf: 'flex-start',
-            background: 'none',
-            border: 'none',
+            background: isBackFocused ? 'rgba(255,255,255,0.12)' : 'none',
+            border: isBackFocused ? `2px solid ${colors.background.primary}` : '2px solid transparent',
             color: colors.text.primaryInverse,
             cursor: 'pointer',
-            padding: '8px 12px',
-            borderRadius: '8px',
+            padding: '8px 16px 8px 10px',
+            borderRadius: '100px',
             ...typography.body.medium,
             fontFamily: 'inherit',
+            transition: 'background 0.2s ease, border-color 0.2s ease',
           }}
         >
           <ChevronLeftIcon size={24} color={colors.text.primaryInverse} />
@@ -241,33 +255,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
             </div>
           )}
 
-          {isLoggedIn && !isGovBrConnected && (
-            <div style={{ ...cardStyle(), padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(30,167,253,0.06)', border: '1px solid rgba(30,167,253,0.2)' }}>
-              <div style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>
-                Conecte o gov.br e libere seu histórico
-              </div>
-              <div style={{ ...typography.body.small, color: colors.text.disabledInverse }}>
-                Acesse dispensações, alertas e sua farmácia habitual com mais praticidade.
-              </div>
-              <button
-                type="button"
-                onClick={connectGovBrMock}
-                style={{
-                  alignSelf: 'flex-start',
-                  border: 'none',
-                  borderRadius: '999px',
-                  background: colors.background.brandPrimary,
-                  color: colors.text.primaryInverse,
-                  padding: '8px 18px',
-                  ...typography.label.small,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                Conectar gov.br
-              </button>
-            </div>
-          )}
+          {/* gov.br banner temporarily hidden */}
         </div>
 
         <div style={{ display: 'flex', gap: '8px', width: 'fit-content' }}>
