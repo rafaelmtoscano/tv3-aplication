@@ -69,6 +69,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
   const mapRef = useRef<L.Map | null>(null);
   const markerRefs = useRef<Record<string, L.Marker | null>>({});
   const listRef = useRef<HTMLDivElement>(null);
+  const histListRef = useRef<HTMLDivElement>(null);
 
   const habitualPharmacy = useMemo(() => {
     if (!govBrUser) return null;
@@ -128,16 +129,20 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
 
   // Scroll focused item into view
   useEffect(() => {
-    if (focusedIndex >= 0 && listRef.current) {
+    if (focusedIndex < 0) return;
+    if (activeTab === 'farmacias' && listRef.current) {
       const items = listRef.current.children;
       if (items[focusedIndex]) {
-        (items[focusedIndex] as HTMLElement).scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-        });
+        (items[focusedIndex] as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
-  }, [focusedIndex]);
+    if (activeTab === 'historico' && histListRef.current) {
+      const items = histListRef.current.children;
+      if (items[focusedIndex]) {
+        (items[focusedIndex] as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [focusedIndex, activeTab]);
 
   const cardStyle = (focused = false): CSSProperties => ({
     borderRadius: '16px',
@@ -222,6 +227,8 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
   onExitRef.current = onExit;
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
+  const activeTabRef = useRef(activeTab);
+  activeTabRef.current = activeTab;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -238,6 +245,14 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
       const section = navSectionRef.current;
       const itemIdx = mainItemIndexRef.current;
       const focIdx = focusedIndexRef.current;
+
+      // Left/right chip switching when in chips zone
+      if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && section === 'chips') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        setActiveTab((prev) => (prev === 'farmacias' ? 'historico' : 'farmacias'));
+        return;
+      }
 
       // Zone transitions: list → chips → back (ArrowUp) and back → chips → list (ArrowDown)
       if (e.key === 'ArrowUp') {
@@ -418,9 +433,12 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
         )}
 
         {activeTab === 'historico' && isFullMode && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minHeight: 0, overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            {alerts.map((alert) => (
-              <div key={alert.dispensacao.id} style={{ ...cardStyle(), padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div
+            ref={histListRef}
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px', minHeight: 0, overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {alerts.map((alert, index) => (
+              <div key={alert.dispensacao.id} style={{ ...cardStyle(focusedIndex === index), padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
                   <strong style={{ ...typography.body.medium, color: colors.text.primaryInverse }}>{alert.dispensacao.medicamento}</strong>
                   <span

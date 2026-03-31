@@ -165,14 +165,13 @@ export const Sidebar = memo(
         lineHeight: '100%',
         color: colors.text.primaryInverse,
         whiteSpace: 'nowrap',
-        opacity: isExpanded ? 0.7 : 0,
-        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        opacity: 0.7,
       };
 
       const logoSubtitleStyle: React.CSSProperties = {
         ...logoTextStyle,
         fontWeight: 700,
-        opacity: isExpanded ? 1 : 0,
+        opacity: 1,
       };
 
       const navbarStyle: React.CSSProperties = {
@@ -207,8 +206,29 @@ export const Sidebar = memo(
           >
             {/* Logo area */}
             <div style={logoAreaStyle}>
-              <div style={logoTextStyle}>{logoName}</div>
-              {logoSubtitle && <div style={logoSubtitleStyle}>{logoSubtitle}</div>}
+              {isExpanded ? (
+                <>
+                  <div style={logoTextStyle}>{logoName}</div>
+                  {logoSubtitle && <div style={logoSubtitleStyle}>{logoSubtitle}</div>}
+                </>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  lineHeight: 1,
+                  fontFamily: typography.body.large.fontFamily,
+                }}>
+                  <span style={{ fontWeight: 300, fontSize: '18px', color: colors.text.primaryInverse, opacity: 0.5 }}>
+                    {logoName?.[0] ?? ''}
+                  </span>
+                  {logoSubtitle && (
+                    <span style={{ fontWeight: 700, fontSize: '18px', color: colors.text.primaryInverse, opacity: 0.5 }}>
+                      {logoSubtitle[0] ?? ''}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Sign area */}

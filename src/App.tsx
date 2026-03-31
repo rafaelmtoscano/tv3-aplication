@@ -50,7 +50,9 @@ interface AppContentProps {
 }
 
 function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, updateChannel, updateVoting }: AppContentProps) {
-  const { connectGovBrMock } = useAuth();
+  const { connectGovBrMock, govBrUser } = useAuth();
+  const [showGovBrNotif, setShowGovBrNotif] = useState(false);
+  const prevGovBrUserRef = useRef<typeof govBrUser>(null);
 
   // Bridge: when mobile authenticates gov.br, mirror it into the TV AuthContext
   useEffect(() => {
@@ -77,6 +79,14 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
       setShowConnectionNotif(true);
     }
   }, [isMobileConnected]);
+
+  // Exibe notificação quando gov.br conecta (transição null → usuário)
+  useEffect(() => {
+    if (govBrUser && !prevGovBrUserRef.current) {
+      setShowGovBrNotif(true);
+    }
+    prevGovBrUserRef.current = govBrUser;
+  }, [govBrUser]);
 
   // Sincroniza canais com o Supabase na inicialização
   useEffect(() => {
@@ -377,6 +387,20 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
 
   const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || watchPage || livePage);
 
+  const govBrNotifItems: NotificationItem[] = govBrUser ? [
+    {
+      id: 'govbr-connected',
+      icon: <span style={{ fontSize: 28 }}>🟢</span>,
+      title: `Olá, ${govBrUser.name.split(' ')[0]}! Você se conectou ao gov.br`,
+      description: 'Seu histórico do Farmácia Popular está disponível em Serviços → Meu SUS.',
+      timestamp: 'agora',
+      onEnter: () => {
+        setShowGovBrNotif(false);
+        setCurrentPage('pharmacies');
+      },
+    },
+  ] : [];
+
   const connectionNotifItems: NotificationItem[] = [
     {
       id: 'device-connected',
@@ -493,39 +517,6 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
 
   return (
     <>
-      {/* Badge segunda tela — código de sessão */}
-      <div style={{
-        position: 'fixed',
-        bottom: 48,
-        right: 56,
-        zIndex: 200,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-end',
-        gap: 6,
-        pointerEvents: 'none',
-      }}>
-        <span style={{
-          fontSize: 13,
-          fontFamily: 'Plus Jakarta Sans, sans-serif',
-          color: 'rgba(255,255,255,0.45)',
-          letterSpacing: 1,
-          textTransform: 'uppercase',
-        }}>
-          Segunda tela
-        </span>
-        <span style={{
-          fontSize: 36,
-          fontFamily: 'Plus Jakarta Sans, sans-serif',
-          fontWeight: 600,
-          color: 'rgba(255,255,255,0.90)',
-          letterSpacing: 8,
-          lineHeight: 1,
-        }}>
-          {sessionCode}
-        </span>
-      </div>
-
       <div style={rootStyle}>
         <Sidebar
           logoName="Plataforma"
@@ -615,6 +606,15 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
           showHeader={false}
           onClose={() => setShowConnectionNotif(false)}
           autoHide={5000}
+        />
+      )}
+
+      {showGovBrNotif && (
+        <NotificationPanel
+          items={govBrNotifItems}
+          showHeader={false}
+          onClose={() => setShowGovBrNotif(false)}
+          autoHide={7000}
         />
       )}
 
