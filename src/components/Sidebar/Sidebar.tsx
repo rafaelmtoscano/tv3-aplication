@@ -122,7 +122,7 @@ export const Sidebar = memo(
       const gradientOverlayStyle: React.CSSProperties = {
         position: 'absolute',
         top: 0,
-        left: isExpanded ? '340px' : '80px', // Animates with sidebar
+        left: isExpanded ? '280px' : '80px', // Animates with sidebar
         height: '100%',
         width: isExpanded ? '50vw' : '0',
         background: 'linear-gradient(270deg, rgba(17, 23, 43, 0) 0%, #11172B 100%)',
@@ -134,7 +134,7 @@ export const Sidebar = memo(
       const sidebarPanelStyle: React.CSSProperties = {
         position: 'relative',
         zIndex: 1,
-        width: isExpanded ? '340px' : '80px',
+        width: isExpanded ? '280px' : '80px',
         height: '100vh',
         background: colors.background.baseInverse,
         display: 'flex',
@@ -161,7 +161,7 @@ export const Sidebar = memo(
       const logoTextStyle: React.CSSProperties = {
         fontFamily: typography.body.large.fontFamily,
         fontWeight: 300,
-        fontSize: '24px',
+        fontSize: '18px',
         lineHeight: '100%',
         color: colors.text.primaryInverse,
         whiteSpace: 'nowrap',
