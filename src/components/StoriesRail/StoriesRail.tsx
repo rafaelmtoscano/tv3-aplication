@@ -59,6 +59,20 @@ export function StoriesRail({
     }
   };
 
+  // When focus moves while a video is playing, follow with activeIndex
+  useEffect(() => {
+    if (focusedIndex >= 0 && activeIndex >= 0 && activeIndex !== focusedIndex) {
+      setActiveIndex(focusedIndex);
+    }
+  }, [focusedIndex]);
+
+  // Stop playback when focus leaves the rail
+  useEffect(() => {
+    if (focusedIndex < 0) {
+      setActiveIndex(-1);
+    }
+  }, [focusedIndex]);
+
   // Scroll focused card into view
   useEffect(() => {
     if (focusedIndex < 0 || !railRef.current) return;
