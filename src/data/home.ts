@@ -55,26 +55,9 @@ function getChannel(id: string) {
 // ─── Hero: 1 ao vivo + 3 vídeos ───────────────────────────────────────────────
 
 // TODO: substituir por chamada à API — ordenar por audiência/destaque
+// Ordenado alfabeticamente por canal (A-Z)
 const heroSlides: HeroSlide[] = [
-  // Slide 1 — TV Brasil ao vivo
-  (() => {
-    const ch = getChannel('tv-brasil');
-    return {
-      id: 'hero-live-tv-brasil',
-      mediaType: 'video' as const,
-      mediaSrc: ch.streamUrl!,
-      logo: ch.logo,
-      isLive: true,
-      signal: 'HD' as const,
-      classification: 'L' as const,
-      title: ch.programs![0].title,
-      description: 'Acompanhe ao vivo a programação da TV Brasil com conteúdo jornalístico de qualidade.',
-      buttonLabel: 'Assistir ao vivo',
-      channelId: ch.id,
-    };
-  })(),
-
-  // Slide 2 — Canal Gov destaque
+  // Slide 1 — Canal Gov destaque
   (() => {
     const ch = getChannel('canal-gov');
     const prog = ch.programs![0];
@@ -90,6 +73,24 @@ const heroSlides: HeroSlide[] = [
       buttonLabel: 'Assistir agora',
       channelId: ch.id,
       videoUrl: prog.videoUrl,
+    };
+  })(),
+
+  // Slide 2 — TV Brasil ao vivo
+  (() => {
+    const ch = getChannel('tv-brasil');
+    return {
+      id: 'hero-live-tv-brasil',
+      mediaType: 'video' as const,
+      mediaSrc: ch.streamUrl!,
+      logo: ch.logo,
+      isLive: true,
+      signal: 'HD' as const,
+      classification: 'L' as const,
+      title: ch.programs![0].title,
+      description: 'Acompanhe ao vivo a programação da TV Brasil com conteúdo jornalístico de qualidade.',
+      buttonLabel: 'Assistir ao vivo',
+      channelId: ch.id,
     };
   })(),
 

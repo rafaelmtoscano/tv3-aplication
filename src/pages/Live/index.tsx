@@ -41,7 +41,8 @@ const liveChannels = channels
     logoFull: ch.logoFull,
     backgroundColor: ch.backgroundColor,
     streamUrl: ch.streamUrl!,
-  }));
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name));
 
 export default function LivePage({ initialChannelId, singleChannel, onExit, isActive, onUpdateChannel, onUpdateVoting }: LivePageProps) {
   const livePlayerRef = useRef<HTMLDivElement>(null);
