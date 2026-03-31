@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, MutableRefObject } from 'react';
+import type { MutableRefObject } from 'react';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -10,6 +10,22 @@ import { usePharmacyRenovationAlerts } from '../../hooks/usePharmacyRenovationAl
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import type { MainZone } from '../../hooks/useFocusNavigation';
+
+// ── style helpers ────────────────────────────────────────────────────────────
+
+const card = (extra: React.CSSProperties = {}): React.CSSProperties => ({
+  borderRadius: '12px',
+  border: `1px solid ${colors.line.dark}`,
+  background: 'rgba(255,255,255,0.04)',
+  ...extra,
+});
+
+const pill = (extra: React.CSSProperties = {}): React.CSSProperties => ({
+  ...typography.label.small,
+  borderRadius: '999px',
+  padding: '3px 10px',
+  ...extra,
+});
 
 interface PharmaciesProps {
   mainZone: MainZone;
@@ -22,7 +38,7 @@ type ViewTab = 'farmacias' | 'historico';
 
 function formatDays(days: number) {
   if (days === 0) return 'vence hoje';
-  if (days < 0) return `atrasada há ${Math.abs(days)} dias`;
+  if (days < 0) return `atrasada há ${Math.abs(days)}d`;
   if (days === 1) return '1 dia restante';
   return `${days} dias restantes`;
 }
@@ -43,20 +59,13 @@ function MapController({ activePharmacy, mapRef, markersRef }: {
 
   useEffect(() => {
     mapRef.current = map;
-    return () => {
-      mapRef.current = null;
-    };
+    return () => { mapRef.current = null; };
   }, [map, mapRef]);
 
   useEffect(() => {
     if (!activePharmacy) return;
-    map.flyTo([activePharmacy.latitude, activePharmacy.longitude], 15, {
-      animate: true,
-      duration: 0.8,
-    });
-
-    const marker = markersRef.current[activePharmacy.id];
-    marker?.openPopup();
+    map.flyTo([activePharmacy.latitude, activePharmacy.longitude], 15, { animate: true, duration: 0.8 });
+    markersRef.current[activePharmacy.id]?.openPopup();
   }, [activePharmacy, map, markersRef]);
 
   return null;
@@ -72,27 +81,20 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
 
   const habitualPharmacy = useMemo(() => {
     if (!govBrUser) return null;
-
     const counts = new Map<string, { pharmacy: Pharmacy; visits: number; lastDate: Date }>();
-
     for (const dispensacao of govBrUser.dispensacoes) {
       const pharmacy = mockPharmacies.find((item) => item.cnes === dispensacao.farmaciaCnes);
       if (!pharmacy) continue;
       const current = counts.get(pharmacy.id);
       const retirada = new Date(dispensacao.dataRetirada);
-
       if (!current) {
         counts.set(pharmacy.id, { pharmacy, visits: 1, lastDate: retirada });
       } else {
         current.visits += 1;
-        if (retirada > current.lastDate) {
-          current.lastDate = retirada;
-        }
+        if (retirada > current.lastDate) current.lastDate = retirada;
       }
     }
-
-    const top = [...counts.values()].sort((a, b) => b.visits - a.visits || b.lastDate.getTime() - a.lastDate.getTime())[0];
-    return top ?? null;
+    return [...counts.values()].sort((a, b) => b.visits - a.visits || b.lastDate.getTime() - a.lastDate.getTime())[0] ?? null;
   }, [govBrUser]);
 
   const orderedPharmacies = useMemo(() => {
@@ -112,450 +114,250 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
   }, [isActive]);
 
   useEffect(() => {
-    if (!isFullMode && activeTab === 'historico') {
-      setActiveTab('farmacias');
-    }
+    if (!isFullMode && activeTab === 'historico') setActiveTab('farmacias');
   }, [activeTab, isFullMode]);
 
-  const pageStyle: CSSProperties = {
-    position: 'fixed',
-    inset: 0,
-    overflow: 'hidden',
-    background: colors.background.baseInverse,
-    display: 'flex',
-    flexDirection: 'column',
-  };
+  // ── helpers ──────────────────────────────────────────────────────────────
 
-  const contentStyle: CSSProperties = {
-    flex: 1,
-    display: 'grid',
-    gridTemplateColumns: '380px 1fr',
-    gap: '32px',
-    padding: '32px 40px 40px 32px',
-    overflow: 'hidden',
-    boxSizing: 'border-box',
-  };
-
-  const leftColumnStyle: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    minWidth: 0,
-    overflow: 'hidden',
-  };
-
-  const rightColumnStyle: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    minWidth: 0,
-    overflow: 'hidden',
-  };
-
-  const headerCardStyle: CSSProperties = {
-    borderRadius: '28px',
-    border: `1px solid ${colors.line.dark}`,
-    background: 'rgba(255, 255, 255, 0.04)',
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  };
-
-  const railStyle: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '16px',
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    paddingBottom: '12px',
-    scrollbarWidth: 'none',
-    msOverflowStyle: 'none',
-    scrollBehavior: 'smooth',
-  };
-
-  const cardBaseStyle = (focused: boolean): CSSProperties => ({
-    width: '332px',
-    flexShrink: 0,
-    borderRadius: '24px',
-    border: focused ? `2px solid ${colors.background.brandPrimary}` : `1px solid ${colors.line.dark}`,
-    background: focused ? 'rgba(30, 167, 253, 0.12)' : 'rgba(255, 255, 255, 0.04)',
-    padding: '18px',
-    transform: focused ? 'translateY(-2px)' : 'translateY(0)',
-    transition: 'transform 0.25s ease, border-color 0.25s ease, background 0.25s ease',
-    boxSizing: 'border-box',
-    color: colors.text.primaryInverse,
-  });
-
-  const detailCardStyle: CSSProperties = {
-    borderRadius: '28px',
-    border: `1px solid ${colors.line.dark}`,
-    background: 'rgba(255, 255, 255, 0.04)',
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    minHeight: 0,
-    overflow: 'hidden',
-  };
-
-  const panelCardStyle: CSSProperties = {
-    borderRadius: '24px',
-    border: `1px solid ${colors.line.dark}`,
-    background: 'rgba(255, 255, 255, 0.04)',
-    padding: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  };
-
-  const bannerStyle = isLoggedIn && !isGovBrConnected
-    ? {
-        background: 'rgba(30, 167, 253, 0.08)',
-        border: '1px solid rgba(30, 167, 253, 0.2)',
-      }
-    : {
-        background: 'rgba(255, 255, 255, 0.04)',
-        border: `1px solid ${colors.line.dark}`,
-      };
-
-  const urgentStyle: CSSProperties = {
-    borderRadius: '24px',
-    border: mostUrgentAlert?.urgency === 'urgent' ? `1px solid ${colors.feedback.error}` : '1px solid #F5C542',
-    background: mostUrgentAlert?.urgency === 'urgent' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(245, 197, 66, 0.12)',
-    padding: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  };
+  const markerIcon = (focused: boolean) =>
 
   const markerIcon = (focused: boolean) =>
     L.divIcon({
       className: '',
-      html: `
-        <div style="width:18px;height:18px;border-radius:999px;background:${focused ? colors.background.brandPrimary : colors.background.primary};border:2px solid rgba(17,23,43,0.35);box-shadow:0 8px 24px rgba(0,0,0,0.3);"></div>
-      `,
-      iconSize: [18, 18],
-      iconAnchor: [9, 9],
+      html: `<div style="width:14px;height:14px;border-radius:999px;background:${focused ? colors.background.brandPrimary : colors.background.primary};border:2px solid rgba(17,23,43,0.4);box-shadow:0 2px 8px rgba(0,0,0,0.5);"></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
     });
 
-  return (
-    <main style={pageStyle}>
-      <div style={{ height: '88px', flexShrink: 0 }} />
+    return (
+      <main style={{
+        position: 'fixed', inset: 0, overflow: 'hidden',
+        background: colors.background.baseInverse,
+        display: 'grid',
+        gridTemplateColumns: '88px 380px 1fr',
+        gridTemplateRows: 'auto auto 1fr',
+      }}>
 
-      <div style={contentStyle}>
-        <section style={leftColumnStyle}>
-          <div style={headerCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ ...typography.label.small, color: colors.text.secondaryInverse, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  Farmácias próximas
-                </span>
-                <h1 style={{ ...typography.headline.large, color: colors.text.primaryInverse, margin: 0 }}>
-                  Onde retirar seus medicamentos
-                </h1>
+        {/* col 1: sidebar spacer */}
+        <div style={{ gridColumn: '1', gridRow: '1 / -1' }} />
+
+        {/* ── ROW 1: HEADER ── */}
+        <div style={{ gridColumn: '2', gridRow: '1', padding: '20px 16px 0 24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <h1 style={{ ...typography.headline.medium, color: colors.text.primaryInverse, margin: 0 }}>
+            Retirada de Medicamentos
+          </h1>
+          <span style={{ ...typography.label.small, color: colors.text.disabledInverse }}>
+            Região detectada: {locationLabel}
+          </span>
+        </div>
+
+        <div style={{ gridColumn: '3', gridRow: '1', padding: '20px 32px 0 16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+          {isGovBrConnected && govBrUser && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${colors.line.dark}`, borderRadius: '999px', padding: '5px 14px 5px 6px' }}>
+              <div style={{ width: '24px', height: '24px', borderRadius: '999px', background: colors.background.brandPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', ...typography.label.small, color: colors.text.primaryInverse, flexShrink: 0 }}>
+                {govBrUser.name.charAt(0)}
               </div>
-              <button
-                type="button"
-                onClick={onExit}
-                style={{
-                  border: `1px solid ${colors.line.dark}`,
-                  background: 'transparent',
-                  color: colors.text.primaryInverse,
-                  borderRadius: '999px',
-                  padding: '12px 16px',
-                  ...typography.label.small,
-                }}
-              >
-                Voltar
-              </button>
+              <span style={{ ...typography.label.small, color: colors.text.secondaryInverse }}>{govBrUser.name}</span>
+              <span style={pill({ background: 'rgba(16,185,129,0.15)', color: '#4ade80' })}>gov.br</span>
             </div>
+          )}
+          <button type="button" onClick={onExit} style={{ border: `1px solid ${colors.line.dark}`, background: 'transparent', color: colors.text.primaryInverse, borderRadius: '999px', padding: '8px 20px', ...typography.label.small, cursor: 'pointer', fontFamily: 'inherit' }}>
+            Voltar
+          </button>
+        </div>
 
-            <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: 0 }}>
-              Região detectada: {locationLabel}
-            </p>
+        {/* ── ROW 2: ALERT BAR ── */}
+        {isFullMode && mostUrgentAlert ? (
+          <div style={{
+            gridColumn: '2 / 4', gridRow: '2', margin: '10px 32px 0 24px',
+            ...card({
+              padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '14px',
+              background: mostUrgentAlert.urgency === 'urgent' ? 'rgba(239,68,68,0.10)' : 'rgba(245,197,66,0.10)',
+              border: `1px solid ${mostUrgentAlert.urgency === 'urgent' ? 'rgba(239,68,68,0.3)' : 'rgba(245,197,66,0.3)'}`,
+            }),
+          }}>
+            <span style={{ ...typography.body.small, color: colors.text.primaryInverse, flex: 1 }}>
+              <strong>{mostUrgentAlert.dispensacao.medicamento}</strong> — {formatDays(mostUrgentAlert.daysLeft)}. Considere retirar em breve.
+            </span>
+            <button type="button" onClick={() => setActiveTab('historico')} style={{ border: 'none', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', color: colors.text.primaryInverse, padding: '6px 14px', ...typography.label.small, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+              Ver histórico
+            </button>
+          </div>
+        ) : (
+          <div style={{ gridColumn: '2 / 4', gridRow: '2' }} />
+        )}
+
+        {/* ── ROW 3 COL 2: ESQUERDA — tabs + banner + lista ── */}
+        <div style={{ gridColumn: '2', gridRow: '3', padding: '12px 16px 24px 24px', display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0, overflow: 'hidden' }}>
+
+          <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '999px', padding: '4px', width: 'fit-content', flexShrink: 0 }}>
+            {(['farmacias', ...(isFullMode ? ['historico'] : [])] as ViewTab[]).map((tab) => (
+              <button key={tab} type="button" onClick={() => setActiveTab(tab)} style={{
+                padding: '6px 16px', borderRadius: '999px', border: 'none', cursor: 'pointer',
+                fontFamily: 'inherit', transition: 'background 0.15s', ...typography.label.small,
+                background: activeTab === tab ? colors.background.primary : 'transparent',
+                color: activeTab === tab ? colors.text.primary : colors.text.disabledInverse,
+              }}>
+                {tab === 'farmacias' ? 'Próximas' : 'Meu histórico'}
+              </button>
+            ))}
           </div>
 
           {!isLoggedIn && (
-            <div style={{ ...panelCardStyle, ...bannerStyle }}>
-              <span style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>Faça login para ver mais</span>
-              <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: 0 }}>
-                Veja seu histórico, identifique sua farmácia habitual e receba alertas de renovação.
-              </p>
-              <button
-                type="button"
-                onClick={loginMock}
-                style={{
-                  alignSelf: 'flex-start',
-                  border: 'none',
-                  borderRadius: '999px',
-                  background: colors.background.primary,
-                  color: colors.text.primary,
-                  padding: '12px 18px',
-                  ...typography.label.small,
-                }}
-              >
+            <div style={card({ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 })}>
+              <div style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>Faça login para ver mais</div>
+              <div style={{ ...typography.body.small, color: colors.text.disabledInverse }}>Veja histórico, farmácia habitual e alertas de renovação.</div>
+              <button type="button" onClick={loginMock} style={{ alignSelf: 'flex-start', border: 'none', borderRadius: '999px', background: colors.background.primary, color: colors.text.primary, padding: '8px 18px', ...typography.label.small, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Entrar no app
               </button>
             </div>
           )}
 
           {isLoggedIn && !isGovBrConnected && (
-            <div style={{ ...panelCardStyle, ...bannerStyle }}>
-              <span style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>Conecte o gov.br para ver seu histórico</span>
-              <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: 0 }}>
-                Conecte o gov.br para ver seu histórico de medicamentos e receber alertas de renovação.
-              </p>
-              <button
-                type="button"
-                onClick={connectGovBrMock}
-                style={{
-                  alignSelf: 'flex-start',
-                  border: 'none',
-                  borderRadius: '999px',
-                  background: colors.background.brandPrimary,
-                  color: colors.text.primaryInverse,
-                  padding: '12px 18px',
-                  ...typography.label.small,
-                }}
-              >
+            <div style={card({ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0, background: 'rgba(30,167,253,0.06)', border: '1px solid rgba(30,167,253,0.2)' })}>
+              <div style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>Mais dados com o gov.br</div>
+              <div style={{ ...typography.body.small, color: colors.text.disabledInverse }}>Conecte para ver histórico HÓRUS, farmácia habitual e alertas.</div>
+              <button type="button" onClick={connectGovBrMock} style={{ alignSelf: 'flex-start', border: 'none', borderRadius: '999px', background: colors.background.brandPrimary, color: colors.text.primaryInverse, padding: '8px 18px', ...typography.label.small, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Conectar gov.br
               </button>
             </div>
           )}
 
-          <div style={railStyle} className="pharmacies-rail-hide-scrollbar">
-            {orderedPharmacies.map((pharmacy, index) => {
-              const focused = focusedIndex === index;
-              const isHabitual = isFullMode && habitualPharmacy?.pharmacy.id === pharmacy.id;
-
-              return (
-                <button
-                  key={pharmacy.id}
-                  type="button"
-                  style={cardBaseStyle(focused)}
-                  onClick={() => {
-                    if (mapRef.current) {
-                      mapRef.current.flyTo([pharmacy.latitude, pharmacy.longitude], 15, { animate: true, duration: 0.8 });
-                    }
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '12px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
-                      <span style={{ ...typography.headline.small, color: colors.text.primaryInverse, margin: 0 }}>{pharmacy.name}</span>
-                      <span style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: 0 }}>
-                        {pharmacy.neighborhood} · {pharmacy.city}/{pharmacy.state}
-                      </span>
-                    </div>
-                    {isHabitual && (
-                      <span style={{
-                        borderRadius: '999px',
-                        background: 'rgba(16, 185, 129, 0.16)',
-                        color: colors.text.primaryInverse,
-                        padding: '6px 10px',
-                        ...typography.label.small,
-                        whiteSpace: 'nowrap',
-                        height: 'fit-content',
-                      }}>
-                        Habitual
-                      </span>
-                    )}
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <span style={{ ...typography.body.small, color: colors.text.primaryInverse }}>{pharmacy.address}</span>
-                    <span style={{ ...typography.body.small, color: colors.text.secondaryInverse }}>{pharmacy.phone}</span>
-                  </div>
-
-                  <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
-                    <span style={{ ...typography.label.small, color: colors.text.secondaryInverse }}>CNES {pharmacy.cnes}</span>
-                    {isHabitual && habitualPharmacy && (
-                      <span style={{ ...typography.label.small, color: colors.text.primaryInverse }}>
-                        última visita {formatLastVisit(habitualPharmacy.lastDate)}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section style={rightColumnStyle}>
-          <div style={detailCardStyle}>
-            {isFullMode && mostUrgentAlert && (
-              <div style={urgentStyle}>
-                <span style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>Renovação necessária</span>
-                <p style={{ ...typography.body.small, color: colors.text.primaryInverse, margin: 0 }}>
-                  {mostUrgentAlert.dispensacao.medicamento} · {formatDays(mostUrgentAlert.daysLeft)}
-                </p>
-                <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: 0 }}>
-                  {mostUrgentAlert.dispensacao.indicacao} • {mostUrgentAlert.dispensacao.farmaciaName}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('historico')}
-                  style={{
-                    alignSelf: 'flex-start',
-                    border: 'none',
-                    borderRadius: '999px',
-                    background: colors.background.primary,
-                    color: colors.text.primary,
-                    padding: '12px 18px',
-                    ...typography.label.small,
-                  }}
-                >
-                  Ver histórico
-                </button>
-              </div>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', minHeight: 0 }}>
-              <div style={{ ...panelCardStyle, padding: 0, overflow: 'hidden' }}>
-                <MapContainer
-                  center={[activePharmacy.latitude, activePharmacy.longitude]}
-                  zoom={15}
-                  scrollWheelZoom={false}
-                  style={{ width: '100%', height: '220px' }}
-                >
-                  <MapController activePharmacy={activePharmacy} mapRef={mapRef} markersRef={markerRefs} />
-                  <TileLayer
-                    attribution="&copy; OpenStreetMap contributors &copy; CARTO"
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                  />
-                  {orderedPharmacies.map((pharmacy, index) => {
-                    const focused = focusedIndex === index;
-                    return (
-                      <Marker
-                        key={pharmacy.id}
-                        position={[pharmacy.latitude, pharmacy.longitude]}
-                        icon={markerIcon(focused)}
-                        ref={(marker) => {
-                          markerRefs.current[pharmacy.id] = marker;
-                        }}
-                      >
-                        <Popup>
-                          {pharmacy.name}
-                        </Popup>
-                      </Marker>
-                    );
-                  })}
-                </MapContainer>
-              </div>
-
-              <div style={panelCardStyle}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <span style={{ ...typography.label.small, color: colors.text.secondaryInverse, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                      Detalhe da farmácia
-                    </span>
-                    <h2 style={{ ...typography.headline.large, color: colors.text.primaryInverse, margin: 0 }}>
-                      {activePharmacy.name}
-                    </h2>
-                  </div>
-                  <span style={{
-                    borderRadius: '999px',
-                    background: 'rgba(30, 167, 253, 0.16)',
-                    color: colors.text.primaryInverse,
-                    padding: '8px 12px',
-                    ...typography.label.small,
-                  }}>
-                    {activePharmacy.city}/{activePharmacy.state}
-                  </span>
-                </div>
-
-                <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: 0 }}>
-                  {activePharmacy.address} • {activePharmacy.neighborhood}
-                </p>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
-                  {activePharmacy.horarios.map((horario) => (
-                    <div key={`${activePharmacy.id}-${horario.dias}`} style={{ borderRadius: '18px', background: colors.background.primaryInverse, padding: '14px' }}>
-                      <div style={{ ...typography.label.small, color: colors.text.secondaryInverse }}>{horario.dias}</div>
-                      <div style={{ ...typography.body.small, color: colors.text.primaryInverse }}>{horario.abre} às {horario.fecha}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {isFullMode && activeTab === 'historico' && (
-                <div style={panelCardStyle}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                    <h3 style={{ ...typography.headline.small, color: colors.text.primaryInverse, margin: 0 }}>Meu histórico</h3>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('farmacias')}
-                      style={{
-                        border: 'none',
-                        borderRadius: '999px',
-                        background: colors.background.primaryInverse,
-                        color: colors.text.primaryInverse,
-                        padding: '10px 14px',
-                        ...typography.label.small,
-                      }}
-                    >
-                      Voltar às farmácias
-                    </button>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflow: 'hidden' }}>
-                    {alerts.map((alert) => (
-                      <div key={alert.dispensacao.id} style={{ borderRadius: '20px', border: `1px solid ${colors.line.dark}`, padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-                          <strong style={{ ...typography.body.small, color: colors.text.primaryInverse }}>{alert.dispensacao.medicamento}</strong>
-                          <span style={{
-                            borderRadius: '999px',
-                            background: alert.urgency === 'urgent' ? 'rgba(239, 68, 68, 0.2)' : alert.urgency === 'warn' ? 'rgba(245, 197, 66, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                            color: colors.text.primaryInverse,
-                            padding: '6px 10px',
-                            ...typography.label.small,
-                            whiteSpace: 'nowrap',
-                          }}>
-                            {formatDays(alert.daysLeft)}
-                          </span>
-                        </div>
-                        <span style={{ ...typography.body.small, color: colors.text.secondaryInverse }}>{alert.dispensacao.indicacao}</span>
-                        <span style={{ ...typography.body.small, color: colors.text.secondaryInverse }}>
-                          {alert.dispensacao.farmaciaName} • retirada em {new Date(alert.dispensacao.dataRetirada).toLocaleDateString('pt-BR')}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+          {activeTab === 'farmacias' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              {isFullMode && habitualPharmacy && (
+                <div style={{ ...typography.label.small, color: colors.text.disabledInverse, padding: '0 4px 4px', textTransform: 'uppercase', letterSpacing: '0.07em', flexShrink: 0 }}>
+                  Sua farmácia habitual
                 </div>
               )}
-
-              {isFullMode && govBrUser && (
-                <div style={panelCardStyle}>
-                  <h3 style={{ ...typography.headline.small, color: colors.text.primaryInverse, margin: 0 }}>CNS e condições</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
-                    <div style={{ borderRadius: '18px', background: colors.background.primaryInverse, padding: '16px' }}>
-                      <div style={{ ...typography.label.small, color: colors.text.secondaryInverse }}>CNS</div>
-                      <div style={{ ...typography.body.small, color: colors.text.primaryInverse }}>{govBrUser.cns}</div>
+              {orderedPharmacies.map((pharmacy, index) => {
+                const focused = focusedIndex === index;
+                const isHabitual = isFullMode && habitualPharmacy?.pharmacy.id === pharmacy.id;
+                return (
+                  <button key={pharmacy.id} type="button"
+                    onClick={() => mapRef.current?.flyTo([pharmacy.latitude, pharmacy.longitude], 15, { animate: true, duration: 0.7 })}
+                    style={{
+                      width: '100%', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
+                      background: focused ? colors.background.primary : isHabitual ? 'rgba(30,167,253,0.06)' : 'transparent',
+                      border: focused ? 'none' : isHabitual ? '1px solid rgba(30,167,253,0.2)' : '1px solid transparent',
+                      borderRadius: '10px', padding: '10px 12px',
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      transition: 'background 0.15s', boxSizing: 'border-box', flexShrink: 0,
+                    }}
+                  >
+                    <div style={{ width: '7px', height: '7px', borderRadius: '999px', flexShrink: 0, background: focused ? colors.background.brandPrimary : colors.text.disabledInverse }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ ...typography.body.small, color: focused ? colors.text.primary : colors.text.primaryInverse, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {pharmacy.name}
+                      </div>
+                      <div style={{ ...typography.label.small, color: focused ? colors.text.secondary : colors.text.disabledInverse, marginTop: '1px' }}>
+                        {pharmacy.neighborhood} · {pharmacy.cep}
+                      </div>
                     </div>
-                    <div style={{ borderRadius: '18px', background: colors.background.primaryInverse, padding: '16px' }}>
-                      <div style={{ ...typography.label.small, color: colors.text.secondaryInverse }}>CEP</div>
-                      <div style={{ ...typography.body.small, color: colors.text.primaryInverse }}>{govBrUser.cep}</div>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    {govBrUser.condicoes.map((condicao) => (
-                      <span key={condicao} style={{ borderRadius: '999px', background: 'rgba(255, 255, 255, 0.08)', color: colors.text.primaryInverse, padding: '10px 14px', ...typography.label.small }}>
-                        {condicao}
+                    <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
+                      {isHabitual && <span style={pill({ background: 'rgba(16,185,129,0.15)', color: '#4ade80' })}>Habitual</span>}
+                      <span style={pill({ background: pharmacy.status === 'Aberto' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.06)', color: pharmacy.status === 'Aberto' ? '#4ade80' : colors.text.disabledInverse })}>
+                        {pharmacy.status}
                       </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {activeTab === 'historico' && isFullMode && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              <div style={{ ...typography.label.small, color: colors.text.disabledInverse, padding: '0 4px 2px', textTransform: 'uppercase', letterSpacing: '0.07em', flexShrink: 0 }}>
+                Dispensações · HÓRUS / DATASUS
+              </div>
+              {alerts.map((alert) => {
+                const fg = alert.urgency === 'urgent' ? '#f87171' : alert.urgency === 'warn' ? '#fbbf24' : '#4ade80';
+                const bg = alert.urgency === 'urgent' ? 'rgba(239,68,68,0.12)' : alert.urgency === 'warn' ? 'rgba(245,197,66,0.12)' : 'rgba(16,185,129,0.10)';
+                return (
+                  <div key={alert.dispensacao.id} style={card({ padding: '9px 12px', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 })}>
+                    <div style={{ width: '7px', height: '7px', borderRadius: '999px', background: fg, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ ...typography.body.small, color: colors.text.primaryInverse }}>{alert.dispensacao.medicamento}</div>
+                      <div style={{ ...typography.label.small, color: colors.text.disabledInverse, marginTop: '1px' }}>
+                        {alert.dispensacao.indicacao} · {new Date(alert.dispensacao.dataRetirada).toLocaleDateString('pt-BR')}
+                      </div>
+                    </div>
+                    <span style={pill({ background: bg, color: fg, whiteSpace: 'nowrap' })}>{formatDays(alert.daysLeft)}</span>
+                  </div>
+                );
+              })}
+              {govBrUser && (
+                <div style={card({ padding: '12px 14px', marginTop: '4px', flexShrink: 0 })}>
+                  <div style={{ ...typography.label.small, color: colors.text.disabledInverse, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' }}>CNS · Condições</div>
+                  <div style={{ ...typography.body.small, color: colors.text.secondaryInverse, marginBottom: '8px' }}>{govBrUser.cns}</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                    {govBrUser.condicoes.map((c) => (
+                      <span key={c} style={pill({ background: 'rgba(255,255,255,0.07)', border: `1px solid ${colors.line.dark}`, color: colors.text.secondaryInverse })}>{c}</span>
                     ))}
                   </div>
                 </div>
               )}
             </div>
-          </div>
-        </section>
-      </div>
+          )}
+        </div>
 
-      <style>{`
-        .pharmacies-rail-hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
-    </main>
-  );
-}
+        {/* ── ROW 3 COL 3: DIREITA — mapa + detalhe ── */}
+        <div style={{ gridColumn: '3', gridRow: '3', padding: '12px 32px 24px 16px', display: 'flex', flexDirection: 'column', gap: '12px', minHeight: 0, overflow: 'hidden' }}>
+
+          <div style={{ ...card({ padding: 0, overflow: 'hidden' }), height: '220px', flexShrink: 0 }}>
+            <MapContainer center={[activePharmacy.latitude, activePharmacy.longitude]} zoom={15} scrollWheelZoom={false} style={{ width: '100%', height: '220px' }}>
+              <MapController activePharmacy={activePharmacy} mapRef={mapRef} markersRef={markerRefs} />
+              <TileLayer attribution="&copy; OpenStreetMap contributors &copy; CARTO" url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+              {orderedPharmacies.map((pharmacy, index) => (
+                <Marker key={pharmacy.id} position={[pharmacy.latitude, pharmacy.longitude]} icon={markerIcon(focusedIndex === index)} ref={(m) => { markerRefs.current[pharmacy.id] = m; }}>
+                  <Popup>{pharmacy.name}</Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
+
+          <div style={card({ padding: '18px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', minHeight: 0, overflow: 'hidden' })}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexShrink: 0 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ ...typography.label.small, color: colors.text.disabledInverse, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Detalhe da farmácia</div>
+                <h2 style={{ ...typography.headline.medium, color: colors.text.primaryInverse, margin: 0 }}>{activePharmacy.name}</h2>
+                <p style={{ ...typography.body.small, color: colors.text.disabledInverse, margin: '4px 0 0' }}>{activePharmacy.address} · {activePharmacy.neighborhood}</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
+                <span style={pill({ background: 'rgba(30,167,253,0.15)', color: '#60a5fa', border: '1px solid rgba(30,167,253,0.25)' })}>
+                  {activePharmacy.city}/{activePharmacy.state}
+                </span>
+                {activePharmacy.phone && <span style={{ ...typography.label.small, color: colors.text.disabledInverse }}>{activePharmacy.phone}</span>}
+              </div>
+            </div>
+
+            <div style={{ height: '1px', background: colors.line.dark, flexShrink: 0 }} />
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', flexShrink: 0 }}>
+              {activePharmacy.horarios.map((horario) => (
+                <div key={`${activePharmacy.id}-${horario.dias}`} style={card({ padding: '10px 12px' })}>
+                  <div style={{ ...typography.label.small, color: colors.text.disabledInverse, marginBottom: '3px' }}>{horario.dias}</div>
+                  <div style={{ ...typography.body.small, color: colors.text.primaryInverse }}>{horario.abre} às {horario.fecha}</div>
+                </div>
+              ))}
+            </div>
+
+            {isFullMode && habitualPharmacy?.pharmacy.id === activePharmacy.id && (
+              <div style={{ padding: '9px 14px', borderRadius: '10px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', flexShrink: 0 }}>
+                <span style={{ ...typography.body.small, color: '#4ade80' }}>
+                  ✓ Sua farmácia habitual · última visita {formatLastVisit(habitualPharmacy.lastDate)}
+                </span>
+              </div>
+            )}
+
+            {activePharmacy.cnes && (
+              <div style={{ marginTop: 'auto', flexShrink: 0 }}>
+                <span style={{ ...typography.label.small, color: colors.text.disabledInverse }}>CNES {activePharmacy.cnes}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    );
+  }
