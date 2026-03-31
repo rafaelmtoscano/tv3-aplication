@@ -57,21 +57,21 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
   const availableResources = [
     {
       id: 'voting',
-      icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'rgba(255,255,255,0.8)' }}>how_to_vote</span>,
+      icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'currentColor' }}>how_to_vote</span>,
       title: 'Painel de Votação',
       description: 'Acompanhe os votos dos parlamentares',
       type: 'voting' as ResourceType,
     },
     {
       id: 'poll',
-      icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'rgba(255,255,255,0.8)' }}>poll</span>,
+      icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'currentColor' }}>poll</span>,
       title: 'Enquete',
       description: 'Participe da consulta pública',
       type: 'poll' as ResourceType,
     },
     {
       id: 'hearing',
-      icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'rgba(255,255,255,0.8)' }}>record_voice_over</span>,
+      icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'currentColor' }}>record_voice_over</span>,
       title: 'Audiência Pública',
       description: 'Envie perguntas e comentários',
       type: 'hearing' as ResourceType,

@@ -127,7 +127,7 @@ export function ResourcesPanel({ resources, onSelect, onClose }: ResourcesPanelP
                 style={itemStyle}
                 onClick={() => onSelect(resource.type)}
               >
-                <div style={iconBoxStyle}>{resource.icon}</div>
+                <div style={{ ...iconBoxStyle, color: isFocused ? colors.text.primary : 'rgba(255,255,255,0.8)' }}>{resource.icon}</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <span style={{ ...typography.body.large, color: titleColor, fontWeight: 600 }}>
                     {resource.title}

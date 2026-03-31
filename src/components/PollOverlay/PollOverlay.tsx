@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import type { Poll } from '../../data/polls';
@@ -14,10 +14,19 @@ interface PollOverlayProps {
 export function PollOverlay({ poll, isAuthenticated: _isAuthenticated, onClose, onBack, onGovAuth }: PollOverlayProps) {
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
+  // 0 = govAuth button, 1 = voltar button
+  const [focusIndex, setFocusIndex] = useState(0);
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') { e.stopImmediatePropagation(); (onBack ?? closeRef.current)(); }
-  }, []);
+    if (e.key === 'ArrowDown') { e.stopImmediatePropagation(); setFocusIndex(i => Math.min(i + 1, 1)); }
+    if (e.key === 'ArrowUp') { e.stopImmediatePropagation(); setFocusIndex(i => Math.max(i - 1, 0)); }
+    if (e.key === 'Enter') {
+      e.stopImmediatePropagation();
+      if (focusIndex === 0) onGovAuth();
+      else (onBack ?? closeRef.current)();
+    }
+  }, [focusIndex, onGovAuth, onBack]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey, { capture: true });
@@ -82,7 +91,12 @@ export function PollOverlay({ poll, isAuthenticated: _isAuthenticated, onClose, 
             Participe de enquetes, acesse serviços gov.br e personalize sua experiência
           </p>
         </div>
-        <button style={govBtnStyle} onClick={onGovAuth}>
+        <button style={{
+          ...govBtnStyle,
+          transform: focusIndex === 0 ? 'scale(1.02)' : 'scale(1)',
+          boxShadow: focusIndex === 0 ? '0 0 0 3px rgba(255,255,255,0.3)' : 'none',
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+        }} onClick={onGovAuth}>
           Entrar com gov.br
         </button>
       </div>
@@ -93,6 +107,9 @@ export function PollOverlay({ poll, isAuthenticated: _isAuthenticated, onClose, 
           padding: '14px 48px', borderRadius: 100, border: 'none',
           background: colors.background.primary, color: colors.text.primary,
           ...typography.body.large, fontWeight: 600, cursor: 'pointer',
+          transform: focusIndex === 1 ? 'scale(1.05)' : 'scale(1)',
+          boxShadow: focusIndex === 1 ? '0 0 0 3px rgba(255,255,255,0.3)' : 'none',
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
         }}>
           <span className="material-symbols-rounded" style={{ fontSize: 20 }}>arrow_back</span>
           Voltar

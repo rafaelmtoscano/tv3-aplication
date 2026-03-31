@@ -49,6 +49,9 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onBa
   const closeRef = useRef(onClose);
   const liveIndexRef = useRef(0);
   const [visibleComments, setVisibleComments] = useState<DisplayComment[]>(() => comments.map(comment => ({ ...comment })));
+  // When not authenticated: 0 = govAuth, 1 = voltar. When authenticated: 0 = voltar
+  const maxFocus = isAuthenticated ? 0 : 1;
+  const [focusIndex, setFocusIndex] = useState(0);
 
   closeRef.current = onClose;
 
@@ -58,7 +61,14 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onBa
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') { e.stopImmediatePropagation(); (onBack ?? closeRef.current)(); }
-  }, []);
+    if (e.key === 'ArrowDown') { e.stopImmediatePropagation(); setFocusIndex(i => Math.min(i + 1, maxFocus)); }
+    if (e.key === 'ArrowUp') { e.stopImmediatePropagation(); setFocusIndex(i => Math.max(i - 1, 0)); }
+    if (e.key === 'Enter') {
+      e.stopImmediatePropagation();
+      if (!isAuthenticated && focusIndex === 0) onGovAuth();
+      else (onBack ?? closeRef.current)();
+    }
+  }, [focusIndex, maxFocus, isAuthenticated, onGovAuth, onBack]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey, { capture: true });
@@ -192,6 +202,9 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onBa
             width: '100%', padding: '14px', borderRadius: 100, border: 'none',
             background: colors.background.primary, color: colors.text.primary,
             ...typography.body.large, fontWeight: 600, cursor: 'pointer',
+            transform: focusIndex === 0 ? 'scale(1.02)' : 'scale(1)',
+            boxShadow: focusIndex === 0 ? '0 0 0 3px rgba(255,255,255,0.3)' : 'none',
+            transition: 'transform 0.15s ease, box-shadow 0.15s ease',
           }}>
             Entrar com gov.br
           </button>
@@ -205,6 +218,9 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onBa
           padding: '14px 48px', borderRadius: 100, border: 'none',
           background: colors.background.primary, color: colors.text.primary,
           ...typography.body.large, fontWeight: 600, cursor: 'pointer',
+          transform: focusIndex === maxFocus ? 'scale(1.05)' : 'scale(1)',
+          boxShadow: focusIndex === maxFocus ? '0 0 0 3px rgba(255,255,255,0.3)' : 'none',
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
         }}>
           <span className="material-symbols-rounded" style={{ fontSize: 20 }}>arrow_back</span>
           Voltar

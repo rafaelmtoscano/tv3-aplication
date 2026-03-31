@@ -27,6 +27,7 @@ export function VotingOverlay({ data, onClose, onBack }: VotingOverlayProps) {
   const [page, setPage] = useState(0);
   const [pageTransitionKey, setPageTransitionKey] = useState(0);
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
+  const [backFocused, setBackFocused] = useState(false);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
 
@@ -45,9 +46,14 @@ export function VotingOverlay({ data, onClose, onBack }: VotingOverlayProps) {
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') { e.stopImmediatePropagation(); (onBack ?? closeRef.current)(); }
-    if (e.key === 'ArrowRight') { e.stopImmediatePropagation(); goToPage(Math.min(page + 1, totalPages - 1)); }
-    if (e.key === 'ArrowLeft')  { e.stopImmediatePropagation(); goToPage(Math.max(page - 1, 0)); }
-  }, [goToPage, page, totalPages]);
+    if (e.key === 'ArrowDown') { e.stopImmediatePropagation(); setBackFocused(true); }
+    if (e.key === 'ArrowUp') { e.stopImmediatePropagation(); setBackFocused(false); }
+    if (!backFocused) {
+      if (e.key === 'ArrowRight') { e.stopImmediatePropagation(); goToPage(Math.min(page + 1, totalPages - 1)); }
+      if (e.key === 'ArrowLeft')  { e.stopImmediatePropagation(); goToPage(Math.max(page - 1, 0)); }
+    }
+    if (e.key === 'Enter' && backFocused) { e.stopImmediatePropagation(); (onBack ?? closeRef.current)(); }
+  }, [goToPage, page, totalPages, backFocused]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey, { capture: true });
@@ -177,6 +183,9 @@ export function VotingOverlay({ data, onClose, onBack }: VotingOverlayProps) {
             padding: '14px 48px', borderRadius: 100, border: 'none',
             background: colors.background.primary, color: colors.text.primary,
             ...typography.body.large, fontWeight: 600, cursor: 'pointer',
+            transform: backFocused ? 'scale(1.05)' : 'scale(1)',
+            boxShadow: backFocused ? '0 0 0 3px rgba(255,255,255,0.3)' : 'none',
+            transition: 'transform 0.15s ease, box-shadow 0.15s ease',
           }}>
             <span className="material-symbols-rounded" style={{ fontSize: 20 }}>arrow_back</span>
             Voltar
