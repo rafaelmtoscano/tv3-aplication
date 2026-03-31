@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { LivePlayer } from '../../components/LivePlayer';
 import { channels } from '../../data/channels';
 import { usePlenarioVoting } from '../../hooks/usePlenarioVoting';
+import { useSenadoVoting } from '../../hooks/useSenadoVoting';
+import { VotingOverlay } from './components/VotingOverlay';
 import { ResourcesPanel } from '../../components/ResourcesPanel';
 import type { ResourceType } from '../../components/ResourcesPanel';
 import { VotingOverlay as ParliamentVotingOverlay } from '../../components/VotingOverlay';
@@ -85,9 +87,11 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
 
   // Detect if it is TV Câmara channel
   const isTvCamara = (initialChannelId ?? liveChannels[0]?.id) === 'tv-camara';
+  const isTvSenado = (initialChannelId ?? liveChannels[0]?.id) === 'tv-senado';
   const hasOverlay = showResourcesPanel || !!activeOverlay;
 
   const voting = usePlenarioVoting(isTvCamara && !!isActive);
+  const senadoVoting = useSenadoVoting(isTvSenado && !!isActive);
 
   // Timer de 15s — dispara UMA vez por sessão quando isActive=true
   // Só abre se a rail de controles já tiver fechado (usuário parou de interagir)
@@ -126,13 +130,17 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
     });
   }, [isActive, initialChannelId, onUpdateChannel]);
 
-  // Sincroniza estado de votação com segunda tela
+  // Sincroniza estado de votação com segunda tela (Câmara ou Senado)
   useEffect(() => {
     if (!onUpdateVoting) return;
-    const votacaoId = voting.sessao?.votacaoAtiva?.id ?? null;
-    const active = voting.phase === 'intro' || voting.phase === 'question' || voting.phase === 'results';
+    const votacaoId = voting.sessao?.votacaoAtiva?.id
+      ?? senadoVoting.sessao?.votacaoAtiva?.id
+      ?? null;
+    const active =
+      voting.phase === 'intro' || voting.phase === 'question' || voting.phase === 'results' ||
+      senadoVoting.phase === 'intro' || senadoVoting.phase === 'question' || senadoVoting.phase === 'results';
     onUpdateVoting(votacaoId, active);
-  }, [voting.phase, voting.sessao, onUpdateVoting]);
+  }, [voting.phase, voting.sessao, senadoVoting.phase, senadoVoting.sessao, onUpdateVoting]);
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
@@ -160,6 +168,10 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
           });
         }}
       />
+
+      {isTvSenado && isActive && (
+        <VotingOverlay voting={senadoVoting as any} livePlayerRef={livePlayerRef as any} />
+      )}
 
       {showResourcesPanel && !activeOverlay && (
         <ResourcesPanel

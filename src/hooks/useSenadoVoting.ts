@@ -1,19 +1,20 @@
-// src/hooks/usePlenarioVoting.ts
-// Hook que detecta sessão plenária ativa, faz polling e gerencia o voto social do usuário.
+// src/hooks/useSenadoVoting.ts
+// Espelho de usePlenarioVoting.ts — adaptado para a API do Senado Federal
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { fetchSessaoCompleta, getSavedVote, saveVote, removeVote } from '../data/plenario';
-import type { SessaoAtiva, VotoSocial } from '../data/plenario';
+import {
+  fetchSessaoCompletaSenado,
+  getSavedVoteSenado,
+  saveVoteSenado,
+  removeVoteSenado,
+} from '../data/senado';
+import type { SessaoAtiva } from '../data/plenario';
 import type { UseVotingReturn, VotingPhase } from '../types/voting';
-
-// Re-export para compatibilidade com imports existentes
-export type { VotingPhase } from '../types/voting';
-export type UsePlenarioVotingReturn = UseVotingReturn;
 
 const POLLING_INTERVAL = 60_000;
 const INITIAL_DELAY = 5_000;
 
-export function usePlenarioVoting(isActive: boolean): UseVotingReturn {
+export function useSenadoVoting(enabled: boolean): UseVotingReturn {
   const [phase, setPhase] = useState<VotingPhase>('idle');
   const [sessao, setSessao] = useState<SessaoAtiva | null>(null);
   const [userVote, setUserVote] = useState<'sim' | 'nao' | null>(null);
@@ -24,34 +25,18 @@ export function usePlenarioVoting(isActive: boolean): UseVotingReturn {
   const isFirstLoadRef = useRef(true);
   const lastVotacaoIdRef = useRef<string | null>(null);
 
-  const isPlenariaNoSchedule = useCallback((): boolean => {
-    // TODO: em produção, integrar com EPG real para verificar se há sessão plenária
-    // Bypass para demo — ativar overlay sempre que houver sessão na API
-    return true;
-  }, []);
-
   const fetchAndUpdate = useCallback(async () => {
     if (!isMountedRef.current) return;
 
-    if (!isPlenariaNoSchedule()) {
-      if (isMountedRef.current) {
-        setPhase('idle');
-        setSessao(null);
-      }
-      return;
-    }
-
-    // Show loading only on first run or when explicitly needed
     if (isFirstLoadRef.current && isMountedRef.current) {
       setPhase('loading');
     }
 
     try {
-      let data = await fetchSessaoCompleta();
+      const data = await fetchSessaoCompletaSenado();
       if (!isMountedRef.current) return;
 
       if (!data) {
-        // Nenhuma sessão ativa encontrada na API — manter idle
         if (isMountedRef.current) setPhase('idle');
         isFirstLoadRef.current = false;
         return;
@@ -60,7 +45,7 @@ export function usePlenarioVoting(isActive: boolean): UseVotingReturn {
       setSessao(data);
 
       const votacaoId = data.votacaoAtiva?.id ?? null;
-      const saved = votacaoId ? getSavedVote(votacaoId) : null;
+      const saved = votacaoId ? getSavedVoteSenado(votacaoId) : null;
 
       // Detect new vote start
       if (votacaoId && lastVotacaoIdRef.current && votacaoId !== lastVotacaoIdRef.current) {
@@ -83,19 +68,18 @@ export function usePlenarioVoting(isActive: boolean): UseVotingReturn {
         }
         isFirstLoadRef.current = false;
       } else if (saved && (phase === 'intro' || phase === 'question')) {
-        // Sync if voted on another device/tab
         setUserVote(saved.userVote);
         setPhase('results');
       }
     } catch {
       if (isMountedRef.current) setPhase('error');
     }
-  }, [isPlenariaNoSchedule, phase]);
+  }, [phase]);
 
   useEffect(() => {
     isMountedRef.current = true;
 
-    if (!isActive) {
+    if (!enabled) {
       setPhase('idle');
       setSessao(null);
       setUserVote(null);
@@ -106,7 +90,6 @@ export function usePlenarioVoting(isActive: boolean): UseVotingReturn {
       return;
     }
 
-    // Initial delay before first check
     delayRef.current = setTimeout(() => {
       fetchAndUpdate();
       pollingRef.current = setInterval(fetchAndUpdate, POLLING_INTERVAL);
@@ -117,18 +100,16 @@ export function usePlenarioVoting(isActive: boolean): UseVotingReturn {
       if (pollingRef.current) clearInterval(pollingRef.current);
       if (delayRef.current) clearTimeout(delayRef.current);
     };
-  }, [isActive, fetchAndUpdate]);
+  }, [enabled, fetchAndUpdate]);
 
   const vote = useCallback(
     (choice: 'sim' | 'nao') => {
       if (!sessao?.votacaoAtiva) return;
-      const votoSocial: VotoSocial = {
+      saveVoteSenado({
         votacaoId: sessao.votacaoAtiva.id,
         userVote: choice,
         timestamp: Date.now(),
-        eventId: sessao.eventId,
-      };
-      saveVote(votoSocial);
+      });
       setUserVote(choice);
       setPhase('results');
     },
@@ -137,7 +118,7 @@ export function usePlenarioVoting(isActive: boolean): UseVotingReturn {
 
   const changeVote = useCallback(() => {
     if (!sessao?.votacaoAtiva) return;
-    removeVote(sessao.votacaoAtiva.id);
+    removeVoteSenado(sessao.votacaoAtiva.id);
     setUserVote(null);
     setPhase('question');
   }, [sessao]);
