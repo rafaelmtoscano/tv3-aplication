@@ -172,10 +172,12 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
   useEffect(() => {
     if (!isActive) return;
 
+    // Visual order: hero → rail-0 → rail-1 (TV ao vivo) → stories → rail-2 → ...
     if (mainZone === 'hero') {
       setMainScrollY(0);
     } else if (mainZone === 'stories') {
-      setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT - RAIL_SCROLL_OFFSET);
+      // stories comes after hero + rail-0 + rail-1
+      setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 2 - RAIL_SCROLL_OFFSET);
     } else if (mainZone === 'my-space') {
       setMainScrollY(HERO_HEIGHT + STORIES_HEIGHT + RAIL_HEIGHT * homeData.rails.length - RAIL_SCROLL_OFFSET);
     } else {
@@ -184,8 +186,12 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
         const railIdx = parseInt(railMatch[1]);
         if (railIdx === 0) {
           setMainScrollY(HERO_HEIGHT - RAIL_SCROLL_OFFSET);
+        } else if (railIdx === 1) {
+          // rail-1 (TV ao vivo) comes right after rail-0, before stories
+          setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT - RAIL_SCROLL_OFFSET);
         } else {
-          setMainScrollY(HERO_HEIGHT + STORIES_HEIGHT + RAIL_HEIGHT * railIdx - RAIL_SCROLL_OFFSET);
+          // rail-2 and beyond come after stories
+          setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * railIdx + STORIES_HEIGHT - RAIL_SCROLL_OFFSET);
         }
       }
     }
@@ -274,7 +280,21 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
           </div>
         </div>
 
-        {/* Stories Rail */}
+        {/* TV ao Vivo Rail (rail-1) */}
+        {homeData.rails[0] && (
+          <ContentRail
+            key={homeData.rails[0].id}
+            title={homeData.rails[0].title}
+            variant={homeData.rails[0].variant}
+            items={railItems(homeData.rails[0].cards)}
+            focusedIndex={mainZone === 'rail-1' ? mainItemIndex : -1}
+            onFocusedIndexChange={() => {}}
+            onNavigateUp={() => {}}
+            onNavigateDown={() => {}}
+          />
+        )}
+
+        {/* Stories Rail (below TV ao vivo) */}
         <div style={{ marginTop: '48px', marginBottom: '48px' }}>
           <StoriesRail
             title="Em destaque agora"
@@ -286,14 +306,14 @@ export default function Home({ mainZone, mainItemIndex, isActive }: HomeProps) {
           />
         </div>
 
-        {/* Content Rails (rail-1 through rail-N) */}
-        {homeData.rails.map((rail, railIndex) => (
+        {/* Content Rails (rail-2 through rail-N) */}
+        {homeData.rails.slice(1).map((rail, railIndex) => (
           <ContentRail
             key={rail.id}
             title={rail.title}
             variant={rail.variant}
             items={railItems(rail.cards)}
-            focusedIndex={mainZone === `rail-${railIndex + 1}` ? mainItemIndex : -1}
+            focusedIndex={mainZone === `rail-${railIndex + 2}` ? mainItemIndex : -1}
             onFocusedIndexChange={() => {}}
             onNavigateUp={() => {}}
             onNavigateDown={() => {}}
