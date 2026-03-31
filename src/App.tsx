@@ -20,6 +20,7 @@ import { homeData } from './data/home';
 import { services } from './data/services';
 import { channels, syncChannelsFromSupabase } from './data/channels';
 import { colors } from './styles/colors';
+import { typography } from './styles/typography';
 import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
 
 type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'settings' | 'help' | 'apps-camara' | 'my-channels';
