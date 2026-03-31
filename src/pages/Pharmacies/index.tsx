@@ -9,6 +9,7 @@ import { usePharmacyLocation } from '../../hooks/usePharmacyLocation';
 import { usePharmacyRenovationAlerts } from '../../hooks/usePharmacyRenovationAlerts';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
+import { ChevronLeftIcon } from '../../icons';
 import type { MainZone } from '../../hooks/useFocusNavigation';
 
 interface PharmaciesProps {
@@ -126,6 +127,18 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     ...typography.label.small,
   });
 
+  const tabChipStyle = (active: boolean): CSSProperties => ({
+    border: 'none',
+    borderRadius: '999px',
+    padding: '8px 14px',
+    background: active ? colors.background.brandPrimary : 'rgba(255,255,255,0.08)',
+    color: active ? colors.text.primaryInverse : colors.text.secondaryInverse,
+    ...typography.label.small,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    transition: 'background 0.2s ease, color 0.2s ease',
+  });
+
   const markerIcon = (focused: boolean) =>
     L.divIcon({
       className: '',
@@ -147,7 +160,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
     gridColumn: '2',
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '20px',
     padding: '48px 16px 24px 48px',
     minHeight: 0,
     overflow: 'hidden',
@@ -168,7 +181,29 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
       <div style={{ gridColumn: '1', gridRow: '1 / -1' }} />
 
       <div style={leftColumnStyle}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingTop: '4px' }}>
+        <button
+          type="button"
+          onClick={onExit}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            alignSelf: 'flex-start',
+            background: 'none',
+            border: 'none',
+            color: colors.text.primaryInverse,
+            cursor: 'pointer',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            ...typography.body.medium,
+            fontFamily: 'inherit',
+          }}
+        >
+          <ChevronLeftIcon size={24} color={colors.text.primaryInverse} />
+          Voltar
+        </button>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px' }}>
           <h1 style={{ ...typography.display.medium, color: colors.text.primaryInverse, margin: 0, lineHeight: 1 }}>
             Retirada de Medicamentos
           </h1>
@@ -177,12 +212,14 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {!isLoggedIn && (
-            <div style={{ ...cardStyle(), padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>Faça login para ver mais</div>
+            <div style={{ ...cardStyle(), padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>
+                Entre para acompanhar suas retiradas
+              </div>
               <div style={{ ...typography.body.small, color: colors.text.disabledInverse }}>
-                Veja histórico, farmácia habitual e alertas de renovação.
+                Veja histórico, farmácia habitual e alertas de renovação em um só lugar.
               </div>
               <button
                 type="button"
@@ -191,24 +228,26 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
                   alignSelf: 'flex-start',
                   border: 'none',
                   borderRadius: '999px',
-                  background: colors.background.primary,
-                  color: colors.text.primary,
+                  background: colors.background.brandPrimary,
+                  color: colors.text.primaryInverse,
                   padding: '8px 18px',
                   ...typography.label.small,
                   cursor: 'pointer',
                   fontFamily: 'inherit',
                 }}
               >
-                Entrar no app
+                Entrar agora
               </button>
             </div>
           )}
 
           {isLoggedIn && !isGovBrConnected && (
-            <div style={{ ...cardStyle(), padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(30,167,253,0.06)', border: '1px solid rgba(30,167,253,0.2)' }}>
-              <div style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>Conecte o gov.br para ver seu histórico</div>
+            <div style={{ ...cardStyle(), padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(30,167,253,0.06)', border: '1px solid rgba(30,167,253,0.2)' }}>
+              <div style={{ ...typography.headline.small, color: colors.text.primaryInverse }}>
+                Conecte o gov.br e libere seu histórico
+              </div>
               <div style={{ ...typography.body.small, color: colors.text.disabledInverse }}>
-                Conecte para ver histórico HÓRUS, farmácia habitual e alertas.
+                Acesse dispensações, alertas e sua farmácia habitual com mais praticidade.
               </div>
               <button
                 type="button"
@@ -231,20 +270,11 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '999px', padding: '4px', width: 'fit-content' }}>
+        <div style={{ display: 'flex', gap: '8px', width: 'fit-content' }}>
           <button
             type="button"
             onClick={() => setActiveTab('farmacias')}
-            style={{
-              border: 'none',
-              borderRadius: '999px',
-              padding: '6px 16px',
-              background: activeTab === 'farmacias' ? colors.background.primary : 'transparent',
-              color: activeTab === 'farmacias' ? colors.text.primary : colors.text.disabledInverse,
-              ...typography.label.small,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
+            style={tabChipStyle(activeTab === 'farmacias')}
           >
             Próximas
           </button>
@@ -252,16 +282,7 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
             <button
               type="button"
               onClick={() => setActiveTab('historico')}
-              style={{
-                border: 'none',
-                borderRadius: '999px',
-                padding: '6px 16px',
-                background: activeTab === 'historico' ? colors.background.primary : 'transparent',
-                color: activeTab === 'historico' ? colors.text.primary : colors.text.disabledInverse,
-                ...typography.label.small,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
+              style={tabChipStyle(activeTab === 'historico')}
             >
               Meu histórico
             </button>
@@ -269,14 +290,14 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
         </div>
 
         {activeTab === 'farmacias' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', minHeight: 0, overflow: 'hidden' }}>
             {isFullMode && habitualPharmacy && (
               <div style={{ ...typography.label.small, color: colors.text.disabledInverse, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                 Sua farmácia habitual
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', overflow: 'hidden', minHeight: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', overflow: 'hidden', minHeight: 0 }}>
               {orderedPharmacies.map((pharmacy, index) => {
                 const focused = focusedIndex === index;
                 const isHabitual = isFullMode && habitualPharmacy?.pharmacy.id === pharmacy.id;
@@ -291,11 +312,11 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
                       textAlign: 'left',
                       cursor: 'pointer',
                       fontFamily: 'inherit',
-                      borderRadius: '14px',
-                      padding: '10px 12px',
+                      borderRadius: '16px',
+                      padding: '14px 16px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '10px',
+                      gap: '12px',
                       boxSizing: 'border-box',
                       flexShrink: 0,
                       border: focused ? 'none' : isHabitual ? '1px solid rgba(30,167,253,0.2)' : '1px solid transparent',
@@ -304,10 +325,10 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
                   >
                     <div style={{ width: '7px', height: '7px', borderRadius: '999px', flexShrink: 0, background: focused ? colors.background.brandPrimary : colors.text.disabledInverse }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ ...typography.body.small, color: focused ? colors.text.primary : colors.text.primaryInverse, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ ...typography.body.medium, color: focused ? colors.text.primary : colors.text.primaryInverse, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {pharmacy.name}
                       </div>
-                      <div style={{ ...typography.label.small, color: focused ? colors.text.secondary : colors.text.disabledInverse, marginTop: '1px' }}>
+                      <div style={{ ...typography.body.small, color: focused ? colors.text.secondary : colors.text.disabledInverse, marginTop: '2px' }}>
                         {pharmacy.neighborhood} · {pharmacy.cep}
                       </div>
                     </div>
@@ -330,11 +351,11 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
         )}
 
         {activeTab === 'historico' && isFullMode && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minHeight: 0, overflow: 'hidden' }}>
             {alerts.map((alert) => (
-              <div key={alert.dispensacao.id} style={{ ...cardStyle(), padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div key={alert.dispensacao.id} style={{ ...cardStyle(), padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-                  <strong style={{ ...typography.body.small, color: colors.text.primaryInverse }}>{alert.dispensacao.medicamento}</strong>
+                  <strong style={{ ...typography.body.medium, color: colors.text.primaryInverse }}>{alert.dispensacao.medicamento}</strong>
                   <span
                     style={{
                       ...pillStyle(
@@ -356,24 +377,6 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={onExit}
-          style={{
-            marginTop: 'auto',
-            alignSelf: 'flex-start',
-            border: `1px solid ${colors.line.dark}`,
-            background: 'transparent',
-            color: colors.text.primaryInverse,
-            borderRadius: '999px',
-            padding: '8px 20px',
-            ...typography.label.small,
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-          }}
-        >
-          Voltar
-        </button>
       </div>
 
       <div style={rightColumnStyle}>
