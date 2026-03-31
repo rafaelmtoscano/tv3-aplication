@@ -207,27 +207,17 @@ export const Sidebar = memo(
             {/* Logo area */}
             <div style={logoAreaStyle}>
               {isExpanded ? (
-                <>
-                  <div style={logoTextStyle}>{logoName}</div>
-                  {logoSubtitle && <div style={logoSubtitleStyle}>{logoSubtitle}</div>}
-                </>
+                <img
+                  src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F680bef2f7f7c478aa70cb7cb92870b4d"
+                  alt="Plataforma Comum"
+                  style={{ height: '32px', width: 'auto', display: 'block' }}
+                />
               ) : (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  lineHeight: 1,
-                  fontFamily: typography.body.large.fontFamily,
-                }}>
-                  <span style={{ fontWeight: 300, fontSize: '18px', color: colors.text.primaryInverse, opacity: 0.5 }}>
-                    {logoName?.[0] ?? ''}
-                  </span>
-                  {logoSubtitle && (
-                    <span style={{ fontWeight: 700, fontSize: '18px', color: colors.text.primaryInverse, opacity: 0.5 }}>
-                      {logoSubtitle[0] ?? ''}
-                    </span>
-                  )}
-                </div>
+                <img
+                  src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F70849a385e8142a190c2aad42c525fcb"
+                  alt="Plataforma Comum"
+                  style={{ height: '32px', width: 'auto', display: 'block' }}
+                />
               )}
             </div>
 
