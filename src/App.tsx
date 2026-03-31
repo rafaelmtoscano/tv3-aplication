@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from './lib/firebase';
 import Home from './pages/Home/index';
 import Live from './pages/Live/index';
 import WatchPage from './pages/Watch/index';
@@ -67,6 +69,21 @@ export default function App() {
     }, 3000);
     return () => clearTimeout(timer);
   }, [toastMessage]);
+
+  useEffect(() => {
+    if (currentPage !== 'pharmacies') return;
+
+    const sessionRef = doc(db, 'sessions', sessionCode);
+    updateDoc(sessionRef, {
+      activeFeature: 'pharmacies',
+    }).catch(console.error);
+
+    return () => {
+      updateDoc(sessionRef, {
+        activeFeature: null,
+      }).catch(console.error);
+    };
+  }, [currentPage, sessionCode]);
 
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
