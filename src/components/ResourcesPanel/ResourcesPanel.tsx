@@ -144,6 +144,9 @@ export function ResourcesPanel({ resources, onSelect, onClose }: ResourcesPanelP
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
           <button
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
               padding: '14px 48px',
               borderRadius: 100,
               border: 'none',
@@ -161,6 +164,7 @@ export function ResourcesPanel({ resources, onSelect, onClose }: ResourcesPanelP
             }}
             onClick={onClose}
           >
+            <span className="material-symbols-rounded" style={{ fontSize: 20 }}>close</span>
             Fechar
           </button>
         </div>

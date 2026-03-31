@@ -8,6 +8,7 @@ interface HearingOverlayProps {
   comments: HearingComment[];
   isAuthenticated: boolean;
   onClose: () => void;
+  onBack?: () => void;
   onGovAuth: () => void;
 }
 
@@ -44,7 +45,7 @@ const demoIncomingComments: Omit<HearingComment, 'id'>[] = [
   },
 ];
 
-export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGovAuth }: HearingOverlayProps) {
+export function HearingOverlay({ title, comments, isAuthenticated, onClose, onBack, onGovAuth }: HearingOverlayProps) {
   const closeRef = useRef(onClose);
   const liveIndexRef = useRef(0);
   const [visibleComments, setVisibleComments] = useState<DisplayComment[]>(() => comments.map(comment => ({ ...comment })));
@@ -56,7 +57,7 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGo
   }, [comments]);
 
   const handleKey = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') { e.stopImmediatePropagation(); closeRef.current(); }
+    if (e.key === 'Escape') { e.stopImmediatePropagation(); (onBack ?? closeRef.current)(); }
   }, []);
 
   useEffect(() => {
@@ -161,7 +162,7 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGo
                 background: colors.background.primaryInverse,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ fontSize: 20, color: colors.text.secondaryInverse }}>👤</span>
+                <span className="material-symbols-rounded" style={{ fontSize: 20, color: colors.text.secondaryInverse }}>person</span>
               </div>
               <div style={{ flex: 1 }}>
                 <p style={textStyle}>
@@ -180,7 +181,9 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGo
       {!isAuthenticated && (
         <div style={govGateStyle}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-            <span style={{ fontSize: 24, color: colors.text.secondaryInverse, flexShrink: 0 }}>🔒</span>
+            <span className="material-symbols-rounded" style={{ fontSize: 24, color: colors.text.secondaryInverse, flexShrink: 0 }}>
+              lock
+            </span>
             <p style={{ ...typography.body.medium, color: colors.text.primaryInverse, margin: 0 }}>
               Participe de enquetes, acesse serviços gov.br e personalize sua experiência
             </p>
@@ -195,14 +198,16 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onGo
         </div>
       )}
 
-      {/* Botão fechar */}
+      {/* Botão voltar */}
       <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 0' }}>
-        <button onClick={onClose} style={{
+        <button onClick={onBack ?? onClose} style={{
+          display: 'flex', alignItems: 'center', gap: 8,
           padding: '14px 48px', borderRadius: 100, border: 'none',
           background: colors.background.primary, color: colors.text.primary,
           ...typography.body.large, fontWeight: 600, cursor: 'pointer',
         }}>
-          Fechar
+          <span className="material-symbols-rounded" style={{ fontSize: 20 }}>arrow_back</span>
+          Voltar
         </button>
       </div>
 

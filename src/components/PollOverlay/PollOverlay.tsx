@@ -7,15 +7,16 @@ interface PollOverlayProps {
   poll: Poll;
   isAuthenticated: boolean;
   onClose: () => void;
+  onBack?: () => void;
   onGovAuth: () => void;
 }
 
-export function PollOverlay({ poll, isAuthenticated: _isAuthenticated, onClose, onGovAuth }: PollOverlayProps) {
+export function PollOverlay({ poll, isAuthenticated: _isAuthenticated, onClose, onBack, onGovAuth }: PollOverlayProps) {
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
 
   const handleKey = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') { e.stopImmediatePropagation(); closeRef.current(); }
+    if (e.key === 'Escape') { e.stopImmediatePropagation(); (onBack ?? closeRef.current)(); }
   }, []);
 
   useEffect(() => {
@@ -74,7 +75,9 @@ export function PollOverlay({ poll, isAuthenticated: _isAuthenticated, onClose, 
 
       <div style={govGateStyle}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-          <span style={{ fontSize: 24, color: colors.text.secondaryInverse, flexShrink: 0 }}>🔒</span>
+          <span className="material-symbols-rounded" style={{ fontSize: 24, color: colors.text.secondaryInverse, flexShrink: 0 }}>
+            lock
+          </span>
           <p style={{ ...typography.body.medium, color: colors.text.primaryInverse, margin: 0 }}>
             Participe de enquetes, acesse serviços gov.br e personalize sua experiência
           </p>
@@ -85,12 +88,14 @@ export function PollOverlay({ poll, isAuthenticated: _isAuthenticated, onClose, 
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <button onClick={onClose} style={{
+        <button onClick={onBack ?? onClose} style={{
+          display: 'flex', alignItems: 'center', gap: 8,
           padding: '14px 48px', borderRadius: 100, border: 'none',
           background: colors.background.primary, color: colors.text.primary,
           ...typography.body.large, fontWeight: 600, cursor: 'pointer',
         }}>
-          Fechar
+          <span className="material-symbols-rounded" style={{ fontSize: 20 }}>arrow_back</span>
+          Voltar
         </button>
       </div>
     </div>

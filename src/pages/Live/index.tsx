@@ -30,6 +30,8 @@ interface LivePageProps {
     isLive: boolean;
   }) => void;
   onUpdateVoting?: (votacaoId: string | null, active: boolean) => void;
+  isAuthenticated?: boolean;
+  onGovAuth?: () => void;
 }
 
 const liveChannels = channels
@@ -44,36 +46,34 @@ const liveChannels = channels
   }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
-export default function LivePage({ initialChannelId, singleChannel, onExit, isActive, onUpdateChannel, onUpdateVoting }: LivePageProps) {
+export default function LivePage({ initialChannelId, singleChannel, onExit, isActive, onUpdateChannel, onUpdateVoting, isAuthenticated = false, onGovAuth }: LivePageProps) {
   const livePlayerRef = useRef<HTMLDivElement>(null);
   const resourcesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resourcesShownRef = useRef(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [showResourcesPanel, setShowResourcesPanel] = useState(false);
   const [activeOverlay, setActiveOverlay] = useState<ResourceType | null>(null);
-  const [isAuthenticated] = useState(false); // TODO: conectar ao estado real de auth
-
   // Recursos disponíveis para demo
   const availableResources = [
     {
       id: 'voting',
-      icon: <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.8)' }}>🗳️</span>,
+      icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'rgba(255,255,255,0.8)' }}>how_to_vote</span>,
       title: 'Painel de Votação',
-      description: 'Acompanhe a votação dos parlamentares',
+      description: 'Acompanhe os votos dos parlamentares',
       type: 'voting' as ResourceType,
     },
     {
       id: 'poll',
-      icon: <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.8)' }}>👤</span>,
-      title: 'Votar em enquetes',
-      description: 'Dê sua opinião sobre a pauta',
+      icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'rgba(255,255,255,0.8)' }}>poll</span>,
+      title: 'Enquete',
+      description: 'Participe da consulta pública',
       type: 'poll' as ResourceType,
     },
     {
       id: 'hearing',
-      icon: <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.8)' }}>👥</span>,
-      title: 'Audiências públicas',
-      description: 'Envie dúvidas, comentários ou sugestões',
+      icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'rgba(255,255,255,0.8)' }}>record_voice_over</span>,
+      title: 'Audiência Pública',
+      description: 'Envie perguntas e comentários',
       type: 'hearing' as ResourceType,
     },
   ];
@@ -198,6 +198,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         <ParliamentVotingOverlay
           data={mockVotingResult}
           onClose={handleCloseOverlay}
+          onBack={() => { setActiveOverlay(null); setShowResourcesPanel(true); }}
         />
       )}
 
@@ -206,7 +207,8 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
           poll={activePoll}
           isAuthenticated={isAuthenticated}
           onClose={handleCloseOverlay}
-          onGovAuth={() => setActiveOverlay(null)}
+          onBack={() => { setActiveOverlay(null); setShowResourcesPanel(true); }}
+          onGovAuth={onGovAuth ?? (() => {})}
         />
       )}
 
@@ -216,7 +218,8 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
           comments={activeHearing.comments}
           isAuthenticated={isAuthenticated}
           onClose={handleCloseOverlay}
-          onGovAuth={() => setActiveOverlay(null)}
+          onBack={() => { setActiveOverlay(null); setShowResourcesPanel(true); }}
+          onGovAuth={onGovAuth ?? (() => {})}
         />
       )}
     </div>

@@ -6,6 +6,7 @@ import type { VotingResult } from '../../data/votingMock';
 interface VotingOverlayProps {
   data: VotingResult;
   onClose: () => void;
+  onBack?: () => void;
 }
 
 const ITEMS_PER_PAGE = 6;
@@ -22,7 +23,7 @@ const VOTE_LABELS = {
   abstencao: 'Abstenção',
 };
 
-export function VotingOverlay({ data, onClose }: VotingOverlayProps) {
+export function VotingOverlay({ data, onClose, onBack }: VotingOverlayProps) {
   const [page, setPage] = useState(0);
   const [pageTransitionKey, setPageTransitionKey] = useState(0);
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
@@ -43,7 +44,7 @@ export function VotingOverlay({ data, onClose }: VotingOverlayProps) {
   }, [page]);
 
   const handleKey = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') { e.stopImmediatePropagation(); closeRef.current(); }
+    if (e.key === 'Escape') { e.stopImmediatePropagation(); (onBack ?? closeRef.current)(); }
     if (e.key === 'ArrowRight') { e.stopImmediatePropagation(); goToPage(Math.min(page + 1, totalPages - 1)); }
     if (e.key === 'ArrowLeft')  { e.stopImmediatePropagation(); goToPage(Math.max(page - 1, 0)); }
   }, [goToPage, page, totalPages]);
@@ -169,14 +170,16 @@ export function VotingOverlay({ data, onClose }: VotingOverlayProps) {
           </div>
         )}
 
-        {/* Botão fechar */}
+        {/* Botão voltar */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}>
-          <button onClick={onClose} style={{
+          <button onClick={onBack ?? onClose} style={{
+            display: 'flex', alignItems: 'center', gap: 8,
             padding: '14px 48px', borderRadius: 100, border: 'none',
             background: colors.background.primary, color: colors.text.primary,
             ...typography.body.large, fontWeight: 600, cursor: 'pointer',
           }}>
-            Fechar
+            <span className="material-symbols-rounded" style={{ fontSize: 20 }}>arrow_back</span>
+            Voltar
           </button>
         </div>
       </div>

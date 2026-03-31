@@ -14,7 +14,7 @@ interface StepCardProps {
   number: number;
   title: string;
   description: string;
-  icon: string;
+  icon: React.ReactNode;
   status: 'pending' | 'active' | 'done';
   content?: React.ReactNode;
 }
@@ -56,7 +56,7 @@ function StepCard({ number, title, description, icon, status, content }: StepCar
   return (
     <div style={cardStyle}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div style={numberStyle}>{isDone ? '✓' : number}</div>
+        <div style={numberStyle}>{isDone ? <span className="material-symbols-rounded" style={{ fontSize: 20 }}>check</span> : number}</div>
         <span style={{ fontSize: 36, color: colors.text.primaryInverse }}>{icon}</span>
         {isDone && (
           <span style={{
@@ -68,7 +68,7 @@ function StepCard({ number, title, description, icon, status, content }: StepCar
             ...typography.body.small,
             fontWeight: 600,
           }}>
-            Conectado ✓
+            <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle' }}>check_circle</span> Conectado
           </span>
         )}
       </div>
@@ -141,7 +141,7 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
       <div style={{ display: 'flex', gap: 32, width: '100%', maxWidth: 1400 }}>
         <StepCard
           number={1}
-          icon="App"
+          icon={<span className="material-symbols-rounded" style={{ fontSize: 36, color: colors.text.primaryInverse }}>phone_iphone</span>}
           title="Baixe o app"
           description="Disponível para Android e iOS. Escaneie o QR code para baixar a segunda tela."
           status="done"
@@ -163,7 +163,7 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
 
         <StepCard
           number={2}
-          icon="Celular"
+          icon={<span className="material-symbols-rounded" style={{ fontSize: 36, color: colors.text.primaryInverse }}>cast</span>}
           title="Conecte seu celular"
           description="Abra o app e digite o código exibido abaixo para sincronizar com esta TV."
           status={step2Status}
@@ -205,7 +205,7 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
                 ))}
               </div>
               <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: 0 }}>
-                {isConnected ? '✓ Celular conectado' : 'Aguardando conexão…'}
+                {isConnected ? <><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle' }}>check_circle</span> Celular conectado</> : 'Aguardando conexão…'}
               </p>
             </div>
           }
@@ -213,14 +213,14 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
 
         <StepCard
           number={3}
-          icon="gov.br"
+          icon={<span className="material-symbols-rounded" style={{ fontSize: 36, color: colors.text.primaryInverse }}>verified_user</span>}
           title="Entre com gov.br"
           description="Faça login pelo celular para participar de enquetes, petições e personalizar sua experiência."
           status={step3Status}
           content={
             isAuthenticated ? (
               <p style={{ ...typography.body.medium, color: colors.background.brandPrimary, margin: 0, fontWeight: 600 }}>
-                ✓ Autenticado com gov.br
+                <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle' }}>check_circle</span> Autenticado com gov.br
               </p>
             ) : (
               <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: 0 }}>

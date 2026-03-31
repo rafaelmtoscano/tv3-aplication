@@ -50,7 +50,7 @@ interface AppContentProps {
 }
 
 function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, updateChannel, updateVoting }: AppContentProps) {
-  const { connectGovBrMock, govBrUser } = useAuth();
+  const { connectGovBrMock, govBrUser, isGovBrConnected } = useAuth();
   const [showGovBrNotif, setShowGovBrNotif] = useState(false);
   const prevGovBrUserRef = useRef<typeof govBrUser>(null);
 
@@ -380,19 +380,33 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
     verticalNavigation: currentPage === 'pharmacies',
   });
 
-  const sidebarSign: SidebarSign = useMemo(() => ({
-    variant: 'icon',
-    icon: <PersonIcon size={28} />,
-  }), []);
+  const isAuthenticated = isGovBrConnected;
+
+  const sidebarSign: SidebarSign = useMemo(() => {
+    if (isGovBrConnected) {
+      return {
+        variant: 'image' as const,
+        image: 'https://i.pravatar.cc/150?img=33',
+      };
+    }
+    return {
+      variant: 'icon' as const,
+      icon: <PersonIcon size={28} />,
+    };
+  }, [isGovBrConnected]);
 
   const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || watchPage || livePage);
 
   const govBrNotifItems: NotificationItem[] = govBrUser ? [
     {
       id: 'govbr-connected',
-      icon: <span style={{ fontSize: 28 }}>🟢</span>,
-      title: `Olá, ${govBrUser.name.split(' ')[0]}! Você se conectou ao gov.br`,
-      description: 'Seu histórico do Farmácia Popular está disponível em Serviços → Meu SUS.',
+      icon: (
+        <span className="material-symbols-rounded" style={{ fontSize: 28, color: '#1ea7fd' }}>
+          verified_user
+        </span>
+      ),
+      title: 'gov.br conectado',
+      description: `Bem-vindo, ${govBrUser.name}. Recursos personalizados desbloqueados.`,
       timestamp: 'agora',
       onEnter: () => {
         setShowGovBrNotif(false);
@@ -587,6 +601,8 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
           }}
           onUpdateChannel={updateChannel}
           onUpdateVoting={updateVoting}
+          isAuthenticated={isAuthenticated}
+          onGovAuth={connectGovBrMock}
         />
       )}
 
@@ -594,7 +610,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
         <AccountPage
           sessionCode={sessionCode}
           isConnected={isMobileConnected}
-          isAuthenticated={false}
+          isAuthenticated={isAuthenticated}
           onBack={() => setCurrentPage('home')}
           onSimulateConnection={() => setShowConnectionNotif(true)}
         />
