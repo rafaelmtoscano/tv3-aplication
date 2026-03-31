@@ -12,8 +12,10 @@ export interface Pharmacy {
   city: string;
   state: string;
   cep: string;
-  phone: string;
+  phone?: string;
   cnes: string;
+  status?: string;
+  tipo?: string;
   latitude: number;
   longitude: number;
   horarios: PharmacyHorario[];

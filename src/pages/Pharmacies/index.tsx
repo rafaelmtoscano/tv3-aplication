@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { useAuth } from '../../context/AuthContext';
 import { mockPharmacies, type Pharmacy } from '../../data/pharmacies';
 import { usePharmacyLocation } from '../../hooks/usePharmacyLocation';
+import { usePharmacies } from '../../hooks/usePharmacies';
 import { usePharmacyRenovationAlerts } from '../../hooks/usePharmacyRenovationAlerts';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
@@ -61,6 +62,7 @@ function MapController({
 export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }: PharmaciesProps) {
   const { govBrUser, isGovBrConnected } = useAuth();
   const { location } = usePharmacyLocation(govBrUser?.cep);
+  const { pharmacies: apiPharmacies, loading: pharmaciesLoading, error: pharmaciesError, isMockData } = usePharmacies(location);
   const alerts = usePharmacyRenovationAlerts(govBrUser?.dispensacoes ?? []);
   const [activeTab, setActiveTab] = useState<ViewTab>('farmacias');
   const [navSection, setNavSection] = useState<NavSection>('list');
@@ -93,9 +95,9 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
   }, [govBrUser]);
 
   const orderedPharmacies = useMemo(() => {
-    if (!isGovBrConnected || !habitualPharmacy) return mockPharmacies;
-    return [habitualPharmacy.pharmacy, ...mockPharmacies.filter((item) => item.id !== habitualPharmacy.pharmacy.id)];
-  }, [habitualPharmacy, isGovBrConnected]);
+    if (!isGovBrConnected || !habitualPharmacy) return apiPharmacies;
+    return [habitualPharmacy.pharmacy, ...apiPharmacies.filter((item) => item.id !== habitualPharmacy.pharmacy.id)];
+  }, [habitualPharmacy, isGovBrConnected, apiPharmacies]);
 
   const focusedIndex = navSection === 'list' && mainZone === 'rail-0' ? mainItemIndex : -1;
   const activePharmacy = orderedPharmacies[focusedIndex >= 0 ? focusedIndex : 0];
@@ -539,6 +541,24 @@ export default function Pharmacies({ mainZone, mainItemIndex, isActive, onExit }
               ))}
             </div>
           </div>
+
+          {/* Indicador de fonte dos dados — visível apenas quando relevante */}
+          {(pharmaciesLoading || pharmaciesError || !isMockData) && (
+            <div style={{
+              position: 'absolute', bottom: '16px', right: '16px',
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '6px 12px', borderRadius: '999px',
+              background: 'rgba(255,255,255,0.06)',
+              border: `1px solid ${colors.line.dark}`,
+              ...typography.label.small,
+              color: colors.text.disabledInverse,
+              zIndex: 10,
+            }}>
+              {pharmaciesLoading && '⏳ Carregando farmácias...'}
+              {!pharmaciesLoading && pharmaciesError && `ℹ ${pharmaciesError}`}
+              {!pharmaciesLoading && !pharmaciesError && !isMockData && '✓ Dados CNES/DATASUS'}
+            </div>
+          )}
 
           {isFullMode && govBrUser && (
             <div style={{ ...cardStyle(), padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
