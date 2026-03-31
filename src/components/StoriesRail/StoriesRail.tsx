@@ -6,6 +6,7 @@ import { typography } from '../../styles/typography';
 export interface StoryItem {
   id: string;
   videoUrl: string;
+  videoType?: 'mp4' | 'youtube';
   thumbnail: string;
   title?: string;
   duration?: number;
@@ -28,6 +29,7 @@ export function StoriesRail({
   title,
   items,
   focusedIndex,
+  onFocusedIndexChange,
 }: StoriesRailProps) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const railRef = useRef<HTMLDivElement>(null);
@@ -35,25 +37,10 @@ export function StoriesRail({
   const hasFocused = focusedIndex >= 0;
   const railHeight = hasFocused ? FOCUSED_HEIGHT : IDLE_HEIGHT;
 
-  // Handle Enter key to start playback
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.defaultPrevented) return;
-      if (focusedIndex < 0) return;
-
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        setActiveIndex(focusedIndex);
-      }
-    };
-
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [focusedIndex]);
-
   const handleEnded = (index: number) => {
     if (index < items.length - 1) {
       setActiveIndex(index + 1);
+      onFocusedIndexChange?.(index + 1);
     } else {
       setActiveIndex(-1);
     }
@@ -93,9 +80,12 @@ export function StoriesRail({
   const railOuterStyle: React.CSSProperties = {
     position: 'relative',
     width: '100%',
-    height: railHeight,
+    height: railHeight + 64,
+    paddingTop: 32,
+    paddingBottom: 32,
     transition: `height ${TRANSITION}`,
     overflow: 'visible',
+    boxSizing: 'border-box',
   };
 
   const railInnerStyle: React.CSSProperties = {
@@ -107,7 +97,7 @@ export function StoriesRail({
     alignItems: 'center',
     overflowX: 'auto',
     overflowY: 'visible',
-    padding: '0 64px',
+    padding: '32px 64px',
     scrollbarWidth: 'none',
     msOverflowStyle: 'none',
     scrollBehavior: 'smooth',
@@ -134,6 +124,7 @@ export function StoriesRail({
               key={item.id}
               id={item.id}
               videoUrl={item.videoUrl}
+              videoType={item.videoType}
               thumbnail={item.thumbnail}
               title={item.title}
               duration={item.duration}

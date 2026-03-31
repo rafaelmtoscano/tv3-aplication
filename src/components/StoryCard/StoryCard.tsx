@@ -1,10 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
+import YouTube from 'react-youtube';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 
 export interface StoryCardProps {
   id: string;
   videoUrl: string;
+  videoType?: 'mp4' | 'youtube';
   thumbnail: string;
   title?: string;
   duration?: number;
@@ -22,6 +24,7 @@ const TRANSITION = '0.35s cubic-bezier(0.34, 1.1, 0.64, 1)';
 
 export function StoryCard({
   videoUrl,
+  videoType = 'mp4',
   thumbnail,
   title,
   duration = 30,
@@ -35,6 +38,7 @@ export function StoryCard({
 
   // Inicia reprodução quando fica em foco (sem precisar pressionar Enter)
   useEffect(() => {
+    if (videoType !== 'mp4') return;
     if (isFocused && videoRef.current) {
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
@@ -43,7 +47,7 @@ export function StoryCard({
       videoRef.current?.pause();
       setProgress(0);
     }
-  }, [isFocused, isActive]);
+  }, [isFocused, isActive, videoType]);
 
   const handleTimeUpdate = () => {
     const video = videoRef.current;
@@ -61,8 +65,8 @@ export function StoryCard({
     }, 300);
   };
 
-  const width = isActive ? ACTIVE_WIDTH : IDLE_WIDTH;
-  const height = isActive ? ACTIVE_HEIGHT : IDLE_HEIGHT;
+  const width = isFocused ? ACTIVE_WIDTH : IDLE_WIDTH;
+  const height = isFocused ? ACTIVE_HEIGHT : IDLE_HEIGHT;
 
   const containerStyle: React.CSSProperties = {
     position: 'relative',
@@ -86,14 +90,18 @@ export function StoryCard({
     backgroundImage: `url(${thumbnail})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    display: isActive ? 'none' : 'block',
+    display: 'block',
+    opacity: isFocused ? 0 : 1,
+    transition: 'opacity 0.3s ease',
   };
 
   const overlayStyle: React.CSSProperties = {
     position: 'absolute',
     inset: 0,
     background: 'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%)',
-    display: isActive ? 'none' : 'block',
+    display: 'block',
+    opacity: isFocused ? 0 : 1,
+    transition: 'opacity 0.3s ease',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -103,11 +111,13 @@ export function StoryCard({
     right: 12,
     ...typography.label.small,
     color: colors.text.primaryInverse,
-    display: isActive ? 'none' : '-webkit-box',
+    display: '-webkit-box',
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
     margin: 0,
+    opacity: isFocused ? 0 : 1,
+    transition: 'opacity 0.3s ease',
   };
 
   const videoStyle: React.CSSProperties = {
@@ -116,7 +126,9 @@ export function StoryCard({
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    display: isActive ? 'block' : 'none',
+    opacity: isFocused ? 1 : 0,
+    pointerEvents: isFocused ? 'auto' : 'none',
+    transition: 'opacity 0.3s ease',
   };
 
   const progressBarBgStyle: React.CSSProperties = {
@@ -127,7 +139,7 @@ export function StoryCard({
     height: 4,
     background: 'rgba(255,255,255,0.3)',
     zIndex: 2,
-    display: isActive ? 'block' : 'none',
+    display: isFocused ? 'block' : 'none',
   };
 
   const progressBarFillStyle: React.CSSProperties = {
@@ -143,16 +155,57 @@ export function StoryCard({
       <div style={overlayStyle} />
       {title && <p style={titleStyle}>{title}</p>}
 
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        style={videoStyle}
-        autoPlay={false}
-        muted
-        playsInline
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={handleEnded}
-      />
+      {videoType === 'youtube' ? (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          opacity: isFocused ? 1 : 0,
+          transition: 'opacity 0.3s ease',
+          pointerEvents: isFocused ? 'auto' : 'none',
+        }}>
+          <YouTube
+            videoId={videoUrl}
+            opts={{
+              width: '100%',
+              height: '100%',
+              playerVars: {
+                autoplay: isFocused ? 1 : 0,
+                controls: 0,
+                mute: 1,
+                loop: 0,
+                playsinline: 1,
+                modestbranding: 1,
+                rel: 0,
+                fs: 0,
+              },
+            }}
+            style={{ width: '100%', height: '100%' }}
+            onEnd={onEnded}
+            onStateChange={(e) => {
+              if (e.data === 1) { // playing
+                const interval = setInterval(() => {
+                  const player = e.target;
+                  const current = player.getCurrentTime?.() ?? 0;
+                  const total = player.getDuration?.() ?? 30;
+                  setProgress((current / total) * 100);
+                }, 500);
+                return () => clearInterval(interval);
+              }
+            }}
+          />
+        </div>
+      ) : (
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          style={videoStyle}
+          autoPlay={false}
+          muted
+          playsInline
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={handleEnded}
+        />
+      )}
 
       <div style={progressBarBgStyle}>
         <div style={progressBarFillStyle} />
