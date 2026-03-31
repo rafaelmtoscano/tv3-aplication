@@ -32,22 +32,42 @@ export function StoryCard({
   isActive,
   onEnded,
 }: StoryCardProps) {
+  const youtubeIntervalRef = useRef<number | null>(null);
+  const youtubePlayerRef = useRef<any>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  useEffect(() => {
+    return () => {
+      if (youtubeIntervalRef.current) {
+        clearInterval(youtubeIntervalRef.current);
+      }
+    };
+  }, []);
+
   // Inicia reprodução quando fica em foco (sem precisar pressionar Enter)
   useEffect(() => {
-    if (videoType !== 'mp4') return;
+    if (videoType === 'youtube') {
+      if (isFocused && youtubePlayerRef.current) {
+        youtubePlayerRef.current.mute();
+        youtubePlayerRef.current.seekTo?.(0, true);
+        youtubePlayerRef.current.playVideo();
+      } else if (!isFocused && youtubePlayerRef.current) {
+        youtubePlayerRef.current.pauseVideo();
+        setProgress(0);
+      }
+      return;
+    }
+
     if (isFocused && videoRef.current) {
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
-    }
-    if (!isFocused && !isActive) {
+    } else {
       videoRef.current?.pause();
       setProgress(0);
     }
-  }, [isFocused, isActive, videoType]);
+  }, [isFocused, videoType]);
 
   const handleTimeUpdate = () => {
     const video = videoRef.current;
@@ -156,13 +176,17 @@ export function StoryCard({
       {title && <p style={titleStyle}>{title}</p>}
 
       {videoType === 'youtube' ? (
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          opacity: isFocused ? 1 : 0,
-          transition: 'opacity 0.3s ease',
-          pointerEvents: isFocused ? 'auto' : 'none',
-        }}>
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            inset: 0,
+            opacity: isFocused ? 1 : 0,
+            transition: 'opacity 0.3s ease',
+            pointerEvents: isFocused ? 'auto' : 'none',
+          }}
+        >
           <YouTube
             videoId={videoUrl}
             opts={{
@@ -177,19 +201,40 @@ export function StoryCard({
                 modestbranding: 1,
                 rel: 0,
                 fs: 0,
+                origin: typeof window !== 'undefined' ? window.location.origin : '',
               },
             }}
-            style={{ width: '100%', height: '100%' }}
-            onEnd={onEnded}
+            style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+            onReady={(e) => {
+              youtubePlayerRef.current = e.target;
+              if (isFocused) {
+                e.target.mute();
+                e.target.seekTo?.(0, true);
+                e.target.playVideo();
+              }
+            }}
+            onEnd={() => {
+              if (youtubeIntervalRef.current) {
+                clearInterval(youtubeIntervalRef.current);
+                youtubeIntervalRef.current = null;
+              }
+              handleEnded();
+            }}
             onStateChange={(e) => {
-              if (e.data === 1) { // playing
-                const interval = setInterval(() => {
-                  const player = e.target;
-                  const current = player.getCurrentTime?.() ?? 0;
-                  const total = player.getDuration?.() ?? 30;
-                  setProgress((current / total) * 100);
+              if (e.data === 1) {
+                if (youtubeIntervalRef.current) {
+                  clearInterval(youtubeIntervalRef.current);
+                }
+                youtubeIntervalRef.current = window.setInterval(() => {
+                  try {
+                    const current = e.target.getCurrentTime?.() ?? 0;
+                    const total = e.target.getDuration?.() ?? 30;
+                    setProgress((current / total) * 100);
+                  } catch {}
                 }, 500);
-                return () => clearInterval(interval);
+              } else if (youtubeIntervalRef.current) {
+                clearInterval(youtubeIntervalRef.current);
+                youtubeIntervalRef.current = null;
               }
             }}
           />
