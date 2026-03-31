@@ -219,6 +219,12 @@ export const HeroBanner = memo(
           aria-label={`Hero banner: ${slide?.title}`}
           role="region"
         >
+          <style>{`
+            @keyframes heroZoomIn {
+              from { transform: scale(1); }
+              to   { transform: scale(1.08); }
+            }
+          `}</style>
           {/* Media layers */}
           {slides.map((s, i) => (
             <div
@@ -227,6 +233,10 @@ export const HeroBanner = memo(
                 ...mediaLayerStyle,
                 opacity: activeIndex === i ? 1 : 0,
                 transition: 'opacity 0.6s ease-in-out',
+                animation: (activeIndex === i && s.mediaType === 'image')
+                  ? 'heroZoomIn 15s ease-out forwards'
+                  : 'none',
+                transform: (activeIndex === i && s.mediaType === 'image') ? undefined : 'scale(1)',
               }}
             >
               {s.mediaType === 'video' ? (
