@@ -50,7 +50,7 @@ export function StoryCard({
   useEffect(() => {
     if (videoType === 'youtube') {
       if (isFocused && youtubePlayerRef.current) {
-        youtubePlayerRef.current.mute();
+        youtubePlayerRef.current.unMute?.();
         youtubePlayerRef.current.seekTo?.(0, true);
         youtubePlayerRef.current.playVideo();
       } else if (!isFocused && youtubePlayerRef.current) {
@@ -195,7 +195,6 @@ export function StoryCard({
               playerVars: {
                 autoplay: isFocused ? 1 : 0,
                 controls: 0,
-                mute: 1,
                 loop: 0,
                 playsinline: 1,
                 modestbranding: 1,
@@ -208,7 +207,7 @@ export function StoryCard({
             onReady={(e) => {
               youtubePlayerRef.current = e.target;
               if (isFocused) {
-                e.target.mute();
+                e.target.unMute?.();
                 e.target.seekTo?.(0, true);
                 e.target.playVideo();
               }
