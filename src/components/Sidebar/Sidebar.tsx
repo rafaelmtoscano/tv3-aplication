@@ -150,7 +150,8 @@ export const Sidebar = memo(
 
       const logoAreaStyle: React.CSSProperties = {
         display: 'flex',
-        alignItems: 'flex-start',
+        justifyContent: 'center',
+        alignItems: 'center',
         width: '100%',
         padding: '0 10px',
         boxSizing: 'border-box',
@@ -208,13 +209,13 @@ export const Sidebar = memo(
                 <img
                   src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F680bef2f7f7c478aa70cb7cb92870b4d"
                   alt="Plataforma Comum"
-                  style={{ height: '100px', width: 'auto', display: 'block', objectFit: 'contain' }}
+                  style={{ height: '80px', width: 'auto', display: 'block', objectFit: 'contain' }}
                 />
               ) : (
                 <img
                   src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F70849a385e8142a190c2aad42c525fcb"
                   alt="Plataforma Comum"
-                  style={{ height: '100px', width: '100px', display: 'block', objectFit: 'contain' }}
+                  style={{ height: '80px', width: '80px', display: 'block', objectFit: 'contain' }}
                 />
               )}
             </div>
