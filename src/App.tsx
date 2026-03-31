@@ -24,6 +24,7 @@ import { useSenadoAPI } from './hooks/useSenadoAPI';
 import { useSecondScreen } from './hooks/useSecondScreen';
 import { homeData } from './data/home';
 import { services } from './data/services';
+import { nationalStories } from './data/stories';
 import { channels, syncChannelsFromSupabase } from './data/channels';
 import { colors } from './styles/colors';
 import { typography } from './styles/typography';
@@ -168,6 +169,7 @@ export default function App() {
     resetToMain,
   } = useFocusNavigation({
     heroLength,
+    storiesLength: currentPage === 'home' ? nationalStories.length : 0,
     railLengths,
     sidebarItemIds,
     sidebarLength: sidebarItems.length + 1,

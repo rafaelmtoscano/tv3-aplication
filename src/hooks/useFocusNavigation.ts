@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-export type MainZone = 'hero' | `rail-${number}` | 'my-space';
+export type MainZone = 'hero' | 'stories' | `rail-${number}` | 'my-space';
 
 export interface FocusState {
   region: 'sidebar' | 'main';
@@ -11,6 +11,7 @@ export interface FocusState {
 
 export interface UseFocusNavigationOptions {
   heroLength: number;
+  storiesLength?: number;
   railLengths: number[];
   sidebarItemIds: string[];   // ids dos itens do menu, SEM o avatar
   sidebarLength: number;      // sidebarItemIds.length + 1 (inclui o avatar)
@@ -32,6 +33,7 @@ export interface UseFocusNavigationReturn {
 
 export const useFocusNavigation = ({
   heroLength,
+  storiesLength = 0,
   railLengths,
   sidebarItemIds,
   sidebarLength,
@@ -85,6 +87,8 @@ export const useFocusNavigation = ({
             let limit = 0;
             if (mainZone === 'hero') {
               limit = heroLength - 1;
+            } else if (mainZone === 'stories') {
+              limit = (storiesLength || 0) - 1;
             } else if (mainZone === 'my-space') {
               limit = 0;
             } else {
@@ -103,6 +107,12 @@ export const useFocusNavigation = ({
 
           case 'ArrowDown': {
             if (mainZone === 'hero') {
+              if (storiesLength > 0) {
+                setFocusState((prev) => ({ ...prev, mainZone: 'stories', mainItemIndex: 0 }));
+              } else {
+                setFocusState((prev) => ({ ...prev, mainZone: 'rail-0', mainItemIndex: 0 }));
+              }
+            } else if (mainZone === 'stories') {
               setFocusState((prev) => ({ ...prev, mainZone: 'rail-0', mainItemIndex: 0 }));
             } else if (mainZone !== 'my-space') {
               const railMatch = mainZone.match(/^rail-(\d+)$/);
@@ -121,12 +131,16 @@ export const useFocusNavigation = ({
           case 'ArrowUp': {
             if (mainZone === 'my-space') {
               setFocusState((prev) => ({ ...prev, mainZone: `rail-${railLengths.length - 1}` as MainZone, mainItemIndex: 0 }));
+            } else if (mainZone === 'stories') {
+              setFocusState((prev) => ({ ...prev, mainZone: 'hero', mainItemIndex: 0 }));
             } else if (mainZone !== 'hero') {
               const railMatch = mainZone.match(/^rail-(\d+)$/);
               if (railMatch) {
                 const railIdx = parseInt(railMatch[1]);
                 if (railIdx > 0) {
                   setFocusState((prev) => ({ ...prev, mainZone: `rail-${railIdx - 1}` as MainZone, mainItemIndex: 0 }));
+                } else if (storiesLength > 0) {
+                  setFocusState((prev) => ({ ...prev, mainZone: 'stories', mainItemIndex: 0 }));
                 } else {
                   setFocusState((prev) => ({ ...prev, mainZone: 'hero', mainItemIndex: 0 }));
                 }
@@ -177,7 +191,7 @@ export const useFocusNavigation = ({
         }
       }
     },
-    [heroLength, railLengths, sidebarItemIds, sidebarLength, activeSidebarId, onEnter, onSidebarSelect]
+    [heroLength, storiesLength, railLengths, sidebarItemIds, sidebarLength, activeSidebarId, onEnter, onSidebarSelect]
   );
 
   useEffect(() => {
