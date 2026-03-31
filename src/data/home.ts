@@ -130,6 +130,26 @@ const heroSlides: HeroSlide[] = [
       videoUrl: prog.videoUrl,
     };
   })(),
+
+  // Slide 5 — TV Senado ao vivo
+  (() => {
+    const ch = getChannel('tv-senado');
+    const prog = ch.programs![0];
+    return {
+      id: 'hero-tv-senado',
+      mediaType: 'image' as const,
+      mediaSrc: prog?.thumbnail ?? '',
+      logo: ch.logo,
+      isLive: true,
+      signal: 'HD' as const,
+      classification: 'L' as const,
+      title: prog?.title ?? 'TV Senado',
+      description: 'Acompanhe ao vivo as votações e sessões do Senado Federal.',
+      buttonLabel: 'Assistir ao vivo',
+      channelId: ch.id,
+      videoUrl: ch.streamUrl,
+    };
+  })(),
 ];
 
 // ─── Rail 1 — TV ao vivo (variant: image, só canais com streamUrl) ────────────
@@ -207,6 +227,30 @@ const politicsRail: Rail = {
     }),
 };
 
+// ─── Rail — Senado Federal ────────────────────────────────────────────────────
+// TODO: substituir por chamada à API do Senado
+const senadoRail: Rail = {
+  id: 'senado',
+  title: 'Senado Federal',
+  variant: 'image-text',
+  cards: (() => {
+    const senado = channels.find(ch => ch.id === 'tv-senado');
+    if (!senado?.programs) return [];
+    return senado.programs.slice(0, 8).map(prog => ({
+      id: `senado-${prog.id}`,
+      channelId: senado.id,
+      channelName: senado.name,
+      logo: senado.logo,
+      backgroundColor: senado.backgroundColor,
+      image: prog.thumbnail,
+      title: prog.title,
+      label: prog.category,
+      isLive: false,
+      videoUrl: prog.videoUrl,
+    }));
+  })(),
+};
+
 // ─── Rail 4 — Educação & Jornalismo ──────────────────────────────────────────
 
 // Categorias: Educação (TV MEC) + Jornalismo (TV Brasil)
@@ -238,5 +282,5 @@ const educationRail: Rail = {
 // TODO: substituir por chamada à API
 export const homeData: HomeData = {
   hero: heroSlides,
-  rails: [liveRail, recentRail, politicsRail, educationRail],
+  rails: [liveRail, recentRail, politicsRail, senadoRail, educationRail],
 };

@@ -108,7 +108,7 @@ export const channels: Channel[] = [
     logo: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Fefb11e9bb9114a46b23813f61e4f1df8?format=webp&width=480&height=192',
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F71bea8998b7d494ea2da48d509a33111?format=webp&width=800&height=450',
     backgroundColor: '#FFFFFF',
-    streamUrl: '',
+    streamUrl: 'https://www.youtube.com/watch?v=live_stream&channel=UCLgti7NuK0RuW9wty-fxPjQ',
     programs: [
       { id: 'tv-senado-1', title: 'Senado aprova redução de tributos para a indústria química e petroquímica', thumbnail: 'https://i.ytimg.com/vi/C2m7YOXnA4o/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=C2m7YOXnA4o', category: 'Política' },
       { id: 'tv-senado-2', title: 'CDH approve medidas de proteção a mulheres em viagens e institui Agenda Transversal', thumbnail: 'https://i.ytimg.com/vi/iSouHkfOypE/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=iSouHkfOypE', category: 'Política' },
