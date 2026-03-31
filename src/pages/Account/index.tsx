@@ -57,7 +57,7 @@ function StepCard({ number, title, description, icon, status, content }: StepCar
     <div style={cardStyle}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <div style={numberStyle}>{isDone ? '✓' : number}</div>
-        <span style={{ fontSize: 36 }}>{icon}</span>
+        <span style={{ fontSize: 36, color: colors.text.primaryInverse }}>{icon}</span>
         {isDone && (
           <span style={{
             marginLeft: 'auto',
