@@ -18,6 +18,7 @@ export interface SecondScreenChannelData {
 
 interface UseSecondScreenReturn {
   sessionCode: string;
+  isMobileConnected: boolean;
   updateChannel: (data: Partial<SecondScreenChannelData>) => void;
   updateVoting: (votacaoId: string | null, active: boolean) => void;
 }
@@ -28,6 +29,7 @@ function generateCode(): string {
 
 export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
   const [sessionCode] = useState<string>(generateCode);
+  const [isMobileConnected, setIsMobileConnected] = useState(false);
   const unsubRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -49,8 +51,12 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
       updatedAt: serverTimestamp(),
     }).catch(console.error);
 
-    unsubRef.current = onSnapshot(sessionRef, () => {
-      // Reservado para reagir a comandos do celular (ex: troca de canal)
+    unsubRef.current = onSnapshot(sessionRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      if (data.mobileConnected === true) {
+        setIsMobileConnected(true);
+      }
     });
 
     return () => {
@@ -96,5 +102,5 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
     }
   }, [sessionCode]);
 
-  return { sessionCode, updateChannel, updateVoting };
+  return { sessionCode, isMobileConnected, updateChannel, updateVoting };
 }

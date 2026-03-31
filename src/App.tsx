@@ -37,18 +37,15 @@ export default function App() {
   const [deputyLoading, setDeputyLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showConnectionNotif, setShowConnectionNotif] = useState(false);
-  const prevConnectedRef = useRef(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
-  const { sessionCode, updateChannel, updateVoting } = useSecondScreen();
+  const { sessionCode, isMobileConnected, updateChannel, updateVoting } = useSecondScreen();
 
   // Detecta quando mobile conecta e exibe notificação
   useEffect(() => {
-    // sessionCode vem do useSecondScreen — quando ele muda,
-    // precisamos escutar o Firestore para saber se alguém conectou.
-    // Por ora, usamos uma simulação via onSnapshot já existente no hook.
-    // TODO: conectar ao estado real de isConnected do Firestore
-    prevConnectedRef.current = false;
-  }, []);
+    if (isMobileConnected) {
+      setShowConnectionNotif(true);
+    }
+  }, [isMobileConnected]);
 
   // Sincroniza canais com o Supabase na inicialização
   useEffect(() => {
@@ -476,7 +473,7 @@ export default function App() {
       {currentPage === 'account' && (
         <AccountPage
           sessionCode={sessionCode}
-          isConnected={false}
+          isConnected={isMobileConnected}
           isAuthenticated={false}
           onBack={() => setCurrentPage('home')}
           onSimulateConnection={() => setShowConnectionNotif(true)}
