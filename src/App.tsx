@@ -282,8 +282,8 @@ export default function App() {
     {
       id: 'device-connected',
       icon: <span style={{ fontSize: 28 }}>📱</span>,
-      title: 'Dispositivo encontrado',
-      description: `Um celular quer se conectar. Código: ${sessionCode}`,
+      title: 'Dispositivo conectado',
+      description: 'Um dispositivo foi conectado.',
       timestamp: 'agora',
       onEnter: () => {
         setShowConnectionNotif(false);
@@ -485,7 +485,7 @@ export default function App() {
           items={connectionNotifItems}
           showHeader={false}
           onClose={() => setShowConnectionNotif(false)}
-          autoHide={15000}
+          autoHide={5000}
         />
       )}
 
