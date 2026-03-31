@@ -15,7 +15,7 @@ const HEADER_HEIGHT = 120;
 const RAIL_BLOCK_HEIGHT = 240;
 const SCROLL_OFFSET = 80;
 
-const scheduledChannelIds = ['tv-camara', 'canal-gov', 'tv-brasil'];
+const scheduledChannelIds = ['tv-camara', 'canal-gov', 'tv-brasil', 'tv-senado'];
 const scheduledChannels = scheduledChannelIds
   .map(id => channels.find(c => c.id === id))
   .filter(Boolean) as typeof channels;

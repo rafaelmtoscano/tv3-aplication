@@ -755,15 +755,103 @@ export const tvBrasilSchedule: ChannelSchedule = {
 };
 
 
+// ─── TV Senado ────────────────────────────────────────────────────────────────
+// Fonte: meuguia.tv — extraída em 31/03/2026
+
+export const tvSenadoSchedule: ChannelSchedule = {
+  channelId: 'tv-senado',
+  schedule: {
+    segunda: [
+      // Usando grade de terça como base (padrão similar)
+      { time: '07:30', title: 'Em Discussão' },
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'Comissão', isLive: true },
+      { time: '10:00', title: 'Comissão', isLive: true },
+      { time: '13:30', title: 'Senado Notícias' },
+      { time: '14:00', title: 'Sessão Plenária', isLive: true },
+      { time: '19:30', title: 'Senado Notícias' },
+      { time: '20:00', title: 'Agenda Econômica' },
+      { time: '20:30', title: 'Assunto de Estado' },
+      { time: '21:00', title: 'Comissão', isLive: true },
+    ],
+    terca: [
+      { time: '07:30', title: 'Em Discussão' },
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'Comissão', isLive: true },
+      { time: '10:00', title: 'Comissão', isLive: true },
+      { time: '13:30', title: 'Senado Notícias' },
+      { time: '14:00', title: 'Sessão Plenária', isLive: true },
+      { time: '19:30', title: 'Senado Notícias' },
+      { time: '20:00', title: 'Agenda Econômica' },
+      { time: '20:30', title: 'Assunto de Estado' },
+      { time: '21:00', title: 'Comissão', isLive: true },
+    ],
+    quarta: [
+      { time: '00:00', title: 'Senadoc' },
+      { time: '03:30', title: 'Que Brasil é Este?' },
+      { time: '04:00', title: 'Em Discussão' },
+      { time: '04:30', title: 'TV Senado Live' },
+      { time: '05:00', title: 'Parlamento Brasil' },
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'Comissão', isLive: true },
+      { time: '14:00', title: 'Sessão Plenária', isLive: true },
+      { time: '19:30', title: 'Senado Notícias' },
+      { time: '20:00', title: 'Que Brasil é Este?' },
+      { time: '20:30', title: 'Agenda Econômica' },
+    ],
+    quinta: [
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'Que Brasil é Este?' },
+      { time: '11:30', title: 'TV Senado Live' },
+      { time: '14:00', title: 'Sessão Plenária', isLive: true },
+      { time: '19:30', title: 'Senado Notícias' },
+      { time: '20:00', title: 'Em Discussão' },
+      { time: '20:30', title: 'Que Brasil é Este?' },
+    ],
+    sexta: [
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Diálogos com TCU' },
+      { time: '09:00', title: 'TV Senado Live' },
+      { time: '13:30', title: 'Senado Notícias' },
+      { time: '20:30', title: 'TV Senado Live' },
+    ],
+    sabado: [
+      { time: '08:00', title: 'Em Discussão' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'EcoSenado' },
+      { time: '12:00', title: 'TV Senado Live' },
+      { time: '13:30', title: 'Senado Notícias' },
+      { time: '14:00', title: 'Galáxias' },
+      { time: '18:00', title: 'Concertos em Geral' },
+      { time: '21:00', title: 'Senadoc' },
+    ],
+    domingo: [
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'EcoSenado' },
+      { time: '09:30', title: 'Que Brasil é Este?' },
+      { time: '10:00', title: 'Concertos em Geral' },
+      { time: '12:00', title: 'Parlamento Brasil' },
+      { time: '12:30', title: 'Em Discussão' },
+      { time: '21:00', title: 'Senadoc' },
+    ],
+  },
+};
+
+
 // =============================================================================
 // ÍNDICE E UTILITÁRIOS
 // =============================================================================
 
-// TODO: adicionar 'tv-mec' e 'tv-senado' quando disponível
 export const allSchedules: Record<string, ChannelSchedule> = {
   'tv-camara':  tvCamaraSchedule,
   'canal-gov':  canalGovSchedule,
   'tv-brasil':  tvBrasilSchedule,
+  'tv-senado':  tvSenadoSchedule,
 };
 
 const DAY_MAP: Record<number, DayOfWeek> = {
