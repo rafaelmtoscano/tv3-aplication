@@ -30,7 +30,8 @@ export function usePharmacyLocation(cep?: string): UsePharmacyLocationResult {
   const normalizedCep = useMemo(() => cep?.replace(/\D/g, '') ?? '', [cep]);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
+    const { signal } = controller;
 
     const resolveLocation = async () => {
       setLoading(true);
@@ -40,10 +41,7 @@ export function usePharmacyLocation(cep?: string): UsePharmacyLocationResult {
         let nextLocation: PharmacyLocation = { ...DEFAULT_LOCATION, cep: normalizedCep || DEFAULT_LOCATION.cep };
 
         try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 5000);
-          const ipResponse = await fetch('https://ipapi.co/json/', { signal: controller.signal });
-          clearTimeout(timeout);
+          const ipResponse = await fetch('https://ipapi.co/json/', { signal });
           if (ipResponse.ok) {
             const ipData = await ipResponse.json();
             nextLocation = {
@@ -58,31 +56,37 @@ export function usePharmacyLocation(cep?: string): UsePharmacyLocationResult {
           // IP lookup failed silently — use default location
         }
 
+        if (signal.aborted) return;
+
         if (normalizedCep) {
-          const cepResponse = await fetch(`https://viacep.com.br/ws/${normalizedCep}/json/`);
-          if (cepResponse.ok) {
-            const cepData = await cepResponse.json();
-            if (!cepData.erro) {
-              nextLocation = {
-                ...nextLocation,
-                city: cepData.localidade || nextLocation.city,
-                state: cepData.uf || nextLocation.state,
-                cep: cepData.cep || nextLocation.cep,
-              };
+          try {
+            const cepResponse = await fetch(`https://viacep.com.br/ws/${normalizedCep}/json/`, { signal });
+            if (cepResponse.ok) {
+              const cepData = await cepResponse.json();
+              if (!cepData.erro) {
+                nextLocation = {
+                  ...nextLocation,
+                  city: cepData.localidade || nextLocation.city,
+                  state: cepData.uf || nextLocation.state,
+                  cep: cepData.cep || nextLocation.cep,
+                };
+              }
             }
+          } catch {
+            // CEP lookup failed silently — keep current nextLocation
           }
         }
 
-        if (!cancelled) {
+        if (!signal.aborted) {
           setLocation(nextLocation);
         }
-      } catch (err) {
-        if (!cancelled) {
+      } catch {
+        if (!signal.aborted) {
           setLocation({ ...DEFAULT_LOCATION, cep: normalizedCep || DEFAULT_LOCATION.cep });
-          setError(err instanceof Error ? err.message : 'Não foi possível obter a localização');
+          setError('Não foi possível obter a localização');
         }
       } finally {
-        if (!cancelled) {
+        if (!signal.aborted) {
           setLoading(false);
         }
       }
@@ -91,7 +95,7 @@ export function usePharmacyLocation(cep?: string): UsePharmacyLocationResult {
     void resolveLocation();
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, [normalizedCep]);
 
