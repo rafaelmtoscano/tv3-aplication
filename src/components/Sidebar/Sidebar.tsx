@@ -186,19 +186,11 @@ export const Sidebar = memo(
           >
             {/* Logo area */}
             <div style={logoAreaStyle}>
-              {isExpanded ? (
-                <img
-                  src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F680bef2f7f7c478aa70cb7cb92870b4d"
-                  alt="Plataforma Comum"
-                  style={{ height: '80px', width: 'auto', display: 'block', objectFit: 'contain' }}
-                />
-              ) : (
-                <img
-                  src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F70849a385e8142a190c2aad42c525fcb"
-                  alt="Plataforma Comum"
-                  style={{ height: '80px', width: '80px', display: 'block', objectFit: 'contain' }}
-                />
-              )}
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F3eb26be205714b19a4e6a537892c9f18"
+                alt="Logo"
+                style={{ height: '80px', width: isExpanded ? 'auto' : '80px', display: 'block', objectFit: 'contain' }}
+              />
             </div>
 
             {/* Sign area */}
