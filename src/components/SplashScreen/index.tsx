@@ -9,10 +9,10 @@ export function SplashScreen({ onComplete, videoUrl }: SplashScreenProps) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // 60-second timeout fallback
+    // 6-second timeout
     timeoutRef.current = setTimeout(() => {
       onComplete();
-    }, 60000);
+    }, 6000);
 
     return () => {
       if (timeoutRef.current) {
