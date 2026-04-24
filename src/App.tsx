@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from './lib/firebase';
+import { SplashScreen } from './components/SplashScreen';
 import Home from './pages/Home/index';
 import Live from './pages/Live/index';
 import WatchPage from './pages/Watch/index';
@@ -663,6 +664,18 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
 
 export default function App() {
   const { sessionCode, isMobileConnected, isMobileGovBrConnected, updateChannel, updateVoting } = useSecondScreen();
+  const [showSplash, setShowSplash] = useState(true);
+
+  const splashVideoUrl = 'https://cdn.builder.io/o/assets%2F8decac7d217b4e02a090384b68b42488%2Fe2a6a4c0b44745bdb12c9a12bc42833b?alt=media&token=a329235e-8402-461b-9df8-bcdaeaaf1b74&apiKey=8decac7d217b4e02a090384b68b42488';
+
+  if (showSplash) {
+    return (
+      <SplashScreen
+        videoUrl={splashVideoUrl}
+        onComplete={() => setShowSplash(false)}
+      />
+    );
+  }
 
   return (
     <AuthProvider sessionCode={sessionCode}>
