@@ -108,12 +108,18 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
     const sessionRef = doc(db, 'sessions', sessionCode);
     updateDoc(sessionRef, {
       activeFeature: 'pharmacies',
-    }).catch(console.error);
+    }).catch((error) => {
+      // Non-critical: second screen synchronization failed
+      console.warn('[Pharmacies] Failed to update activeFeature:', error?.code || error?.message);
+    });
 
     return () => {
       updateDoc(sessionRef, {
         activeFeature: null,
-      }).catch(console.error);
+      }).catch((error) => {
+        // Non-critical: second screen synchronization failed
+        console.warn('[Pharmacies] Failed to clear activeFeature:', error?.code || error?.message);
+      });
     };
   }, [currentPage, sessionCode]);
 

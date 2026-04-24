@@ -117,6 +117,9 @@ export function AuthProvider({ children, sessionCode }: { children: ReactNode; s
         govBrConnected: true,
         govBrUserName: MOCK_GOVBR_USER.name,
         govBrConnectedAt: new Date().toISOString(),
+      }).catch((error) => {
+        // Non-critical: second screen synchronization failed
+        console.warn('[AuthContext] Failed to sync GovBr connection:', error?.code || error?.message);
       });
     }
   }, [sessionCode]);
@@ -127,6 +130,9 @@ export function AuthProvider({ children, sessionCode }: { children: ReactNode; s
       await updateDoc(doc(db, 'sessions', sessionCode), {
         govBrConnected: false,
         govBrUserName: null,
+      }).catch((error) => {
+        // Non-critical: second screen synchronization failed
+        console.warn('[AuthContext] Failed to sync GovBr disconnection:', error?.code || error?.message);
       });
     }
   }, [sessionCode]);
