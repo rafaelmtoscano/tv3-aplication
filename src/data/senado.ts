@@ -141,6 +141,80 @@ export async function fetchSessaoCompletaSenado(): Promise<SessaoAtiva | null> {
   };
 }
 
+/**
+ * Fallback histórico do Senado — espelho de fetchSessaoHistorica da Câmara.
+ * Busca votações dos últimos 7 dias e devolve a mais recente como SessaoAtiva
+ * com situacao='Histórico'. A flag de histórico vive no estado do hook.
+ */
+export async function fetchSessaoHistoricaSenado(): Promise<SessaoAtiva | null> {
+  function fmt(d: Date): string {
+    return d.toISOString().split('T')[0].replace(/-/g, '');
+  }
+
+  const today = new Date();
+  const past = new Date();
+  past.setDate(past.getDate() - 7);
+
+  const url = `${API_BASE}/plenario/lista/votacao/${fmt(past)}/${fmt(today)}.json`;
+
+  try {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return null;
+    const json = await res.json();
+
+    const sessoes = json?.VotacaoPlenarioLista?.Plenario?.Sessoes?.Sessao;
+    if (!sessoes) return null;
+
+    const lista = Array.isArray(sessoes) ? sessoes : [sessoes];
+
+    // Coletar todas as votações nominais com data, ordenadas pela mais recente
+    type RawVotacao = { sessao: any; votacao: any };
+    const todas: RawVotacao[] = [];
+    for (const s of lista) {
+      const vots = s?.Votacoes?.Votacao;
+      if (!vots) continue;
+      const arr = Array.isArray(vots) ? vots : [vots];
+      for (const v of arr) todas.push({ sessao: s, votacao: v });
+    }
+    if (!todas.length) return null;
+
+    todas.sort((a, b) => {
+      const da = (a.votacao?.DataSessao ?? a.sessao?.DataSessao ?? '') as string;
+      const db = (b.votacao?.DataSessao ?? b.sessao?.DataSessao ?? '') as string;
+      return db.localeCompare(da);
+    });
+
+    const { sessao: s, votacao: v } = todas[0];
+
+    const sim = parseInt(v?.TotaisVotos?.TotalVotosSim ?? v?.TotalVotosSim ?? '0');
+    const nao = parseInt(v?.TotaisVotos?.TotalVotosNao ?? v?.TotalVotosNao ?? '0');
+    const abs = parseInt(v?.TotaisVotos?.TotalAbstencoes ?? v?.TotalVotosAbstencao ?? '0');
+
+    const data = (v?.DataSessao ?? s?.DataSessao ?? new Date().toISOString().split('T')[0]) as string;
+
+    const votacao: Votacao = {
+      id: v?.CodigoSessaoVotacao ?? v?.CodigoVotacao ?? `${s?.CodigoSessao ?? ''}-hist`,
+      uri: '',
+      data,
+      dataHoraRegistro: data,
+      siglaOrgao: 'PLEN-SENADO',
+      descricao: v?.DescricaoVotacao ?? s?.DescricaoSessao ?? s?.TipoSessao ?? '',
+      aprovacao: null,
+      placar: { sim, nao, abstencao: abs },
+    };
+
+    return {
+      eventId: parseInt(s?.CodigoSessao ?? '') || 0,
+      descricao: s?.DescricaoSessao ?? s?.TipoSessao ?? 'Última votação registrada',
+      situacao: 'Histórico',
+      votacaoAtiva: votacao,
+      pauta: [],
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ─────────────────────────────────────────────
 // VOTO SOCIAL (localStorage — chave separada da Câmara)
 // ─────────────────────────────────────────────

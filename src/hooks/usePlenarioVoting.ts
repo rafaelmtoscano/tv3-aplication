@@ -2,7 +2,7 @@
 // Hook que detecta sessão plenária ativa, faz polling e gerencia o voto social do usuário.
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { fetchSessaoCompleta, getSavedVote, saveVote, removeVote } from '../data/plenario';
+import { fetchSessaoCompleta, fetchSessaoHistorica, getSavedVote, saveVote, removeVote } from '../data/plenario';
 import type { SessaoAtiva, VotoSocial } from '../data/plenario';
 import type { UseVotingReturn, VotingPhase } from '../types/voting';
 
@@ -51,8 +51,15 @@ export function usePlenarioVoting(isActive: boolean): UseVotingReturn {
       if (!isMountedRef.current) return;
 
       if (!data) {
-        // Nenhuma sessão ativa encontrada na API — manter idle
-        if (isMountedRef.current) setPhase('idle');
+        // Sem sessão ao vivo — tenta fallback com a última votação dos últimos 7 dias
+        const historica = await fetchSessaoHistorica();
+        if (!isMountedRef.current) return;
+        if (historica) {
+          setSessao(historica);
+          setPhase('historico');
+        } else {
+          setPhase('idle');
+        }
         isFirstLoadRef.current = false;
         return;
       }

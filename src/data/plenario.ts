@@ -104,6 +104,30 @@ export async function fetchPautaEvento(eventId: number): Promise<PautaItem[]> {
 }
 
 /**
+ * Busca o placar completo de uma votação individual.
+ * O endpoint de listagem (/votacoes) NÃO retorna placar — só o endpoint
+ * individual (/votacoes/{id}) traz `dados.placar` com sim/não/abstenção.
+ */
+async function fetchPlacarVotacao(
+  votacaoId: string
+): Promise<{ sim: number; nao: number; abstencao: number } | null> {
+  try {
+    const res = await fetch(`${API_BASE}/votacoes/${votacaoId}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const placar = json?.dados?.placar;
+    if (!placar) return null;
+    return {
+      sim: placar.votosSim ?? 0,
+      nao: placar.votosNao ?? 0,
+      abstencao: placar.votosAbstencao ?? 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Busca a votação mais recente de um evento.
  * Prioriza votações em andamento (aprovacao === null).
  * Retorna null se não houver votações.
@@ -125,7 +149,61 @@ export async function fetchVotacaoAtiva(eventId: number): Promise<Votacao | null
 
   // Prioriza votação em andamento
   const emAndamento = votacoes.find(v => v.aprovacao === null);
-  return emAndamento ?? votacoes[0];
+  const votacao = emAndamento ?? votacoes[0];
+
+  // Endpoint de listagem não traz placar — buscar individualmente.
+  if (votacao && !votacao.placar) {
+    const placar = await fetchPlacarVotacao(votacao.id);
+    if (placar) votacao.placar = placar;
+  }
+
+  return votacao;
+}
+
+/**
+ * Fallback histórico — busca a última votação dos últimos 7 dias quando não há
+ * sessão ao vivo. Retorna SessaoAtiva com situacao='Histórico' e pauta vazia.
+ * A flag de histórico vive no estado do hook (phase === 'historico').
+ */
+export async function fetchSessaoHistorica(): Promise<SessaoAtiva | null> {
+  const today = new Date();
+  const past = new Date();
+  past.setDate(past.getDate() - 7);
+
+  const dataFim = today.toISOString().split('T')[0];
+  const dataInicio = past.toISOString().split('T')[0];
+
+  const url =
+    `${API_BASE}/votacoes` +
+    `?dataInicio=${dataInicio}` +
+    `&dataFim=${dataFim}` +
+    `&ordem=DESC` +
+    `&ordenarPor=dataHoraRegistro` +
+    `&itens=5`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const votacoes: Votacao[] = json.dados ?? [];
+    if (!votacoes.length) return null;
+
+    const votacao = votacoes[0];
+    if (votacao && !votacao.placar) {
+      const placar = await fetchPlacarVotacao(votacao.id);
+      if (placar) votacao.placar = placar;
+    }
+
+    return {
+      eventId: 0,
+      descricao: votacao.descricao || 'Última votação registrada',
+      situacao: 'Histórico',
+      votacaoAtiva: votacao,
+      pauta: [],
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**

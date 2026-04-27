@@ -17,7 +17,7 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
   } = voting;
 
   const [focusedBtn, setFocusedBtn] = useState(0);
-  const isVisible = phase === 'intro' || phase === 'question' || phase === 'details' || phase === 'results';
+  const isVisible = phase === 'intro' || phase === 'question' || phase === 'details' || phase === 'results' || phase === 'historico';
 
   // Reset focused button when phase changes
   useEffect(() => { setFocusedBtn(0); }, [phase]);
@@ -194,6 +194,59 @@ export function VotingOverlay({ voting, livePlayerRef }: VotingOverlayProps) {
         )}
 
       </div>
+
+      <DebugPanel voting={voting} casa="câmara" />
     </div>
   );
+}
+
+// ─────────────────────────────────────────────
+// DebugPanel — visível apenas com VITE_DEBUG_VOTING=true
+// ─────────────────────────────────────────────
+
+interface DebugPanelProps {
+  voting: UsePlenarioVotingReturn;
+  casa: 'câmara' | 'senado';
+}
+
+function DebugPanel({ voting, casa }: DebugPanelProps) {
+  if (import.meta.env.VITE_DEBUG_VOTING !== 'true') return null;
+
+  const { phase, sessao } = voting;
+  const votacao = sessao?.votacaoAtiva;
+  const placar = votacao?.placar;
+  const isHistorico = phase === 'historico';
+
+  const sessaoDesc = (sessao?.descricao ?? '—').slice(0, 40);
+  const dataFmt = votacao?.dataHoraRegistro
+    ? new Date(votacao.dataHoraRegistro).toLocaleString('pt-BR')
+    : '—';
+
+  const panelStyle: React.CSSProperties = {
+    position: 'absolute',
+    bottom: '8px',
+    right: '8px',
+    background: 'rgba(0,0,0,0.7)',
+    color: colors.text.primaryInverse,
+    padding: '8px',
+    borderRadius: '4px',
+    fontFamily: 'monospace',
+    fontSize: '12px',
+    lineHeight: '1.4',
+    whiteSpace: 'pre',
+    pointerEvents: 'none',
+    zIndex: 1001,
+  };
+
+  const text =
+    `[DEBUG VOTING]\n` +
+    `Casa:        ${casa}\n` +
+    `Phase:       ${phase}\n` +
+    `Sessão:      ${sessaoDesc}\n` +
+    `VotaçãoID:   ${votacao?.id ?? '—'}\n` +
+    `isHistorico: ${isHistorico}\n` +
+    `Placar:      sim=${placar?.sim ?? 0} nao=${placar?.nao ?? 0} abs=${placar?.abstencao ?? 0}\n` +
+    `Data:        ${dataFmt}`;
+
+  return <div style={panelStyle}>{text}</div>;
 }

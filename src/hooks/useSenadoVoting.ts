@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   fetchSessaoCompletaSenado,
+  fetchSessaoHistoricaSenado,
   getSavedVoteSenado,
   saveVoteSenado,
   removeVoteSenado,
@@ -37,7 +38,15 @@ export function useSenadoVoting(enabled: boolean): UseVotingReturn {
       if (!isMountedRef.current) return;
 
       if (!data) {
-        if (isMountedRef.current) setPhase('idle');
+        // Sem sessão ao vivo — tenta fallback com a última votação dos últimos 7 dias
+        const historica = await fetchSessaoHistoricaSenado();
+        if (!isMountedRef.current) return;
+        if (historica) {
+          setSessao(historica);
+          setPhase('historico');
+        } else {
+          setPhase('idle');
+        }
         isFirstLoadRef.current = false;
         return;
       }
