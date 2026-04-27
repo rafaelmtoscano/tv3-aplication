@@ -423,6 +423,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
         variant: 'image' as const,
         image: activeProfile.avatar,
         alt: activeProfile.name,
+        name: activeProfile.name,
       };
     }
     return {

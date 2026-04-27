@@ -1,5 +1,6 @@
 import React, { useState, useRef, forwardRef, memo, useCallback } from 'react';
 import { colors } from '../../styles/colors';
+import { typography } from '../../styles/typography';
 import { MenuItem } from '../MenuItem';
 import { Sign } from '../Sign';
 
@@ -15,6 +16,7 @@ export interface SidebarSign {
   icon?: React.ReactNode;
   image?: string;
   alt?: string;
+  name?: string;
 }
 
 export interface SidebarProps {
@@ -168,6 +170,20 @@ export const Sidebar = memo(
         padding: '0 4px',
         width: '100%',
         boxSizing: 'border-box',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+      };
+
+      const signNameStyle: React.CSSProperties = {
+        ...typography.body.medium,
+        color: colors.text.primaryInverse,
+        opacity: isExpanded ? 1 : 0,
+        maxWidth: isExpanded ? '180px' : '0',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        transition: 'opacity 0.3s, max-width 0.3s',
       };
 
       return (
@@ -206,6 +222,7 @@ export const Sidebar = memo(
                   state={activeItemId === 'avatar' ? 'selected' : 'idle'}
                   onClick={() => onItemClick?.('avatar')}
                 />
+                {sign.name && <span style={signNameStyle}>{sign.name}</span>}
               </div>
             )}
 
