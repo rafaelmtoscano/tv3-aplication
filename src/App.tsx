@@ -12,6 +12,7 @@ import Settings from './pages/Settings/index';
 import Help from './pages/Help/index';
 import Pharmacies from './pages/Pharmacies';
 import AccountPage from './pages/Account';
+import ProfileSwitcher from './pages/ProfileSwitcher';
 import { NotificationPanel } from './components/NotificationPanel';
 import type { NotificationItem } from './components/NotificationPanel';
 import Camara from './pages/Camara/index';
@@ -24,6 +25,7 @@ import type { SidebarItem, SidebarSign } from './components/Sidebar';
 import { useFocusNavigation } from './hooks/useFocusNavigation';
 import type { FocusState } from './hooks/useFocusNavigation';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { GOVBR_PROFILES } from './data/govBrProfiles';
 import { useCamaraAPI } from './hooks/useCamaraAPI';
 import { useSenadoAPI } from './hooks/useSenadoAPI';
 import { useSecondScreen } from './hooks/useSecondScreen';
@@ -52,7 +54,7 @@ interface AppContentProps {
 }
 
 function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, isMobileRequesting, updateChannel, updateVoting }: AppContentProps) {
-  const { connectGovBrMock, govBrUser, isGovBrConnected } = useAuth();
+  const { connectGovBrMock, govBrUser, isGovBrConnected, activeProfileId, switchProfile } = useAuth();
   const [showGovBrNotif, setShowGovBrNotif] = useState(false);
   const prevGovBrUserRef = useRef<typeof govBrUser>(null);
 
@@ -73,6 +75,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showConnectionNotif, setShowConnectionNotif] = useState(false);
   const [showRequestNotif, setShowRequestNotif] = useState(false);
+  const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const { senatorsList: senators, loading: senatorsLoading } = useSenadoAPI();
 
@@ -171,7 +174,11 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
 
   const handleSidebarSelect = useCallback((id: string) => {
     if (id === 'avatar') {
-      setCurrentPage('account');
+      if (isGovBrConnected) {
+        setShowProfileSwitcher(true);
+      } else {
+        setCurrentPage('account');
+      }
       return;
     }
     if (id === 'live') {
@@ -180,7 +187,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
       return;
     }
     setCurrentPage(id as PageId);
-  }, []);
+  }, [isGovBrConnected]);
 
   const handleDeputySelect = useCallback(async (deputy: import('./data/deputies').Deputy) => {
     setShowDeputiesGrid(false);
@@ -405,20 +412,26 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
 
   const isAuthenticated = isGovBrConnected;
 
+  const activeProfile = useMemo(
+    () => GOVBR_PROFILES.find((p) => p.id === activeProfileId) ?? GOVBR_PROFILES[0],
+    [activeProfileId],
+  );
+
   const sidebarSign: SidebarSign = useMemo(() => {
     if (isGovBrConnected) {
       return {
         variant: 'image' as const,
-        image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F16c0a867110f4acdb55cbc0e28831f6d?format=webp&width=800&height=1200',
+        image: activeProfile.avatar,
+        alt: activeProfile.name,
       };
     }
     return {
       variant: 'icon' as const,
       icon: <PersonIcon size={28} />,
     };
-  }, [isGovBrConnected]);
+  }, [isGovBrConnected, activeProfile]);
 
-  const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || watchPage || livePage);
+  const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || watchPage || livePage || showProfileSwitcher);
 
   const govBrNotifItems: NotificationItem[] = govBrUser ? [
     {
@@ -656,6 +669,16 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
             setLivePage(null);
             setCurrentPage('account');
           }}
+        />
+      )}
+
+      {showProfileSwitcher && (
+        <ProfileSwitcher
+          profiles={GOVBR_PROFILES}
+          activeProfileId={activeProfileId}
+          onSelect={(p) => { switchProfile(p.id); setShowProfileSwitcher(false); }}
+          onManageAccount={() => { setShowProfileSwitcher(false); setCurrentPage('account'); }}
+          onBack={() => setShowProfileSwitcher(false)}
         />
       )}
 

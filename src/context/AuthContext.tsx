@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { GOVBR_PROFILES } from '../data/govBrProfiles';
 
 export interface Dispensacao {
   id: string;
@@ -37,6 +38,8 @@ interface AuthContextValue {
   govBrUser: GovBrUser | null;
   isLoggedIn: boolean;
   isGovBrConnected: boolean;
+  activeProfileId: string;
+  switchProfile: (profileId: string) => void;
   loginMock: () => void;
   connectGovBrMock: () => void;
   disconnectGovBr: () => void;
@@ -105,13 +108,22 @@ const MOCK_APP_USER: AppUser = {
 export function AuthProvider({ children, sessionCode }: { children: ReactNode; sessionCode: string }) {
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [govBrUser, setGovBrUser] = useState<GovBrUser | null>(null);
+  const [activeProfileId, setActiveProfileId] = useState<string>('titular');
 
   const loginMock = useCallback(() => {
     setAppUser(MOCK_APP_USER);
   }, []);
 
+  const switchProfile = useCallback((profileId: string) => {
+    const profile = GOVBR_PROFILES.find((p) => p.id === profileId);
+    if (!profile) return;
+    setGovBrUser(profile.data);
+    setActiveProfileId(profile.id);
+  }, []);
+
   const connectGovBrMock = useCallback(async () => {
     setGovBrUser(MOCK_GOVBR_USER);
+    setActiveProfileId('titular');
     if (sessionCode) {
       await updateDoc(doc(db, 'sessions', sessionCode), {
         govBrConnected: true,
@@ -150,6 +162,7 @@ export function AuthProvider({ children, sessionCode }: { children: ReactNode; s
   const logout = useCallback(() => {
     setAppUser(null);
     setGovBrUser(null);
+    setActiveProfileId('titular');
   }, []);
 
   return (
@@ -159,6 +172,8 @@ export function AuthProvider({ children, sessionCode }: { children: ReactNode; s
         govBrUser,
         isLoggedIn: appUser !== null,
         isGovBrConnected: govBrUser !== null,
+        activeProfileId,
+        switchProfile,
         loginMock,
         connectGovBrMock,
         disconnectGovBr,
