@@ -72,11 +72,6 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
         if (data.mobileConnected === true) {
           setIsMobileConnected(true);
         }
-        if (data.mobileRequesting === true && !data.mobileConnected) {
-          setIsMobileRequesting(true);
-        } else {
-          setIsMobileRequesting(false);
-        }
         setIsMobileGovBrConnected((data.govBrConnected as boolean) ?? false);
       },
       (error) => {
@@ -91,9 +86,31 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
 
     unsubRef.current = unsubscribe;
 
+    // Escuta pedidos de conexão vindos da segunda tela
+    const requestRef = doc(db, 'requests', 'pending');
+    const unsubRequest = onSnapshot(
+      requestRef,
+      (snap) => {
+        if (!isMountedRef.current) return;
+        if (!snap.exists()) {
+          setIsMobileRequesting(false);
+          return;
+        }
+        const data = snap.data();
+        const requestedAt = data.requestedAt?.toMillis?.() ?? 0;
+        const isRecent = Date.now() - requestedAt < 60_000;
+        setIsMobileRequesting(isRecent && data.requesting === true);
+      },
+      (error) => {
+        if (error?.code === 'removed' || error?.code === 'aborted') return;
+        console.warn('[Second Screen] Request listener error:', error?.code || error?.message);
+      }
+    );
+
     return () => {
       // Mark component as unmounted first to prevent state updates
       isMountedRef.current = false;
+      unsubRequest();
       // Unsubscribe from listener
       if (unsubRef.current) {
         unsubRef.current();
