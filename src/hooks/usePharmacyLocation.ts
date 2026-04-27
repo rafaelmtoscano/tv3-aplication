@@ -54,20 +54,25 @@ export function usePharmacyLocation(cep?: string): UsePharmacyLocationResult {
         try {
           const controller = new AbortController();
           const timeout = setTimeout(() => controller.abort(), 5000);
-          const ipResponse = await fetch('https://ipapi.co/json/', { signal: controller.signal });
-          clearTimeout(timeout);
-          if (ipResponse.ok) {
-            const ipData = await ipResponse.json();
-            nextLocation = {
-              city: ipData.city || DEFAULT_LOCATION.city,
-              state: ipData.region_code || ipData.region || DEFAULT_LOCATION.state,
-              cep: ipData.postal || normalizedCep || DEFAULT_LOCATION.cep,
-              latitude: typeof ipData.latitude === 'number' ? ipData.latitude : DEFAULT_LOCATION.latitude,
-              longitude: typeof ipData.longitude === 'number' ? ipData.longitude : DEFAULT_LOCATION.longitude,
-            };
+          try {
+            const ipResponse = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+            clearTimeout(timeout);
+            if (ipResponse.ok) {
+              const ipData = await ipResponse.json();
+              nextLocation = {
+                city: ipData.city || DEFAULT_LOCATION.city,
+                state: ipData.region_code || ipData.region || DEFAULT_LOCATION.state,
+                cep: ipData.postal || normalizedCep || DEFAULT_LOCATION.cep,
+                latitude: typeof ipData.latitude === 'number' ? ipData.latitude : DEFAULT_LOCATION.latitude,
+                longitude: typeof ipData.longitude === 'number' ? ipData.longitude : DEFAULT_LOCATION.longitude,
+              };
+            }
+          } catch {
+            clearTimeout(timeout);
+            // IP lookup failed silently — use default location
           }
         } catch {
-          // IP lookup failed silently — use default location
+          // Outer catch for safety
         }
 
         if (cancelled) return;

@@ -71,7 +71,11 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
         setIsMobileGovBrConnected((data.govBrConnected as boolean) ?? false);
       },
       (error) => {
-        // Log Firestore snapshot listener errors but don't crash
+        // Ignore "Target removed" or "Aborted" errors on cleanup - they're expected
+        if (error?.code === 'removed' || error?.code === 'aborted' || error?.message?.includes('aborted')) {
+          return;
+        }
+        // Log other Firestore snapshot listener errors but don't crash
         console.warn('[Second Screen] Snapshot listener error:', error?.code || error?.message);
       }
     );
@@ -79,9 +83,18 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
     unsubRef.current = unsubscribe;
 
     return () => {
-      unsubRef.current?.();
+      // Unsubscribe from listener first
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
+      // Then clean up the document
       deleteDoc(sessionRef).catch((error) => {
-        // Log cleanup errors but don't crash
+        // Ignore expected cleanup errors
+        if (error?.code === 'not-found' || error?.code === 'aborted') {
+          return;
+        }
+        // Log other cleanup errors but don't crash
         console.warn('[Second Screen] Failed to delete session:', error?.code || error?.message);
       });
     };
