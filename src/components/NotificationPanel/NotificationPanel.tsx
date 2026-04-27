@@ -7,7 +7,7 @@ export interface NotificationItem {
   id: string;
   icon?: React.ReactNode;
   title: string;
-  description: string;
+  description: React.ReactNode;
   timestamp?: string;
   onEnter?: () => void;
 }

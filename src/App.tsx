@@ -457,7 +457,20 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
       id: 'device-requesting',
       icon: <span style={{ fontSize: 28 }}>📱</span>,
       title: 'Dispositivo quer se conectar',
-      description: `Digite o código ${sessionCode} no app da segunda tela para confirmar.`,
+      description: (
+        <>
+          Um dispositivo próximo quer se emparelhar com esta TV. Digite o código{' '}
+          <span style={{
+            fontWeight: 700,
+            fontSize: '1.4em',
+            letterSpacing: '0.15em',
+            color: colors.background.brandPrimary,
+          }}>
+            {sessionCode}
+          </span>
+          {' '}no app para confirmar.
+        </>
+      ),
       timestamp: 'agora',
       onEnter: () => {
         setShowRequestNotif(false);
