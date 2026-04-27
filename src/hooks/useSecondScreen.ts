@@ -75,8 +75,12 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
         setIsMobileGovBrConnected((data.govBrConnected as boolean) ?? false);
       },
       (error) => {
-        // Ignore "Target removed" or "Aborted" errors on cleanup - they're expected
-        if (error?.code === 'removed' || error?.code === 'aborted' || error?.message?.includes('aborted')) {
+        // Ignore abort/cleanup errors - these are expected during unmount
+        if (error?.code === 'removed' || error?.code === 'aborted' || error?.name === 'AbortError') {
+          return;
+        }
+        // Ignore "cancelled" operations
+        if (error?.message?.includes('aborted') || error?.message?.includes('cancelled')) {
           return;
         }
         // Log other Firestore snapshot listener errors but don't crash
@@ -102,7 +106,14 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
         setIsMobileRequesting(isRecent && data.requesting === true);
       },
       (error) => {
-        if (error?.code === 'removed' || error?.code === 'aborted') return;
+        // Ignore abort/cleanup errors - these are expected during unmount
+        if (error?.code === 'removed' || error?.code === 'aborted' || error?.name === 'AbortError') {
+          return;
+        }
+        // Ignore "cancelled" operations
+        if (error?.message?.includes('aborted') || error?.message?.includes('cancelled')) {
+          return;
+        }
         console.warn('[Second Screen] Request listener error:', error?.code || error?.message);
       }
     );
@@ -110,16 +121,29 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
     return () => {
       // Mark component as unmounted first to prevent state updates
       isMountedRef.current = false;
-      unsubRequest();
-      // Unsubscribe from listener
-      if (unsubRef.current) {
-        unsubRef.current();
-        unsubRef.current = null;
+
+      // Unsubscribe from both listeners immediately
+      try {
+        unsubRequest();
+      } catch (e) {
+        // Ignore errors during unsubscription
       }
+      try {
+        if (unsubRef.current) {
+          unsubRef.current();
+          unsubRef.current = null;
+        }
+      } catch (e) {
+        // Ignore errors during unsubscription
+      }
+
       // Then clean up the document
       deleteDoc(sessionRef).catch((error) => {
         // Ignore expected cleanup errors
-        if (error?.code === 'not-found' || error?.code === 'aborted') {
+        if (error?.code === 'not-found' || error?.code === 'aborted' || error?.name === 'AbortError') {
+          return;
+        }
+        if (error?.message?.includes('aborted') || error?.message?.includes('cancelled')) {
           return;
         }
         // Log other cleanup errors but don't crash
