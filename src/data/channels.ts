@@ -19,6 +19,7 @@ export interface Channel {
   backgroundColor: string;
   streamUrl?: string;
   programs?: Program[];
+  resources?: ('voting' | 'poll' | 'hearing')[];
 }
 
 // TODO: substituir por chamada à API
@@ -31,6 +32,7 @@ export const channels: Channel[] = [
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Fa6eaef1fb7db406593cd2e64dfafb0a5?format=webp&width=800&height=450',
     backgroundColor: '#0D448C',
     streamUrl: 'https://canalgov-stream.ebc.com.br/GOV.m3u8',
+    resources: [],
     programs: [
       { id: 'canal-gov-1', title: 'SUS terá novo teste de DNA para diagnóstico de doenças raras', thumbnail: 'https://i.ytimg.com/vi/mu7heQQ3ekU/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=mu7heQQ3ekU', category: 'Governo' },
       { id: 'canal-gov-2', title: 'Luz do povo garante gratuidade e desconto para milhões de famílias', thumbnail: 'https://i.ytimg.com/vi/-igsD2VQZkE/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=-igsD2VQZkE', category: 'Governo' },
@@ -51,6 +53,7 @@ export const channels: Channel[] = [
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F5c8223094974421f98bc81f062e7b025?format=webp&width=800&height=450',
     backgroundColor: '#EEBE08',
     streamUrl: 'https://tvbrasil-stream.ebc.com.br/EBC_HD.m3u8',
+    resources: [],
     programs: [
       { id: 'tv-brasil-manual', title: 'Manual de Sobrevivência da Literatura Brasileira', thumbnail: 'https://i.ytimg.com/vi/tu0fMZNKQQs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=tu0fMZNKQQs', category: 'Jornalismo' },
       { id: 'tv-brasil-1', title: 'BRASIL NO MUNDO | Eduardo Serra, professor de Relações Internacionais', thumbnail: 'https://i.ytimg.com/vi/tu0fMZNKQQs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=tu0fMZNKQQs', category: 'Jornalismo' },
@@ -72,6 +75,7 @@ export const channels: Channel[] = [
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F64a9563fa6b74e149a27e7d4b91da1c1?format=webp&width=800&height=450',
     backgroundColor: '#FFFFFF',
     streamUrl: 'https://stream3.camara.gov.br/tv1/manifest.m3u8',
+    resources: ['voting', 'poll', 'hearing'],
     programs: [
       { id: 'tv-camara-1', title: 'Câmara aprova política de capacitação digital para pessoas idosas - 27/02/26', thumbnail: 'https://i.ytimg.com/vi/b7QbtVgLheQ/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=b7QbtVgLheQ', category: 'Política' },
       { id: 'tv-camara-2', title: 'Aprovado projeto que determina acesso de idosos a tecnologias de comunicação - 27/02/2026', thumbnail: 'https://i.ytimg.com/vi/gQH2OODFdJQ/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=gQH2OODFdJQ', category: 'Política' },
@@ -92,6 +96,7 @@ export const channels: Channel[] = [
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F9e0a62eeec2a4e2aaa1fe8ab565197bc?format=webp&width=480&height=192',
     backgroundColor: '#3A2452',
     streamUrl: '',
+    resources: [],
     programs: [
       { id: 'tv-mec-1', title: '#TVdoMEC | Toda Matemática - EP 08', thumbnail: 'https://i.ytimg.com/vi/sPnSXbh7Fwc/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=sPnSXbh7Fwc', category: 'Educação' },
       { id: 'tv-mec-2', title: '#TVdoMEC | Toda Matemática - EP 09', thumbnail: 'https://i.ytimg.com/vi/qbsWB133gXs/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=qbsWB133gXs', category: 'Educação' },
@@ -110,6 +115,7 @@ export const channels: Channel[] = [
     logoFull: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F71bea8998b7d494ea2da48d509a33111?format=webp&width=800&height=450',
     backgroundColor: '#FFFFFF',
     streamUrl: 'https://www.youtube.com/watch?v=live_stream&channel=UCLgti7NuK0RuW9wty-fxPjQ',
+    resources: ['voting', 'poll'],
     programs: [
       { id: 'tv-senado-1', title: 'Senado aprova redução de tributos para a indústria química e petroquímica', thumbnail: 'https://i.ytimg.com/vi/C2m7YOXnA4o/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=C2m7YOXnA4o', category: 'Política' },
       { id: 'tv-senado-2', title: 'CDH approve medidas de proteção a mulheres em viagens e institui Agenda Transversal', thumbnail: 'https://i.ytimg.com/vi/iSouHkfOypE/maxresdefault.jpg', videoUrl: 'https://www.youtube.com/watch?v=iSouHkfOypE', category: 'Política' },

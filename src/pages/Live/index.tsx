@@ -65,11 +65,16 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
   const [showResourcesPanel, setShowResourcesPanel] = useState(false);
   const [activeOverlay, setActiveOverlay] = useState<ResourceType | null>(null);
   const [activeVotingData, setActiveVotingData] = useState<VotingResult | null>(null);
+  const [currentChannelId, setCurrentChannelId] = useState(initialChannelId ?? liveChannels[0]?.id ?? 'tv-camara');
 
   // Detect if it is TV Câmara channel
-  const isTvCamara = (initialChannelId ?? liveChannels[0]?.id) === 'tv-camara';
-  const isTvSenado = (initialChannelId ?? liveChannels[0]?.id) === 'tv-senado';
+  const isTvCamara = currentChannelId === 'tv-camara';
+  const isTvSenado = currentChannelId === 'tv-senado';
   const hasOverlay = showResourcesPanel || !!activeOverlay;
+
+  // Get current channel to access resources configuration
+  const currentChannel = channels.find(ch => ch.id === currentChannelId);
+  const channelResources = currentChannel?.resources ?? [];
 
   const voting = usePlenarioVoting(isTvCamara && !!isActive);
   const senadoVoting = useSenadoVoting(isTvSenado && !!isActive);
@@ -95,30 +100,41 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
     votacaoId: activeVotacao.id,
   } : activePoll;
 
-  // Recursos disponíveis — Painel de Votação e Enquete só aparecem se houver votação ≤ 48h
-  const availableResources = [
-    ...(hasRecentVoting ? [{
+  // Recursos disponíveis — construídos dinamicamente baseado na configuração do canal
+  const availableResources = [];
+
+  // Voting — só se canal suporta E há votação recente
+  if (channelResources.includes('voting') && hasRecentVoting) {
+    availableResources.push({
       id: 'voting',
       icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'currentColor' }}>how_to_vote</span>,
       title: 'Painel de Votação',
       description: 'Acompanhe os votos dos parlamentares',
       type: 'voting' as ResourceType,
-    }] : []),
-    ...(hasRecentVoting ? [{
+    });
+  }
+
+  // Poll — só se canal suporta E há votação recente
+  if (channelResources.includes('poll') && hasRecentVoting) {
+    availableResources.push({
       id: 'poll',
       icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'currentColor' }}>poll</span>,
       title: 'Enquete',
       description: 'Participe da consulta pública',
       type: 'poll' as ResourceType,
-    }] : []),
-    {
+    });
+  }
+
+  // Hearing — só se canal suporta
+  if (channelResources.includes('hearing')) {
+    availableResources.push({
       id: 'hearing',
       icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'currentColor' }}>record_voice_over</span>,
       title: 'Audiência Pública',
       description: 'Envie perguntas e comentários',
       type: 'hearing' as ResourceType,
-    },
-  ];
+    });
+  }
 
   const handleResourceSelect = useCallback((type: ResourceType) => {
     setShowResourcesPanel(false);
@@ -185,7 +201,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
   // Sincroniza canal ativo com segunda tela ao montar
   useEffect(() => {
     if (!isActive || !onUpdateChannel) return;
-    const ch = channels.find(c => c.id === (initialChannelId ?? liveChannels[0]?.id));
+    const ch = channels.find(c => c.id === currentChannelId);
     if (!ch) return;
     onUpdateChannel({
       channelId: ch.id,
@@ -197,7 +213,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
       programTime: '',
       isLive: true,
     });
-  }, [isActive, initialChannelId, onUpdateChannel]);
+  }, [isActive, currentChannelId, onUpdateChannel]);
 
   // Sincroniza estado de votação com segunda tela (Câmara ou Senado)
   useEffect(() => {
@@ -223,6 +239,8 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         onOpenResources={hasOverlay ? undefined : () => setShowResourcesPanel(true)}
         onControlsVisibilityChange={(visible) => setControlsVisible(visible)}
         onChannelChange={(channelId) => {
+          // Update current channel state
+          setCurrentChannelId(channelId);
           // Fechar overlays ao trocar de canal
           setShowResourcesPanel(false);
           setActiveOverlay(null);
