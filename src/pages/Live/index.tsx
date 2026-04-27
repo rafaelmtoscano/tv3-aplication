@@ -5,6 +5,7 @@ import { usePlenarioVoting } from '../../hooks/usePlenarioVoting';
 import { useSenadoVoting } from '../../hooks/useSenadoVoting';
 import { ResourcesPanel } from '../../components/ResourcesPanel';
 import type { ResourceType } from '../../components/ResourcesPanel';
+import { VotingOverlay } from './components/VotingOverlay';
 import { VotingOverlay as ParliamentVotingOverlay } from '../../components/VotingOverlay';
 import { PollOverlay } from '../../components/PollOverlay';
 import { HearingOverlay } from '../../components/HearingOverlay';
@@ -261,6 +262,14 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
           });
         }}
       />
+
+      {isTvCamara && isActive && (
+        <VotingOverlay voting={voting} livePlayerRef={livePlayerRef as any} />
+      )}
+
+      {isTvSenado && isActive && (
+        <VotingOverlay voting={senadoVoting as any} livePlayerRef={livePlayerRef as any} />
+      )}
 
       {showResourcesPanel && !activeOverlay && (
         <ResourcesPanel
