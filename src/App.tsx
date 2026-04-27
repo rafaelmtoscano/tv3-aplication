@@ -259,7 +259,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     resetToMain,
   } = useFocusNavigation({
     heroLength,
-    storiesLength: currentPage === 'home' ? nationalStories.length : 0,
+    storiesLength: currentPage === 'home' && isGovBrConnected ? nationalStories.length : 0,
     railLengths,
     sidebarItemIds,
     sidebarLength: sidebarItems.length + 1,

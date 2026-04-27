@@ -166,14 +166,16 @@ export default function Home({ mainZone, mainItemIndex, isActive, isGovBrConnect
   useEffect(() => {
     if (!isActive) return;
 
-    // Visual order: hero → rail-0 → rail-1 (TV ao vivo) → stories → rail-2 → ...
+    // Visual order: hero → rail-0 → rail-1 (TV ao vivo) → [stories] → rail-2 → ...
+    const storiesOffset = isGovBrConnected ? STORIES_HEIGHT : 0;
+
     if (mainZone === 'hero') {
       setMainScrollY(0);
     } else if (mainZone === 'stories') {
-      // stories comes after hero + rail-0 + rail-1
+      // stories comes after hero + rail-0 + rail-1 (only when connected)
       setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * 2 - RAIL_SCROLL_OFFSET);
     } else if (mainZone === 'my-space') {
-      setMainScrollY(HERO_HEIGHT + STORIES_HEIGHT + RAIL_HEIGHT * homeData.rails.length - RAIL_SCROLL_OFFSET);
+      setMainScrollY(HERO_HEIGHT + storiesOffset + RAIL_HEIGHT * homeData.rails.length - RAIL_SCROLL_OFFSET);
     } else {
       const railMatch = mainZone.match(/^rail-(\d+)$/);
       if (railMatch) {
@@ -184,12 +186,12 @@ export default function Home({ mainZone, mainItemIndex, isActive, isGovBrConnect
           // rail-1 (TV ao vivo) comes right after rail-0, before stories
           setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT - RAIL_SCROLL_OFFSET);
         } else {
-          // rail-2 and beyond come after stories
-          setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * railIdx + STORIES_HEIGHT - RAIL_SCROLL_OFFSET);
+          // rail-2 and beyond come after stories (when present)
+          setMainScrollY(HERO_HEIGHT + RAIL_HEIGHT * railIdx + storiesOffset - RAIL_SCROLL_OFFSET);
         }
       }
     }
-  }, [mainZone, isActive]);
+  }, [mainZone, isActive, isGovBrConnected]);
 
   const mainAreaStyle: React.CSSProperties = {
     flex: 1,
@@ -288,17 +290,19 @@ export default function Home({ mainZone, mainItemIndex, isActive, isGovBrConnect
           />
         )}
 
-        {/* Stories Rail (below TV ao vivo) */}
-        <div style={{ marginTop: '48px', marginBottom: '48px' }}>
-          <StoriesRail
-            title="Em destaque agora"
-            items={nationalStories}
-            focusedIndex={mainZone === 'stories' ? mainItemIndex : -1}
-            onFocusedIndexChange={() => {}}
-            onNavigateUp={() => {}}
-            onNavigateDown={() => {}}
-          />
-        </div>
+        {/* Stories Rail (below TV ao vivo) — apenas quando conectado ao gov.br */}
+        {isGovBrConnected && (
+          <div style={{ marginTop: '48px', marginBottom: '48px' }}>
+            <StoriesRail
+              title="Em destaque agora"
+              items={nationalStories}
+              focusedIndex={mainZone === 'stories' ? mainItemIndex : -1}
+              onFocusedIndexChange={() => {}}
+              onNavigateUp={() => {}}
+              onNavigateDown={() => {}}
+            />
+          </div>
+        )}
 
         {/* Content Rails (rail-2 through rail-N) */}
         {homeData.rails.slice(1).map((rail, railIndex) => (
