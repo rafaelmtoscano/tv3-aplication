@@ -216,6 +216,56 @@ export async function fetchSessaoHistoricaSenado(): Promise<SessaoAtiva | null> 
 }
 
 // ─────────────────────────────────────────────
+// VOTOS DOS SENADORES — endpoint de votação individual
+// ─────────────────────────────────────────────
+
+import type { DeputyVote } from './votingMock';
+import { isVotacaoRecente } from './plenario';
+
+export { isVotacaoRecente };
+
+/**
+ * Busca a lista de votos dos senadores para uma votação específica.
+ * GET /plenario/votacao/{codigoSessaoVotacao}.json
+ * TODO: validar payload real em produção.
+ */
+export async function fetchVotosSenadores(votacaoId: string): Promise<DeputyVote[]> {
+  if (!votacaoId) return [];
+  const url = `${API_BASE}/plenario/votacao/${votacaoId}.json`;
+  try {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return [];
+    const json = await res.json();
+
+    const votos = json?.Votacao?.Votos?.VotoParlamentar
+      ?? json?.VotacaoPlenario?.Votos?.VotoParlamentar
+      ?? json?.VotacaoPlenario?.Plenario?.SessoesPlenario?.SessaoPlenaria
+          ?.VotacoesNominais?.VotacaoNominal?.Votos?.VotoParlamentar;
+
+    if (!votos) return [];
+
+    const lista = Array.isArray(votos) ? votos : [votos];
+    return lista.map((v: any, idx: number): DeputyVote => {
+      const codigo = String(v?.CodigoParlamentar ?? `${votacaoId}-${idx}`);
+      const sigla = String(v?.SiglaVoto ?? v?.DescricaoVoto ?? '').toUpperCase();
+      let vote: DeputyVote['vote'] = 'abstencao';
+      if (sigla.startsWith('S')) vote = 'sim';
+      else if (sigla.startsWith('N')) vote = 'nao';
+      return {
+        id: codigo,
+        name: v?.NomeParlamentar ?? 'Senador(a)',
+        party: v?.SiglaPartido ?? '',
+        state: v?.SiglaUF ?? '',
+        photo: v?.UrlFotoParlamentar ?? `https://www.senado.leg.br/senadores/img/fotos-oficiais/senador${codigo}.jpg`,
+        vote,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+// ─────────────────────────────────────────────
 // VOTO SOCIAL (localStorage — chave separada da Câmara)
 // ─────────────────────────────────────────────
 

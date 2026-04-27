@@ -4,7 +4,7 @@ import { typography } from '../../styles/typography';
 import type { VotingResult } from '../../data/votingMock';
 
 interface VotingOverlayProps {
-  data: VotingResult;
+  data: VotingResult | null;
   onClose: () => void;
   onBack?: () => void;
 }
@@ -31,11 +31,10 @@ export function VotingOverlay({ data, onClose, onBack }: VotingOverlayProps) {
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
 
-  const totalPages = Math.ceil(data.deputies.length / ITEMS_PER_PAGE);
-  const pageDeputies = data.deputies.slice(
-    page * ITEMS_PER_PAGE,
-    (page + 1) * ITEMS_PER_PAGE
-  );
+  const totalPages = data ? Math.ceil(data.deputies.length / ITEMS_PER_PAGE) : 0;
+  const pageDeputies = data
+    ? data.deputies.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE)
+    : [];
 
   const goToPage = useCallback((nextPage: number) => {
     if (nextPage === page) return;
@@ -106,7 +105,7 @@ export function VotingOverlay({ data, onClose, onBack }: VotingOverlayProps) {
         {/* Header */}
         <div style={{ padding: '0 32px 20px', borderBottom: `1px solid ${colors.line.dark}` }}>
           <span style={{ ...typography.headline.medium, color: colors.text.primaryInverse, fontWeight: 600 }}>
-            {data.title}
+            {data ? data.title : 'Carregando votação…'}
           </span>
         </div>
 
@@ -116,7 +115,7 @@ export function VotingOverlay({ data, onClose, onBack }: VotingOverlayProps) {
             <div key={v} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ width: 10, height: 10, borderRadius: '50%', background: VOTE_COLORS[v], display: 'inline-block' }} />
               <span style={{ ...typography.body.medium, color: colors.text.primaryInverse }}>
-                {VOTE_LABELS[v]} ({String(data[v]).padStart(2, '0')})
+                {VOTE_LABELS[v]} ({data ? String(data[v]).padStart(2, '0') : '--'})
               </span>
             </div>
           ))}
@@ -124,6 +123,13 @@ export function VotingOverlay({ data, onClose, onBack }: VotingOverlayProps) {
 
         {/* Lista de deputados */}
         <div key={pageTransitionKey} style={pageListStyle}>
+          {!data && (
+            <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+              <span style={{ ...typography.body.medium, color: colors.text.secondaryInverse }}>
+                Carregando votos…
+              </span>
+            </div>
+          )}
           {pageDeputies.map((dep, i) => (
             <div key={dep.id} style={{
               display: 'flex',

@@ -3,13 +3,14 @@ import { LivePlayer } from '../../components/LivePlayer';
 import { channels } from '../../data/channels';
 import { usePlenarioVoting } from '../../hooks/usePlenarioVoting';
 import { useSenadoVoting } from '../../hooks/useSenadoVoting';
-import { VotingOverlay } from './components/VotingOverlay';
 import { ResourcesPanel } from '../../components/ResourcesPanel';
 import type { ResourceType } from '../../components/ResourcesPanel';
 import { VotingOverlay as ParliamentVotingOverlay } from '../../components/VotingOverlay';
 import { PollOverlay } from '../../components/PollOverlay';
 import { HearingOverlay } from '../../components/HearingOverlay';
-import { mockVotingResult } from '../../data/votingMock';
+import type { VotingResult } from '../../data/votingMock';
+import { fetchVotosDeputados, isVotacaoRecente } from '../../data/plenario';
+import { fetchVotosSenadores } from '../../data/senado';
 import { activePoll } from '../../data/polls';
 import { activeHearing } from '../../data/hearings';
 
@@ -53,15 +54,32 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
   const [controlsVisible, setControlsVisible] = useState(true);
   const [showResourcesPanel, setShowResourcesPanel] = useState(false);
   const [activeOverlay, setActiveOverlay] = useState<ResourceType | null>(null);
-  // Recursos disponíveis para demo
+  const [activeVotingData, setActiveVotingData] = useState<VotingResult | null>(null);
+
+  // Detect if it is TV Câmara channel
+  const isTvCamara = (initialChannelId ?? liveChannels[0]?.id) === 'tv-camara';
+  const isTvSenado = (initialChannelId ?? liveChannels[0]?.id) === 'tv-senado';
+  const hasOverlay = showResourcesPanel || !!activeOverlay;
+
+  const voting = usePlenarioVoting(isTvCamara && !!isActive);
+  const senadoVoting = useSenadoVoting(isTvSenado && !!isActive);
+
+  // Sessão ativa (independente da casa) e flag de votação ≤ 48h
+  const activeVotacao =
+    (isTvCamara ? voting.sessao?.votacaoAtiva : null) ??
+    (isTvSenado ? senadoVoting.sessao?.votacaoAtiva : null) ??
+    null;
+  const hasRecentVoting = isVotacaoRecente(activeVotacao, 48);
+
+  // Recursos disponíveis — Painel de Votação só aparece se houver votação ≤ 48h
   const availableResources = [
-    {
+    ...(hasRecentVoting ? [{
       id: 'voting',
       icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'currentColor' }}>how_to_vote</span>,
       title: 'Painel de Votação',
       description: 'Acompanhe os votos dos parlamentares',
       type: 'voting' as ResourceType,
-    },
+    }] : []),
     {
       id: 'poll',
       icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'currentColor' }}>poll</span>,
@@ -81,19 +99,36 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
   const handleResourceSelect = useCallback((type: ResourceType) => {
     setShowResourcesPanel(false);
     setActiveOverlay(type);
-  }, []);
+
+    if (type === 'voting') {
+      const v = activeVotacao;
+      if (!v) return;
+      setActiveVotingData(null);
+      const fetcher = isTvSenado ? fetchVotosSenadores : fetchVotosDeputados;
+      fetcher(v.id).then(deputies => {
+        setActiveVotingData({
+          title: v.descricao || 'Votação em andamento',
+          sim: v.placar?.sim ?? 0,
+          nao: v.placar?.nao ?? 0,
+          abstencao: v.placar?.abstencao ?? 0,
+          deputies,
+        });
+      }).catch(() => {
+        setActiveVotingData({
+          title: v.descricao || 'Votação em andamento',
+          sim: v.placar?.sim ?? 0,
+          nao: v.placar?.nao ?? 0,
+          abstencao: v.placar?.abstencao ?? 0,
+          deputies: [],
+        });
+      });
+    }
+  }, [activeVotacao, isTvSenado]);
 
   const handleCloseOverlay = useCallback(() => {
     setActiveOverlay(null);
+    setActiveVotingData(null);
   }, []);
-
-  // Detect if it is TV Câmara channel
-  const isTvCamara = (initialChannelId ?? liveChannels[0]?.id) === 'tv-camara';
-  const isTvSenado = (initialChannelId ?? liveChannels[0]?.id) === 'tv-senado';
-  const hasOverlay = showResourcesPanel || !!activeOverlay;
-
-  const voting = usePlenarioVoting(isTvCamara && !!isActive);
-  const senadoVoting = useSenadoVoting(isTvSenado && !!isActive);
 
   // Timer de 15s — dispara UMA vez por sessão de canal
   // Só inicia quando os controles do player são ocultados (controlsVisible = false)
@@ -182,14 +217,6 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         }}
       />
 
-      {isTvCamara && isActive && (
-        <VotingOverlay voting={voting} livePlayerRef={livePlayerRef as any} />
-      )}
-
-      {isTvSenado && isActive && (
-        <VotingOverlay voting={senadoVoting as any} livePlayerRef={livePlayerRef as any} />
-      )}
-
       {showResourcesPanel && !activeOverlay && (
         <ResourcesPanel
           resources={availableResources}
@@ -200,9 +227,9 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
 
       {activeOverlay === 'voting' && (
         <ParliamentVotingOverlay
-          data={mockVotingResult}
+          data={activeVotingData}
           onClose={handleCloseOverlay}
-          onBack={() => { setActiveOverlay(null); setShowResourcesPanel(true); }}
+          onBack={() => { setActiveOverlay(null); setActiveVotingData(null); setShowResourcesPanel(true); }}
         />
       )}
 

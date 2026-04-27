@@ -264,6 +264,69 @@ export async function fetchSessaoCompleta(): Promise<SessaoAtiva | null> {
 }
 
 // ─────────────────────────────────────────────
+// VOTOS DOS DEPUTADOS — endpoint individual
+// ─────────────────────────────────────────────
+
+import type { DeputyVote } from './votingMock';
+
+/**
+ * Busca a lista completa de votos dos deputados de uma votação.
+ * GET /api/v2/votacoes/{votacaoId}/votos
+ * A API pagina em até 100 itens — buscamos páginas adicionais em paralelo
+ * caso a primeira venha cheia.
+ * TODO: validar payload real em produção.
+ */
+export async function fetchVotosDeputados(votacaoId: string): Promise<DeputyVote[]> {
+  const ITENS = 100;
+  const fetchPagina = async (pagina: number): Promise<any[]> => {
+    try {
+      const url = `${API_BASE}/votacoes/${votacaoId}/votos?itens=${ITENS}&pagina=${pagina}`;
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const json = await res.json();
+      return Array.isArray(json?.dados) ? json.dados : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const primeira = await fetchPagina(1);
+  let restantes: any[] = [];
+  if (primeira.length === ITENS) {
+    // Busca até mais 5 páginas em paralelo (cobre os 513 deputados).
+    const paginas = await Promise.all([2, 3, 4, 5, 6].map(fetchPagina));
+    restantes = paginas.flat();
+  }
+  const todos = [...primeira, ...restantes];
+
+  return todos.map((v: any, idx: number): DeputyVote => {
+    const dep = v?.deputado_ ?? {};
+    const tipo = String(v?.tipoVoto ?? '').toLowerCase();
+    let vote: DeputyVote['vote'] = 'abstencao';
+    if (tipo.includes('sim')) vote = 'sim';
+    else if (tipo.includes('não') || tipo.includes('nao')) vote = 'nao';
+    return {
+      id: String(dep.id ?? `${votacaoId}-${idx}`),
+      name: dep.nome ?? 'Deputado(a)',
+      party: dep.siglaPartido ?? '',
+      state: dep.siglaUf ?? '',
+      photo: dep.urlFoto ?? '',
+      vote,
+    };
+  });
+}
+
+/**
+ * Retorna true quando dataHoraRegistro está dentro da janela informada (default 48h).
+ */
+export function isVotacaoRecente(votacao: Votacao | null | undefined, horas = 48): boolean {
+  if (!votacao?.dataHoraRegistro) return false;
+  const ts = new Date(votacao.dataHoraRegistro).getTime();
+  if (Number.isNaN(ts)) return false;
+  return Date.now() - ts <= horas * 60 * 60 * 1000;
+}
+
+// ─────────────────────────────────────────────
 // STORAGE — votos do usuário (localStorage)
 // ─────────────────────────────────────────────
 
