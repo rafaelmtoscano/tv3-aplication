@@ -10,6 +10,7 @@ export type VotingPhase =
   | 'details'
   | 'question'
   | 'results'
+  | 'historico'   // sem sessão ao vivo — exibe última votação com data/hora
   | 'error';
 
 export interface UseVotingReturn {
