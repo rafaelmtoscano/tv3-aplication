@@ -396,8 +396,8 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           }
         }
 
-        // rail-5 = Botão "Entrar com gov.br" (deslogado)
-        if (state.mainZone === 'rail-5' && !isGovBrConnected) {
+        // Última zona = Botão "Entrar com gov.br" (deslogado)
+        if (state.mainZone === `rail-${homeData.rails.length + 1}` && !isGovBrConnected) {
           setCurrentPage('account');
         }
       }

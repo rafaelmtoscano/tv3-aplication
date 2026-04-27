@@ -316,7 +316,7 @@ export default function Home({ mainZone, mainItemIndex, isActive, isGovBrConnect
 
         {/* Seção gov.br: Login Card (deslogado) ou oculta (conectado) */}
         <ServicesSection
-          focusedIndex={mainZone === 'rail-5' ? mainItemIndex : -1}
+          focusedIndex={mainZone === `rail-${homeData.rails.length + 1}` ? mainItemIndex : -1}
           isGovBrConnected={isGovBrConnected}
         />
 
