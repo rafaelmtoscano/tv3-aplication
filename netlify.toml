@@ -8,6 +8,7 @@
   # e dos Authorized Domains do Firebase Auth.
   SECRETS_SCAN_OMIT_PATHS = "dist/**,node_modules/**"
   SECRETS_SCAN_OMIT_KEYS = "FIREBASE_API_KEY"
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyDnoKsiFO4DXTV4g8-J6hciiTuqUjadFtg"
 
 [[redirects]]
   from = "/*"
