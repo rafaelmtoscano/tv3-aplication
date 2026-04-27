@@ -14,6 +14,7 @@ export interface VotingResult {
   nao: number;
   abstencao: number;
   deputies: DeputyVote[];
+  createdAt?: string; // ISO 8601
 }
 
 export const mockVotingResult: VotingResult = {

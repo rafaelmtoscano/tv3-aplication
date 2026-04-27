@@ -5,6 +5,8 @@ export interface Poll {
   bill: string; // ex: "PL 1/2025"
   billDescription?: string;
   options: { id: string; label: string }[];
+  createdAt?: string; // ISO 8601
+  votacaoId?: string;
 }
 
 export const activePoll: Poll = {

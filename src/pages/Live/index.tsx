@@ -14,6 +14,16 @@ import { fetchVotosSenadores } from '../../data/senado';
 import { activePoll } from '../../data/polls';
 import { activeHearing } from '../../data/hearings';
 
+/**
+ * Extracts the bill number (e.g., "PL 1/2025") from a voting description
+ * Falls back to first 30 characters if no match
+ */
+function extractBillNumber(descricao?: string): string {
+  if (!descricao) return 'Votação';
+  const match = descricao.match(/\b(PL|PEC|MP|PLP|PDL)\s*\d+\/\d{4}\b/i);
+  return match ? match[0].toUpperCase() : descricao.substring(0, 30) + (descricao.length > 30 ? '…' : '');
+}
+
 interface LivePageProps {
   isActive?: boolean;
   mainItemIndex?: number;
@@ -71,7 +81,21 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
     null;
   const hasRecentVoting = isVotacaoRecente(activeVotacao, 48);
 
-  // Recursos disponíveis — Painel de Votação só aparece se houver votação ≤ 48h
+  // Construir activePoll a partir da votação ativa (sincronizada com VotingOverlay e programação)
+  const activePollData = activeVotacao ? {
+    id: activeVotacao.id,
+    question: 'Qual sua opinião sobre?',
+    bill: extractBillNumber(activeVotacao.descricao),
+    billDescription: activeVotacao.descricao,
+    options: [
+      { id: 'concordo', label: 'Concordo' },
+      { id: 'discordo', label: 'Discordo' },
+    ],
+    createdAt: activeVotacao.dataHoraRegistro,
+    votacaoId: activeVotacao.id,
+  } : activePoll;
+
+  // Recursos disponíveis — Painel de Votação e Enquete só aparecem se houver votação ≤ 48h
   const availableResources = [
     ...(hasRecentVoting ? [{
       id: 'voting',
@@ -80,13 +104,13 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
       description: 'Acompanhe os votos dos parlamentares',
       type: 'voting' as ResourceType,
     }] : []),
-    {
+    ...(hasRecentVoting ? [{
       id: 'poll',
       icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'currentColor' }}>poll</span>,
       title: 'Enquete',
       description: 'Participe da consulta pública',
       type: 'poll' as ResourceType,
-    },
+    }] : []),
     {
       id: 'hearing',
       icon: <span className="material-symbols-rounded" style={{ fontSize: 24, color: 'currentColor' }}>record_voice_over</span>,
@@ -112,6 +136,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
           nao: v.placar?.nao ?? 0,
           abstencao: v.placar?.abstencao ?? 0,
           deputies,
+          createdAt: v.dataHoraRegistro,
         });
       }).catch(() => {
         setActiveVotingData({
@@ -120,6 +145,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
           nao: v.placar?.nao ?? 0,
           abstencao: v.placar?.abstencao ?? 0,
           deputies: [],
+          createdAt: v.dataHoraRegistro,
         });
       });
     }
@@ -235,7 +261,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
 
       {activeOverlay === 'poll' && (
         <PollOverlay
-          poll={activePoll}
+          poll={activePollData}
           isAuthenticated={isAuthenticated}
           onClose={handleCloseOverlay}
           onBack={() => { setActiveOverlay(null); setShowResourcesPanel(true); }}

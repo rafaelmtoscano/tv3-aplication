@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef, useState } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import type { VotingResult } from '../../data/votingMock';
+import { formatRelativeTime } from '../../utils/formatDateTime';
 
 interface VotingOverlayProps {
   data: VotingResult | null;
@@ -107,6 +108,11 @@ export function VotingOverlay({ data, onClose, onBack }: VotingOverlayProps) {
           <span style={{ ...typography.headline.medium, color: colors.text.primaryInverse, fontWeight: 600 }}>
             {data ? data.title : 'Carregando votação…'}
           </span>
+          {data?.createdAt && (
+            <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: '8px 0 0' }}>
+              Criada {formatRelativeTime(data.createdAt)}
+            </p>
+          )}
         </div>
 
         {/* Contadores */}

@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef, useState } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import type { Poll } from '../../data/polls';
+import { formatRelativeTime } from '../../utils/formatDateTime';
 
 interface PollOverlayProps {
   poll: Poll;
@@ -157,6 +158,11 @@ export function PollOverlay({ poll, isAuthenticated, onClose, onBack, onGovAuth 
           <p style={{ ...typography.body.medium, color: colors.text.secondaryInverse, margin: '8px 0 0' }}>
             Pauta: {poll.bill}
           </p>
+          {poll.createdAt && (
+            <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: '4px 0 0' }}>
+              Criada {formatRelativeTime(poll.createdAt)}
+            </p>
+          )}
         </div>
 
         <div style={{
@@ -197,6 +203,11 @@ export function PollOverlay({ poll, isAuthenticated, onClose, onBack, onGovAuth 
           <p style={{ ...typography.body.medium, color: colors.text.secondaryInverse, margin: '8px 0 0' }}>
             Pauta: {poll.bill}
           </p>
+          {poll.createdAt && (
+            <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: '4px 0 0' }}>
+              Criada {formatRelativeTime(poll.createdAt)}
+            </p>
+          )}
         </div>
 
         <button style={btnStyle(focusIndex === 0)} onClick={() => setAuthStep('vote')}>
@@ -240,6 +251,11 @@ export function PollOverlay({ poll, isAuthenticated, onClose, onBack, onGovAuth 
           <p style={{ ...typography.body.medium, color: colors.text.secondaryInverse, margin: '8px 0 0' }}>
             Pauta: {poll.bill}
           </p>
+          {poll.createdAt && (
+            <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: '4px 0 0' }}>
+              Criada {formatRelativeTime(poll.createdAt)}
+            </p>
+          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -277,6 +293,11 @@ export function PollOverlay({ poll, isAuthenticated, onClose, onBack, onGovAuth 
           <p style={{ ...typography.body.medium, color: colors.text.secondaryInverse, margin: '8px 0 0' }}>
             Pauta: {poll.bill}
           </p>
+          {poll.createdAt && (
+            <p style={{ ...typography.body.small, color: colors.text.secondaryInverse, margin: '4px 0 0' }}>
+              Criada {formatRelativeTime(poll.createdAt)}
+            </p>
+          )}
         </div>
 
         <div style={{
