@@ -102,7 +102,7 @@ const heroSlides: HeroSlide[] = [
       classification: 'L' as const,
       title: currentProg?.title ?? ch.programs![0].title,
       description: 'Acompanhe ao vivo a programação da TV Brasil com conteúdo jornalístico de qualidade.',
-      buttonLabel: 'Assistir ao vivo',
+      buttonLabel: 'Assistir agora',
       channelId: ch.id,
     };
   })(),
@@ -160,7 +160,7 @@ const heroSlides: HeroSlide[] = [
       classification: 'L' as const,
       title: currentProg?.title ?? prog?.title ?? 'TV Senado',
       description: 'Acompanhe ao vivo as votações e sessões do Senado Federal.',
-      buttonLabel: 'Assistir ao vivo',
+      buttonLabel: 'Assistir agora',
       channelId: ch.id,
       videoUrl: ch.streamUrl,
     };

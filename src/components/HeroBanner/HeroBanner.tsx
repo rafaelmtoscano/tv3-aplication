@@ -164,7 +164,8 @@ export const HeroBanner = memo(
         maxWidth: '720px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '20px',
+        alignItems: 'flex-start',
+        gap: '32px',
       };
 
       const titleStyle: React.CSSProperties = {
@@ -174,6 +175,9 @@ export const HeroBanner = memo(
         fontWeight: 700,
         lineHeight: '110%',
         margin: 0,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        minHeight: '0px',
         overflow: 'hidden',
         display: '-webkit-box',
         WebkitLineClamp: 3,
@@ -194,7 +198,8 @@ export const HeroBanner = memo(
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
-        gap: '20px',
+        justifyContent: 'center',
+        gap: '32px',
       };
 
       const paginationStyle: React.CSSProperties = {
