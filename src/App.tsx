@@ -46,11 +46,12 @@ interface AppContentProps {
   isMobileGovBrConnected: boolean;
   sessionCode: string;
   isMobileConnected: boolean;
+  isMobileRequesting: boolean;
   updateChannel: (data: Partial<SecondScreenChannelData>) => void;
   updateVoting: (votacaoId: string | null, active: boolean) => void;
 }
 
-function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, updateChannel, updateVoting }: AppContentProps) {
+function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, isMobileRequesting, updateChannel, updateVoting }: AppContentProps) {
   const { connectGovBrMock, govBrUser, isGovBrConnected } = useAuth();
   const [showGovBrNotif, setShowGovBrNotif] = useState(false);
   const prevGovBrUserRef = useRef<typeof govBrUser>(null);
@@ -71,6 +72,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
   const [deputyLoading, setDeputyLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showConnectionNotif, setShowConnectionNotif] = useState(false);
+  const [showRequestNotif, setShowRequestNotif] = useState(false);
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const { senatorsList: senators, loading: senatorsLoading } = useSenadoAPI();
 
@@ -78,6 +80,20 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
   useEffect(() => {
     if (isMobileConnected) {
       setShowConnectionNotif(true);
+    }
+  }, [isMobileConnected]);
+
+  // Detecta quando mobile está pedindo conexão
+  useEffect(() => {
+    if (isMobileRequesting) {
+      setShowRequestNotif(true);
+    }
+  }, [isMobileRequesting]);
+
+  // Fecha notificação de pedido quando conexão é confirmada
+  useEffect(() => {
+    if (isMobileConnected) {
+      setShowRequestNotif(false);
     }
   }, [isMobileConnected]);
 
@@ -436,6 +452,20 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
     },
   ];
 
+  const requestNotifItems: NotificationItem[] = [
+    {
+      id: 'device-requesting',
+      icon: <span style={{ fontSize: 28 }}>📱</span>,
+      title: 'Dispositivo quer se conectar',
+      description: `Digite o código ${sessionCode} no app da segunda tela para confirmar.`,
+      timestamp: 'agora',
+      onEnter: () => {
+        setShowRequestNotif(false);
+        setCurrentPage('account');
+      },
+    },
+  ];
+
   const rootStyle: React.CSSProperties = {
     position: 'fixed',
     inset: 0,
@@ -635,6 +665,15 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
         />
       )}
 
+      {showRequestNotif && (
+        <NotificationPanel
+          items={requestNotifItems}
+          showHeader={false}
+          onClose={() => setShowRequestNotif(false)}
+          autoHide={30000}
+        />
+      )}
+
       {showGovBrNotif && (
         <NotificationPanel
           items={govBrNotifItems}
@@ -672,7 +711,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
 // Calls useSecondScreen, mounts AuthProvider with sessionCode, renders AppContent.
 
 export default function App() {
-  const { sessionCode, isMobileConnected, isMobileGovBrConnected, updateChannel, updateVoting } = useSecondScreen();
+  const { sessionCode, isMobileConnected, isMobileRequesting, isMobileGovBrConnected, updateChannel, updateVoting } = useSecondScreen();
   const [showSplash, setShowSplash] = useState(true);
 
   const splashVideoUrl = 'https://cdn.builder.io/o/assets%2F8decac7d217b4e02a090384b68b42488%2Fe2a6a4c0b44745bdb12c9a12bc42833b?alt=media&token=a329235e-8402-461b-9df8-bcdaeaaf1b74&apiKey=8decac7d217b4e02a090384b68b42488';
@@ -692,6 +731,7 @@ export default function App() {
         isMobileGovBrConnected={isMobileGovBrConnected}
         sessionCode={sessionCode}
         isMobileConnected={isMobileConnected}
+        isMobileRequesting={isMobileRequesting}
         updateChannel={updateChannel}
         updateVoting={updateVoting}
       />

@@ -19,6 +19,7 @@ export interface SecondScreenChannelData {
 interface UseSecondScreenReturn {
   sessionCode: string;
   isMobileConnected: boolean;
+  isMobileRequesting: boolean;
   isMobileGovBrConnected: boolean;
   updateChannel: (data: Partial<SecondScreenChannelData>) => void;
   updateVoting: (votacaoId: string | null, active: boolean) => void;
@@ -31,10 +32,13 @@ function generateCode(): string {
 export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
   const [sessionCode] = useState<string>(generateCode);
   const [isMobileConnected, setIsMobileConnected] = useState(false);
+  const [isMobileRequesting, setIsMobileRequesting] = useState(false);
   const [isMobileGovBrConnected, setIsMobileGovBrConnected] = useState(false);
   const unsubRef = useRef<(() => void) | null>(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
+    isMountedRef.current = true;
     const sessionRef = doc(db, 'sessions', sessionCode);
 
     // Initialize session document - failure is non-critical
@@ -63,10 +67,15 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
     const unsubscribe = onSnapshot(
       sessionRef,
       (snap) => {
-        if (!snap.exists()) return;
+        if (!isMountedRef.current || !snap.exists()) return;
         const data = snap.data();
         if (data.mobileConnected === true) {
           setIsMobileConnected(true);
+        }
+        if (data.mobileRequesting === true && !data.mobileConnected) {
+          setIsMobileRequesting(true);
+        } else {
+          setIsMobileRequesting(false);
         }
         setIsMobileGovBrConnected((data.govBrConnected as boolean) ?? false);
       },
@@ -83,7 +92,9 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
     unsubRef.current = unsubscribe;
 
     return () => {
-      // Unsubscribe from listener first
+      // Mark component as unmounted first to prevent state updates
+      isMountedRef.current = false;
+      // Unsubscribe from listener
       if (unsubRef.current) {
         unsubRef.current();
         unsubRef.current = null;
@@ -148,5 +159,5 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
     }
   }, [sessionCode]);
 
-  return { sessionCode, isMobileConnected, isMobileGovBrConnected, updateChannel, updateVoting };
+  return { sessionCode, isMobileConnected, isMobileRequesting, isMobileGovBrConnected, updateChannel, updateVoting };
 }
