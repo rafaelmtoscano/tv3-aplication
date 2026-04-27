@@ -6,7 +6,7 @@ interface SplashScreenProps {
 }
 
 export function SplashScreen({ onComplete, videoUrl }: SplashScreenProps) {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     // 6-second timeout

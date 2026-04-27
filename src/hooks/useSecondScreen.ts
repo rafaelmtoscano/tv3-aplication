@@ -76,7 +76,7 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
       },
       (error) => {
         // Ignore abort/cleanup errors - these are expected during unmount
-        if (error?.code === 'removed' || error?.code === 'aborted' || error?.name === 'AbortError') {
+        if (error?.code === 'cancelled' || error?.code === 'aborted' || error?.name === 'AbortError') {
           return;
         }
         // Ignore "cancelled" operations
@@ -107,7 +107,7 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
       },
       (error) => {
         // Ignore abort/cleanup errors - these are expected during unmount
-        if (error?.code === 'removed' || error?.code === 'aborted' || error?.name === 'AbortError') {
+        if (error?.code === 'cancelled' || error?.code === 'aborted' || error?.name === 'AbortError') {
           return;
         }
         // Ignore "cancelled" operations
