@@ -87,7 +87,7 @@ export const ActionButton = memo(
         justifyContent: 'center',
         borderRadius: '32px',
         cursor: 'pointer',
-        padding: variant === 'text' ? '0.5rem 1.5rem 0.5rem 0.5rem' : '0.25rem',
+        padding: variant === 'text' ? '0.5rem 1rem 0.5rem 1rem' : '0.25rem',
         gap: variant === 'icon-text' ? '0.63rem' : '0',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         outline: 'none',
