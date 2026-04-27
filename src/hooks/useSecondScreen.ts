@@ -30,10 +30,10 @@ function generateCode(): string {
 }
 
 export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
-  const [sessionCode] = useState<string>(generateCode);
+  const [sessionCode] = useState<string>(() => generateCode());
   const [isMobileConnected, setIsMobileConnected] = useState(false);
-  const [isMobileRequesting, setIsMobileRequesting] = useState(false);
   const [isMobileGovBrConnected, setIsMobileGovBrConnected] = useState(false);
+  const [isMobileRequesting, setIsMobileRequesting] = useState(false);
   const unsubRef = useRef<(() => void) | null>(null);
   const isMountedRef = useRef(true);
 
