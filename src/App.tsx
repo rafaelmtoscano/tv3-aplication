@@ -427,7 +427,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
       id: 'device-connected',
       icon: <span style={{ fontSize: 28 }}>📱</span>,
       title: 'Dispositivo conectado',
-      description: 'Um dispositivo foi conectado.',
+      description: `Um dispositivo quer se conectar. Código: ${sessionCode}`,
       timestamp: 'agora',
       onEnter: () => {
         setShowConnectionNotif(false);
@@ -609,7 +609,10 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, up
           onUpdateChannel={updateChannel}
           onUpdateVoting={updateVoting}
           isAuthenticated={isAuthenticated}
-          onGovAuth={connectGovBrMock}
+          onGovAuth={() => {
+            setLivePage(null);
+            setCurrentPage('account');
+          }}
         />
       )}
 
