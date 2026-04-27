@@ -62,7 +62,7 @@ const heroSlides: HeroSlide[] = [
   {
     id: 'hero-segunda-tela',
     mediaType: 'image' as const,
-    mediaSrc: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2Ffd273fb300054a77885c0668c9998da6',
+    mediaSrc: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F790adf5506c847b994ae97fd0f348dee',
     isLive: false,
     title: 'Mais Brasil TV: informação e serviços em um só lugar',
     description: 'Mais acesso, mais serviço e mais  BR conectando seu celular a TV.',
