@@ -122,7 +122,7 @@ export default function ProfileSwitcher({
         .profile-card__avatar {
           width: 200px;
           height: 200px;
-          border-radius: 16px;
+          border-radius: 50%;
           object-fit: cover;
           display: block;
           background: ${colors.background.primaryInverse};
