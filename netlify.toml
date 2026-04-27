@@ -2,6 +2,13 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  # A apiKey do Firebase Web é pública por design (identifica o projeto,
+  # não autentica acesso). A segurança vem das Firestore Security Rules
+  # e dos Authorized Domains do Firebase Auth.
+  SECRETS_SCAN_OMIT_PATHS = "dist/**,node_modules/**"
+  SECRETS_SCAN_OMIT_KEYS = "FIREBASE_API_KEY"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
