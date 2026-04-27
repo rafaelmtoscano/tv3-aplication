@@ -65,15 +65,18 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
   const [showResourcesPanel, setShowResourcesPanel] = useState(false);
   const [activeOverlay, setActiveOverlay] = useState<ResourceType | null>(null);
   const [activeVotingData, setActiveVotingData] = useState<VotingResult | null>(null);
-  const [currentChannelId, setCurrentChannelId] = useState(initialChannelId ?? liveChannels[0]?.id ?? 'tv-camara');
+
+  // Use initialChannelId (from props) to determine active channel
+  // This avoids state management issues with LivePlayer callbacks
+  const activeChannelId = initialChannelId ?? liveChannels[0]?.id ?? 'tv-camara';
 
   // Detect if it is TV Câmara channel
-  const isTvCamara = currentChannelId === 'tv-camara';
-  const isTvSenado = currentChannelId === 'tv-senado';
+  const isTvCamara = activeChannelId === 'tv-camara';
+  const isTvSenado = activeChannelId === 'tv-senado';
   const hasOverlay = showResourcesPanel || !!activeOverlay;
 
   // Get current channel to access resources configuration
-  const currentChannel = channels.find(ch => ch.id === currentChannelId);
+  const currentChannel = channels.find(ch => ch.id === activeChannelId);
   const channelResources = currentChannel?.resources ?? [];
 
   const voting = usePlenarioVoting(isTvCamara && !!isActive);
@@ -201,7 +204,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
   // Sincroniza canal ativo com segunda tela ao montar
   useEffect(() => {
     if (!isActive || !onUpdateChannel) return;
-    const ch = channels.find(c => c.id === currentChannelId);
+    const ch = channels.find(c => c.id === activeChannelId);
     if (!ch) return;
     onUpdateChannel({
       channelId: ch.id,
@@ -213,7 +216,7 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
       programTime: '',
       isLive: true,
     });
-  }, [isActive, currentChannelId, onUpdateChannel]);
+  }, [isActive, activeChannelId, onUpdateChannel]);
 
   // Sincroniza estado de votação com segunda tela (Câmara ou Senado)
   useEffect(() => {
@@ -239,8 +242,6 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         onOpenResources={hasOverlay ? undefined : () => setShowResourcesPanel(true)}
         onControlsVisibilityChange={(visible) => setControlsVisible(visible)}
         onChannelChange={(channelId) => {
-          // Update current channel state
-          setCurrentChannelId(channelId);
           // Fechar overlays ao trocar de canal
           setShowResourcesPanel(false);
           setActiveOverlay(null);
