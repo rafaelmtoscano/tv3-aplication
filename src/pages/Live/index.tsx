@@ -182,6 +182,10 @@ export default function LivePage({ initialChannelId, singleChannel, onExit, isAc
         }}
       />
 
+      {isTvCamara && isActive && (
+        <VotingOverlay voting={voting} livePlayerRef={livePlayerRef as any} />
+      )}
+
       {isTvSenado && isActive && (
         <VotingOverlay voting={senadoVoting as any} livePlayerRef={livePlayerRef as any} />
       )}
