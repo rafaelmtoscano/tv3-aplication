@@ -164,8 +164,8 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     if (currentPage === 'pharmacies') {
       return [mockPharmacies.length];
     }
-    return [services.length, ...homeData.rails.map((r) => r.cards.length), services.length];
-  }, [currentPage, deputies.length, senators.length]);
+    return [services.length, ...homeData.rails.map((r) => r.cards.length), isGovBrConnected ? 0 : 1];
+  }, [currentPage, deputies.length, senators.length, isGovBrConnected]);
 
   const sidebarItemIds = useMemo(() => sidebarItems.map((i) => i.id), [sidebarItems]);
 
@@ -396,15 +396,12 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           }
         }
 
-        // rail-5 = Serviços (Gov.br section)
-        if (state.mainZone === 'rail-5') {
-          const service = services[state.mainItemIndex];
-          if (service) {
-            handleServiceSelect(service.id);
-          }
+        // rail-5 = Botão "Entrar com gov.br" (deslogado)
+        if (state.mainZone === 'rail-5' && !isGovBrConnected) {
+          setCurrentPage('account');
         }
       }
-    }, [deputies, handleDeputySelect, handleSenatorSelect, handleServiceSelect, senators, updateChannel]),
+    }, [deputies, handleDeputySelect, handleSenatorSelect, handleServiceSelect, senators, updateChannel, isGovBrConnected]),
     onSidebarSelect: handleSidebarSelect,
     onEscape: currentPage === 'pharmacies' ? handlePharmaciesEscape : undefined,
     verticalNavigation: currentPage === 'pharmacies',
@@ -523,6 +520,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
             mainZone={mainZone}
             mainItemIndex={mainItemIndex}
             isActive={currentPage === 'home'}
+            isGovBrConnected={isGovBrConnected}
           />
         );
       case 'search':
