@@ -88,10 +88,10 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
 
   // Detecta quando mobile está pedindo conexão
   useEffect(() => {
-    if (isMobileRequesting) {
+    if (isMobileRequesting && !isMobileConnected) {
       setShowRequestNotif(true);
     }
-  }, [isMobileRequesting]);
+  }, [isMobileRequesting, isMobileConnected]);
 
   // Fecha notificação de pedido quando conexão é confirmada
   useEffect(() => {
@@ -314,6 +314,15 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
         }
       }
       if (currentPage === 'home') {
+        if (state.mainZone === 'stories') {
+          const story = nationalStories[state.mainItemIndex];
+          if (story?.videoUrl) {
+            setWatchPage({
+              videoUrl: `https://www.youtube.com/watch?v=${story.videoUrl}`,
+              title: story.title,
+            });
+          }
+        }
         if (state.mainZone === 'hero') {
           const slide = homeData.hero[state.mainItemIndex];
           if (slide?.channelId === 'segunda-tela') {
@@ -687,7 +696,6 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           isConnected={isMobileConnected}
           isAuthenticated={isAuthenticated}
           onBack={() => setCurrentPage('home')}
-          onSimulateConnection={() => setShowConnectionNotif(true)}
         />
       )}
 

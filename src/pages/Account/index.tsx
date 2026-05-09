@@ -7,7 +7,6 @@ interface AccountPageProps {
   isConnected: boolean;
   isAuthenticated: boolean;
   onBack: () => void;
-  onSimulateConnection?: () => void;
 }
 
 interface StepCardProps {
@@ -85,7 +84,7 @@ function StepCard({ number, title, description, icon, status, content }: StepCar
   );
 }
 
-export default function AccountPage({ sessionCode, isConnected, isAuthenticated, onBack, onSimulateConnection }: AccountPageProps) {
+export default function AccountPage({ sessionCode, isConnected, isAuthenticated, onBack }: AccountPageProps) {
   const onBackRef = useRef(onBack);
   onBackRef.current = onBack;
   const [backFocused, setBackFocused] = useState(true);
@@ -252,24 +251,6 @@ export default function AccountPage({ sessionCode, isConnected, isAuthenticated,
         Voltar
       </button>
 
-      {onSimulateConnection && (
-        <button
-          onClick={onSimulateConnection}
-          style={{
-            marginTop: 8,
-            padding: '10px 32px',
-            borderRadius: 100,
-            border: '1px dashed rgba(255,255,255,0.2)',
-            background: 'transparent',
-            color: 'rgba(255,255,255,0.4)',
-            fontFamily: 'inherit',
-            fontSize: 14,
-            cursor: 'pointer',
-          }}
-        >
-          [Demo] Simular conexão do celular
-        </button>
-      )}
     </div>
   );
 }

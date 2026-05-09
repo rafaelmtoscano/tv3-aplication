@@ -288,7 +288,7 @@ export const useFocusNavigation = ({
       mainItemIndex: 0,
       region: 'main', // Ensure we switch back to main region when navigating to a new page
     }));
-  }, [activeSidebarId, heroLength]);
+  }, [activeSidebarId]);
 
   const resetToMain = useCallback(() => {
     setFocusState((prev) => ({
