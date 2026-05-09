@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-export type MainZone = 'hero' | `rail-${number}` | 'my-space';
+export type MainZone = 'hero' | 'stories' | `rail-${number}` | 'my-space';
 
 export interface FocusState {
   region: 'sidebar' | 'main';
@@ -11,12 +11,15 @@ export interface FocusState {
 
 export interface UseFocusNavigationOptions {
   heroLength: number;
+  storiesLength?: number;
   railLengths: number[];
   sidebarItemIds: string[];   // ids dos itens do menu, SEM o avatar
   sidebarLength: number;      // sidebarItemIds.length + 1 (inclui o avatar)
   activeSidebarId: string;    // id do item correspondente à página atual, ex: 'home'
   onEnter?: (state: FocusState) => void;
   onSidebarSelect?: (id: string) => void;
+  onEscape?: (state: FocusState) => void;
+  verticalNavigation?: boolean;
 }
 
 export interface UseFocusNavigationReturn {
@@ -32,17 +35,20 @@ export interface UseFocusNavigationReturn {
 
 export const useFocusNavigation = ({
   heroLength,
+  storiesLength = 0,
   railLengths,
   sidebarItemIds,
   sidebarLength,
   activeSidebarId,
   onEnter,
   onSidebarSelect,
+  onEscape,
+  verticalNavigation = false,
 }: UseFocusNavigationOptions): UseFocusNavigationReturn => {
   const [focusState, setFocusState] = useState<FocusState>({
     region: 'main',
     sidebarIndex: 0,
-    mainZone: 'hero',
+    mainZone: heroLength === 0 ? 'rail-0' : 'hero',
     mainItemIndex: 0,
   });
 
@@ -65,6 +71,50 @@ export const useFocusNavigation = ({
       }
 
       if (region === 'main') {
+        // Vertical navigation mode: ArrowUp/ArrowDown move within the rail
+        if (verticalNavigation && mainZone.startsWith('rail-')) {
+          const railMatch = mainZone.match(/^rail-(\d+)$/);
+          const railIdx = railMatch ? parseInt(railMatch[1]) : 0;
+          const limit = (railLengths[railIdx] || 0) - 1;
+
+          switch (event.key) {
+            case 'ArrowDown':
+              if (mainItemIndex < limit) {
+                setFocusState((prev) => ({ ...prev, mainItemIndex: mainItemIndex + 1 }));
+              }
+              break;
+            case 'ArrowUp':
+              if (mainItemIndex > 0) {
+                setFocusState((prev) => ({ ...prev, mainItemIndex: mainItemIndex - 1 }));
+              }
+              break;
+            case 'ArrowLeft':
+              if (mainItemIndex === 0) {
+                const activeIdx = sidebarItemIds.indexOf(activeSidebarId);
+                const targetSidebarIndex = activeIdx !== -1 ? activeIdx + 1 : 1;
+                setFocusState((prev) => ({
+                  ...prev,
+                  region: 'sidebar',
+                  sidebarIndex: targetSidebarIndex,
+                }));
+              }
+              break;
+            case 'ArrowRight':
+              break;
+            case 'Escape':
+              if (onEscape) {
+                onEscape(focusStateRef.current);
+              } else {
+                setFocusState((prev) => ({ ...prev, mainZone: heroLength === 0 ? 'rail-0' : 'hero', mainItemIndex: 0 }));
+              }
+              break;
+            case 'Enter':
+              onEnter?.(focusStateRef.current);
+              break;
+          }
+          return;
+        }
+
         switch (event.key) {
           case 'ArrowLeft':
             if (mainItemIndex > 0) {
@@ -85,6 +135,8 @@ export const useFocusNavigation = ({
             let limit = 0;
             if (mainZone === 'hero') {
               limit = heroLength - 1;
+            } else if (mainZone === 'stories') {
+              limit = (storiesLength || 0) - 1;
             } else if (mainZone === 'my-space') {
               limit = 0;
             } else {
@@ -102,13 +154,34 @@ export const useFocusNavigation = ({
           }
 
           case 'ArrowDown': {
+            // Visual order: hero → rail-0 → rail-1 → stories → rail-2 → rail-3 → ... → my-space
             if (mainZone === 'hero') {
               setFocusState((prev) => ({ ...prev, mainZone: 'rail-0', mainItemIndex: 0 }));
+            } else if (mainZone === 'rail-0') {
+              if (heroLength === 0 && railLengths.length === 1) {
+                break;
+              }
+              if (railLengths.length > 1) {
+                setFocusState((prev) => ({ ...prev, mainZone: 'rail-1' as MainZone, mainItemIndex: 0 }));
+              } else if (storiesLength > 0) {
+                setFocusState((prev) => ({ ...prev, mainZone: 'stories', mainItemIndex: 0 }));
+              } else {
+                setFocusState((prev) => ({ ...prev, mainZone: 'my-space', mainItemIndex: 0 }));
+              }
+            } else if (mainZone === 'stories') {
+              if (railLengths.length > 2) {
+                setFocusState((prev) => ({ ...prev, mainZone: 'rail-2' as MainZone, mainItemIndex: 0 }));
+              } else {
+                setFocusState((prev) => ({ ...prev, mainZone: 'my-space', mainItemIndex: 0 }));
+              }
             } else if (mainZone !== 'my-space') {
               const railMatch = mainZone.match(/^rail-(\d+)$/);
               if (railMatch) {
                 const railIdx = parseInt(railMatch[1]);
-                if (railIdx < railLengths.length - 1) {
+                if (railIdx === 1 && storiesLength > 0) {
+                  // rail-1 (TV ao vivo) → stories
+                  setFocusState((prev) => ({ ...prev, mainZone: 'stories', mainItemIndex: 0 }));
+                } else if (railIdx < railLengths.length - 1) {
                   setFocusState((prev) => ({ ...prev, mainZone: `rail-${railIdx + 1}` as MainZone, mainItemIndex: 0 }));
                 } else {
                   setFocusState((prev) => ({ ...prev, mainZone: 'my-space', mainItemIndex: 0 }));
@@ -119,15 +192,25 @@ export const useFocusNavigation = ({
           }
 
           case 'ArrowUp': {
+            // Visual order: hero → rail-0 → rail-1 → stories → rail-2 → rail-3 → ... → my-space
             if (mainZone === 'my-space') {
               setFocusState((prev) => ({ ...prev, mainZone: `rail-${railLengths.length - 1}` as MainZone, mainItemIndex: 0 }));
+            } else if (mainZone === 'stories') {
+              // stories → rail-1 (TV ao vivo)
+              setFocusState((prev) => ({ ...prev, mainZone: 'rail-1' as MainZone, mainItemIndex: 0 }));
+            } else if (mainZone === 'rail-0' && heroLength === 0 && railLengths.length === 1) {
+              break;
             } else if (mainZone !== 'hero') {
               const railMatch = mainZone.match(/^rail-(\d+)$/);
               if (railMatch) {
                 const railIdx = parseInt(railMatch[1]);
-                if (railIdx > 0) {
+                if (railIdx === 2 && storiesLength > 0) {
+                  // rail-2 → stories
+                  setFocusState((prev) => ({ ...prev, mainZone: 'stories', mainItemIndex: 0 }));
+                } else if (railIdx > 0) {
                   setFocusState((prev) => ({ ...prev, mainZone: `rail-${railIdx - 1}` as MainZone, mainItemIndex: 0 }));
                 } else {
+                  // rail-0 → hero
                   setFocusState((prev) => ({ ...prev, mainZone: 'hero', mainItemIndex: 0 }));
                 }
               }
@@ -136,8 +219,12 @@ export const useFocusNavigation = ({
           }
 
           case 'Escape':
+            if (onEscape) {
+              onEscape(focusStateRef.current);
+              break;
+            }
             if (mainZone !== 'hero') {
-              setFocusState((prev) => ({ ...prev, mainZone: 'hero', mainItemIndex: 0 }));
+              setFocusState((prev) => ({ ...prev, mainZone: heroLength === 0 ? 'rail-0' : 'hero', mainItemIndex: 0 }));
             }
             break;
 
@@ -164,8 +251,15 @@ export const useFocusNavigation = ({
             break;
 
           case 'ArrowRight':
-          case 'Escape':
             // Voltar para main restaurando mainZone e mainItemIndex (memória preservada)
+            setFocusState((prev) => ({ ...prev, region: 'main' }));
+            break;
+
+          case 'Escape':
+            if (onEscape) {
+              onEscape(focusStateRef.current);
+              break;
+            }
             setFocusState((prev) => ({ ...prev, region: 'main' }));
             break;
 
@@ -177,7 +271,7 @@ export const useFocusNavigation = ({
         }
       }
     },
-    [heroLength, railLengths, sidebarItemIds, sidebarLength, activeSidebarId, onEnter, onSidebarSelect]
+    [heroLength, storiesLength, railLengths, sidebarItemIds, sidebarLength, activeSidebarId, onEnter, onSidebarSelect, onEscape, verticalNavigation]
   );
 
   useEffect(() => {
@@ -190,20 +284,20 @@ export const useFocusNavigation = ({
   useEffect(() => {
     setFocusState((prev) => ({
       ...prev,
-      mainZone: 'hero',
+      mainZone: heroLength === 0 ? 'rail-0' : 'hero',
       mainItemIndex: 0,
       region: 'main', // Ensure we switch back to main region when navigating to a new page
     }));
-  }, [activeSidebarId]);
+  }, [activeSidebarId, heroLength]);
 
   const resetToMain = useCallback(() => {
     setFocusState((prev) => ({
       ...prev,
       region: 'main',
-      mainZone: 'hero',
+      mainZone: heroLength === 0 ? 'rail-0' : 'hero',
       mainItemIndex: 0,
     }));
-  }, []);
+  }, [heroLength]);
 
   const isInSidebar = focusState.region === 'sidebar';
 

@@ -1,6 +1,7 @@
 // TODO: substituir por chamada à API
 
 import { channels } from './channels';
+import { allSchedules, getCurrentProgram } from './schedule';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -55,26 +56,20 @@ function getChannel(id: string) {
 // ─── Hero: 1 ao vivo + 3 vídeos ───────────────────────────────────────────────
 
 // TODO: substituir por chamada à API — ordenar por audiência/destaque
+// Ordenado alfabeticamente por canal (A-Z)
 const heroSlides: HeroSlide[] = [
-  // Slide 1 — TV Brasil ao vivo
-  (() => {
-    const ch = getChannel('tv-brasil');
-    return {
-      id: 'hero-live-tv-brasil',
-      mediaType: 'video' as const,
-      mediaSrc: ch.streamUrl!,
-      logo: ch.logo,
-      isLive: true,
-      signal: 'HD' as const,
-      classification: 'L' as const,
-      title: ch.programs![0].title,
-      description: 'Acompanhe ao vivo a programação da TV Brasil com conteúdo jornalístico de qualidade.',
-      buttonLabel: 'Assistir ao vivo',
-      channelId: ch.id,
-    };
-  })(),
-
-  // Slide 2 — Canal Gov destaque
+  // Slide 0 — Banner Segunda Tela
+  {
+    id: 'hero-segunda-tela',
+    mediaType: 'image' as const,
+    mediaSrc: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F992a57e4108e4b68a9b6f2e5dd982a0a',
+    isLive: false,
+    title: 'Mais Brasil TV: informação e serviços em um só lugar',
+    description: 'Mais acesso, mais serviço e mais  BR conectando seu celular a TV.',
+    buttonLabel: 'Conectar celular',
+    channelId: 'segunda-tela',
+  },
+  // Slide 1 — Canal Gov destaque
   (() => {
     const ch = getChannel('canal-gov');
     const prog = ch.programs![0];
@@ -90,6 +85,25 @@ const heroSlides: HeroSlide[] = [
       buttonLabel: 'Assistir agora',
       channelId: ch.id,
       videoUrl: prog.videoUrl,
+    };
+  })(),
+
+  // Slide 2 — TV Brasil ao vivo
+  (() => {
+    const ch = getChannel('tv-brasil');
+    const currentProg = allSchedules[ch.id] ? getCurrentProgram(allSchedules[ch.id]) : null;
+    return {
+      id: 'hero-live-tv-brasil',
+      mediaType: 'video' as const,
+      mediaSrc: ch.streamUrl!,
+      logo: ch.logo,
+      isLive: true,
+      signal: 'HD' as const,
+      classification: 'L' as const,
+      title: currentProg?.title ?? ch.programs![0].title,
+      description: 'Acompanhe ao vivo a programação da TV Brasil com conteúdo jornalístico de qualidade.',
+      buttonLabel: 'Assistir agora',
+      channelId: ch.id,
     };
   })(),
 
@@ -128,6 +142,27 @@ const heroSlides: HeroSlide[] = [
       buttonLabel: 'Assistir agora',
       channelId: ch.id,
       videoUrl: prog.videoUrl,
+    };
+  })(),
+
+  // Slide 5 — TV Senado ao vivo
+  (() => {
+    const ch = getChannel('tv-senado');
+    const prog = ch.programs![0];
+    const currentProg = allSchedules[ch.id] ? getCurrentProgram(allSchedules[ch.id]) : null;
+    return {
+      id: 'hero-tv-senado',
+      mediaType: 'image' as const,
+      mediaSrc: prog?.thumbnail ?? '',
+      logo: ch.logo,
+      isLive: true,
+      signal: 'HD' as const,
+      classification: 'L' as const,
+      title: currentProg?.title ?? prog?.title ?? 'TV Senado',
+      description: 'Acompanhe ao vivo as votações e sessões do Senado Federal.',
+      buttonLabel: 'Assistir agora',
+      channelId: ch.id,
+      videoUrl: ch.streamUrl,
     };
   })(),
 ];
@@ -181,14 +216,14 @@ const recentRail: Rail = {
 
 // ─── Rail 3 — Política & Democracia ──────────────────────────────────────────
 
-// Categorias: Política (TV Câmara, TV Senado) + Governo (Canal Gov) + Direito (TV Justiça)
+// Categorias: Política (TV Câmara, TV Senado) + Governo (Canal Gov)
 // TODO: substituir por chamada à API com tag 'politica-democracia'
 const politicsRail: Rail = {
   id: 'politics',
   title: 'Política & Democracia',
   variant: 'image-text',
   cards: channels
-    .filter(ch => ['tv-camara', 'tv-senado', 'canal-gov', 'tv-justica'].includes(ch.id))
+    .filter(ch => ['tv-camara', 'tv-senado', 'canal-gov'].includes(ch.id))
     .flatMap(ch => {
       const prog = ch.programs?.[2];
       if (!prog) return [];
@@ -205,6 +240,30 @@ const politicsRail: Rail = {
         videoUrl: prog.videoUrl,
       }];
     }),
+};
+
+// ─── Rail — Senado Federal ────────────────────────────────────────────────────
+// TODO: substituir por chamada à API do Senado
+const senadoRail: Rail = {
+  id: 'senado',
+  title: 'Senado Federal',
+  variant: 'image-text',
+  cards: (() => {
+    const senado = channels.find(ch => ch.id === 'tv-senado');
+    if (!senado?.programs) return [];
+    return senado.programs.slice(0, 8).map(prog => ({
+      id: `senado-${prog.id}`,
+      channelId: senado.id,
+      channelName: senado.name,
+      logo: senado.logo,
+      backgroundColor: senado.backgroundColor,
+      image: prog.thumbnail,
+      title: prog.title,
+      label: prog.category,
+      isLive: false,
+      videoUrl: prog.videoUrl,
+    }));
+  })(),
 };
 
 // ─── Rail 4 — Educação & Jornalismo ──────────────────────────────────────────
@@ -238,5 +297,5 @@ const educationRail: Rail = {
 // TODO: substituir por chamada à API
 export const homeData: HomeData = {
   hero: heroSlides,
-  rails: [liveRail, recentRail, politicsRail, educationRail],
+  rails: [liveRail, recentRail, politicsRail, senadoRail, educationRail],
 };

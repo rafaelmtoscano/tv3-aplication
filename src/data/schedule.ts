@@ -6,7 +6,6 @@
 //   TV Câmara  → https://www.camara.leg.br/tv/programacao-semanal
 //   Canal Gov  → grade-canal-gov.pdf
 //   TV Brasil  → https://tvbrasil.ebc.com.br/programacao
-//   TV Justiça → https://www.tvjustica.jus.br/programacao
 //
 // Última atualização: 2026-03-06
 // =============================================================================
@@ -755,180 +754,104 @@ export const tvBrasilSchedule: ChannelSchedule = {
   },
 };
 
-// ─── TV Justiça ───────────────────────────────────────────────────────────────
-// TODO: substituir por chamada à API
 
-export const tvJusticaSchedule: ChannelSchedule = {
-  channelId: 'tv-justica',
+// ─── TV Senado ────────────────────────────────────────────────────────────────
+// Fonte: meuguia.tv — extraída em 31/03/2026
+
+export const tvSenadoSchedule: ChannelSchedule = {
+  channelId: 'tv-senado',
   schedule: {
-    domingo: [
-      { time: '00:00', title: 'Iluminuras' },
-      { time: '00:30', title: 'Repórter ECO' },
-      { time: '01:00', title: 'Arena dos Saberes' },
-      { time: '02:00', title: 'Noturno' },
-      { time: '03:00', title: 'Música Orquestrada' },
-      { time: '04:00', title: 'Último Recurso' },
-      { time: '05:00', title: 'Trabalho Legal' },
-      { time: '05:30', title: 'Justiça & Trabalho' },
-      { time: '06:00', title: 'Hora Extra' },
-      { time: '06:30', title: 'Justiça em Questão' },
-      { time: '07:00', title: 'Inteiro Teor' },
-      { time: '07:30', title: 'Interlocução' },
-      { time: '08:00', title: 'Saber Direito' },
-      { time: '10:30', title: 'Como funciona aí?' },
-      { time: '11:00', title: 'Direito sem Fronteiras' },
-      { time: '11:30', title: 'Repórter Justiça' },
-      { time: '12:00', title: 'Artigo 5º' },
-      { time: '12:30', title: 'Supremo na Semana' },
-      { time: '13:00', title: 'Justiça & Trabalho' },
-      { time: '13:30', title: 'Hora Extra' },
-      { time: '14:30', title: 'Descomplicando' },
-      { time: '15:00', title: 'Aulas Magnas' },
-      { time: '17:30', title: 'Plenárias' },
-      { time: '18:00', title: 'Entender Direito' },
-      { time: '19:00', title: 'Interesse Público' },
-      { time: '19:30', title: 'Pela Ordem' },
-      { time: '20:00', title: 'Iluminuras' },
-      { time: '20:30', title: 'Repórter ECO' },
-      { time: '21:00', title: 'Arena dos Saberes' },
-      { time: '22:00', title: 'Música Orquestrada' },
-      { time: '23:00', title: 'Noturno' },
-    ],
     segunda: [
-      { time: '00:00', title: 'Iluminuras' },
-      { time: '00:30', title: 'Repórter ECO' },
-      { time: '01:00', title: 'Arena dos Saberes' },
-      { time: '02:00', title: 'Música Orquestrada' },
-      { time: '03:00', title: 'Noturno' },
-      { time: '04:00', title: 'Sessão Plenária TSE', isLive: true },
-      { time: '06:30', title: 'Saber Direito' },
-      { time: '07:00', title: 'Revista Justiça' },
-      { time: '08:00', title: 'Justiça Agora' },
-      { time: '18:00', title: 'Documentário' },
-      { time: '18:30', title: 'Jornal da Justiça' },
-      { time: '19:00', title: 'Academia' },
-      { time: '19:30', title: 'Artigo 5º' },
-      { time: '20:00', title: 'Repórter Justiça' },
-      { time: '20:30', title: 'Saber Direito' },
-      { time: '21:00', title: 'A Voz do Brasil' },
-      { time: '21:05', title: 'Revista TST' },
-      { time: '21:30', title: 'Inteiro Teor' },
-      { time: '22:00', title: 'Cartório Contemporâneo' },
-      { time: '22:30', title: 'Pensamento Jurídico' },
-      { time: '23:00', title: 'Trabalho Legal' },
-      { time: '23:40', title: 'Evento' },
+      // Usando grade de terça como base (padrão similar)
+      { time: '07:30', title: 'Em Discussão' },
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'Comissão', isLive: true },
+      { time: '10:00', title: 'Comissão', isLive: true },
+      { time: '13:30', title: 'Senado Notícias' },
+      { time: '14:00', title: 'Sessão Plenária', isLive: true },
+      { time: '19:30', title: 'Senado Notícias' },
+      { time: '20:00', title: 'Agenda Econômica' },
+      { time: '20:30', title: 'Assunto de Estado' },
+      { time: '21:00', title: 'Comissão', isLive: true },
     ],
     terca: [
-      { time: '00:00', title: 'Aulas Magnas' },
-      { time: '03:30', title: 'Sessão TST', isLive: true },
-      { time: '06:30', title: 'Saber Direito' },
-      { time: '07:00', title: 'Revista Justiça' },
-      { time: '08:00', title: 'Justiça Agora' },
-      { time: '09:00', title: 'Sessão TST', isLive: true },
-      { time: '14:00', title: 'Sessão Turma', isLive: true },
-      { time: '18:00', title: 'Documentário' },
-      { time: '18:30', title: 'Jornal da Justiça' },
-      { time: '19:00', title: 'Sessão Plenária TSE', isLive: true },
-      { time: '20:30', title: 'Saber Direito' },
-      { time: '21:00', title: 'A Voz do Brasil' },
-      { time: '21:05', title: 'Como funciona aí?' },
-      { time: '21:30', title: 'STJ Notícias' },
-      { time: '22:00', title: 'Sergipe Justiça' },
-      { time: '23:40', title: 'Evento' },
+      { time: '07:30', title: 'Em Discussão' },
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'Comissão', isLive: true },
+      { time: '10:00', title: 'Comissão', isLive: true },
+      { time: '13:30', title: 'Senado Notícias' },
+      { time: '14:00', title: 'Sessão Plenária', isLive: true },
+      { time: '19:30', title: 'Senado Notícias' },
+      { time: '20:00', title: 'Agenda Econômica' },
+      { time: '20:30', title: 'Assunto de Estado' },
+      { time: '21:00', title: 'Comissão', isLive: true },
     ],
     quarta: [
-      { time: '00:00', title: 'Aulas Magnas' },
-      { time: '03:30', title: 'Direto do Plenário', isLive: true },
-      { time: '06:30', title: 'Saber Direito' },
-      { time: '07:00', title: 'Revista Justiça' },
-      { time: '08:00', title: 'Justiça Agora' },
-      { time: '13:00', title: 'Hora Extra' },
-      { time: '18:30', title: 'Jornal da Justiça' },
-      { time: '19:00', title: 'Iluminuras' },
-      { time: '19:30', title: 'Direito sem Fronteiras' },
-      { time: '20:30', title: 'Saber Direito' },
-      { time: '21:00', title: 'A Voz do Brasil' },
-      { time: '21:05', title: 'Descomplicando' },
-      { time: '21:30', title: 'Jornada TST' },
-      { time: '22:30', title: 'Entender Direito' },
-      { time: '23:40', title: 'Evento' },
+      { time: '00:00', title: 'Senadoc' },
+      { time: '03:30', title: 'Que Brasil é Este?' },
+      { time: '04:00', title: 'Em Discussão' },
+      { time: '04:30', title: 'TV Senado Live' },
+      { time: '05:00', title: 'Parlamento Brasil' },
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'Comissão', isLive: true },
+      { time: '14:00', title: 'Sessão Plenária', isLive: true },
+      { time: '19:30', title: 'Senado Notícias' },
+      { time: '20:00', title: 'Que Brasil é Este?' },
+      { time: '20:30', title: 'Agenda Econômica' },
     ],
     quinta: [
-      { time: '00:00', title: 'Aulas Magnas' },
-      { time: '03:30', title: 'Direto do Plenário', isLive: true },
-      { time: '06:30', title: 'Saber Direito' },
-      { time: '07:00', title: 'Revista Justiça' },
-      { time: '08:00', title: 'Justiça Agora' },
-      { time: '09:00', title: 'Sessão TST', isLive: true },
-      { time: '10:10', title: 'Sessão Plenária TSE', isLive: true },
-      { time: '18:00', title: 'Documentário' },
-      { time: '18:30', title: 'Jornal da Justiça' },
-      { time: '19:00', title: 'Academia' },
-      { time: '19:30', title: 'Artigo 5º' },
-      { time: '20:00', title: 'Repórter Justiça' },
-      { time: '20:30', title: 'Saber Direito' },
-      { time: '21:00', title: 'A Voz do Brasil' },
-      { time: '21:05', title: 'Como funciona aí?' },
-      { time: '21:30', title: 'AGU' },
-      { time: '22:00', title: 'Justiça & Trabalho' },
-      { time: '22:30', title: 'Jornal Atricon' },
-      { time: '23:00', title: 'Interlocução' },
-      { time: '23:40', title: 'Evento' },
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'Que Brasil é Este?' },
+      { time: '11:30', title: 'TV Senado Live' },
+      { time: '14:00', title: 'Sessão Plenária', isLive: true },
+      { time: '19:30', title: 'Senado Notícias' },
+      { time: '20:00', title: 'Em Discussão' },
+      { time: '20:30', title: 'Que Brasil é Este?' },
     ],
     sexta: [
-      { time: '00:00', title: 'Aulas Magnas' },
-      { time: '03:30', title: 'Sessão TST', isLive: true },
-      { time: '06:30', title: 'Saber Direito' },
-      { time: '07:00', title: 'Revista Justiça' },
-      { time: '08:00', title: 'Justiça Agora' },
-      { time: '17:30', title: 'Plenárias' },
-      { time: '18:00', title: 'Documentário' },
-      { time: '18:30', title: 'Jornal da Justiça' },
-      { time: '19:00', title: 'Iluminuras' },
-      { time: '19:30', title: 'Direito sem Fronteiras' },
-      { time: '20:30', title: 'Saber Direito' },
-      { time: '21:00', title: 'A Voz do Brasil' },
-      { time: '21:05', title: 'Pela Ordem' },
-      { time: '21:30', title: 'Interesse Público' },
-      { time: '22:00', title: 'Justiça em Questão' },
-      { time: '22:30', title: 'Último Recurso' },
-      { time: '23:40', title: 'Evento' },
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Diálogos com TCU' },
+      { time: '09:00', title: 'TV Senado Live' },
+      { time: '13:30', title: 'Senado Notícias' },
+      { time: '20:30', title: 'TV Senado Live' },
     ],
     sabado: [
-      { time: '00:00', title: 'Aulas Magnas' },
-      { time: '01:00', title: 'Arena dos Saberes' },
-      { time: '04:30', title: 'Cartório Contemporâneo' },
-      { time: '05:00', title: 'Sergipe Justiça' },
-      { time: '06:00', title: 'Pensamento Jurídico' },
-      { time: '07:00', title: 'Entender Direito' },
-      { time: '08:00', title: 'Saber Direito' },
-      { time: '12:30', title: 'Supremo na Semana' },
-      { time: '13:30', title: 'Jornal Atricon' },
-      { time: '14:30', title: 'Descomplicando' },
-      { time: '17:30', title: 'Plenárias' },
-      { time: '18:00', title: 'Jornada TST' },
-      { time: '18:30', title: 'STJ Notícias' },
-      { time: '19:00', title: 'Revista TST' },
-      { time: '19:30', title: 'AGU' },
-      { time: '20:00', title: 'Iluminuras' },
-      { time: '20:30', title: 'Repórter ECO' },
-      { time: '21:00', title: 'Arena dos Saberes' },
-      { time: '22:00', title: 'Noturno' },
-      { time: '23:00', title: 'Música Orquestrada' },
+      { time: '08:00', title: 'Em Discussão' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'EcoSenado' },
+      { time: '12:00', title: 'TV Senado Live' },
+      { time: '13:30', title: 'Senado Notícias' },
+      { time: '14:00', title: 'Galáxias' },
+      { time: '18:00', title: 'Concertos em Geral' },
+      { time: '21:00', title: 'Senadoc' },
+    ],
+    domingo: [
+      { time: '08:00', title: 'Cidadania' },
+      { time: '08:30', title: 'Senado Notícias' },
+      { time: '09:00', title: 'EcoSenado' },
+      { time: '09:30', title: 'Que Brasil é Este?' },
+      { time: '10:00', title: 'Concertos em Geral' },
+      { time: '12:00', title: 'Parlamento Brasil' },
+      { time: '12:30', title: 'Em Discussão' },
+      { time: '21:00', title: 'Senadoc' },
     ],
   },
 };
+
 
 // =============================================================================
 // ÍNDICE E UTILITÁRIOS
 // =============================================================================
 
-// TODO: adicionar 'tv-mec' e 'tv-senado' quando disponível
 export const allSchedules: Record<string, ChannelSchedule> = {
   'tv-camara':  tvCamaraSchedule,
   'canal-gov':  canalGovSchedule,
   'tv-brasil':  tvBrasilSchedule,
-  'tv-justica': tvJusticaSchedule,
+  'tv-senado':  tvSenadoSchedule,
 };
 
 const DAY_MAP: Record<number, DayOfWeek> = {
@@ -969,8 +892,10 @@ export function getCurrentProgram(
   if (!entries?.length) return null;
 
   const currentMinutes = brasiliaDate.getHours() * 60 + brasiliaDate.getMinutes();
+  const sorted = [...entries].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
   let current: ScheduleEntry | null = null;
-  for (const entry of entries) {
+  for (const entry of sorted) {
     if (timeToMinutes(entry.time) <= currentMinutes) current = entry;
     else break;
   }
@@ -984,9 +909,11 @@ export function buildEPG(
   const entries = channelSchedule.schedule[day];
   if (!entries?.length) return [];
 
-  return entries.map((entry, i): EPGEntry => {
+  const sorted = [...entries].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+  return sorted.map((entry, i): EPGEntry => {
     const startMin = timeToMinutes(entry.time);
-    const nextEntry = entries[i + 1];
+    const nextEntry = sorted[i + 1];
     const endMin = nextEntry ? timeToMinutes(nextEntry.time) : 1440;
     const duration = endMin > startMin ? endMin - startMin : 1440 - startMin + endMin;
 
@@ -1001,10 +928,11 @@ export function buildEPG(
 }
 
 export function getUpcomingPrograms(
-  channelSchedule: ChannelSchedule,
+  channelSchedule: ChannelSchedule | undefined,
   count: number = 3,
   now: Date = new Date()
 ): EPGEntry[] {
+  if (!channelSchedule) return [];
   const brasiliaDate = getBrasiliaDate(now);
   const day = DAY_MAP[brasiliaDate.getDay()];
   const epg = buildEPG(channelSchedule, day);

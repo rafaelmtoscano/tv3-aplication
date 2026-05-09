@@ -2,34 +2,18 @@
 // Hook que detecta sessão plenária ativa, faz polling e gerencia o voto social do usuário.
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { fetchSessaoCompleta, getSavedVote, saveVote, removeVote } from '../data/plenario';
+import { fetchSessaoCompleta, fetchSessaoHistorica, getSavedVote, saveVote, removeVote } from '../data/plenario';
 import type { SessaoAtiva, VotoSocial } from '../data/plenario';
+import type { UseVotingReturn, VotingPhase } from '../types/voting';
+
+// Re-export para compatibilidade com imports existentes
+export type { VotingPhase } from '../types/voting';
+export type UsePlenarioVotingReturn = UseVotingReturn;
 
 const POLLING_INTERVAL = 60_000;
 const INITIAL_DELAY = 5_000;
 
-export type VotingPhase =
-  | 'idle'
-  | 'loading'
-  | 'intro'
-  | 'details'
-  | 'question'
-  | 'results'
-  | 'error';
-
-export interface UsePlenarioVotingReturn {
-  phase: VotingPhase;
-  sessao: SessaoAtiva | null;
-  userVote: 'sim' | 'nao' | null;
-  vote: (choice: 'sim' | 'nao') => void;
-  changeVote: () => void;
-  dismiss: () => void;
-  goToQuestion: () => void;
-  goToDetails: () => void;
-  goToIntro: () => void;
-}
-
-export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
+export function usePlenarioVoting(isActive: boolean): UseVotingReturn {
   const [phase, setPhase] = useState<VotingPhase>('idle');
   const [sessao, setSessao] = useState<SessaoAtiva | null>(null);
   const [userVote, setUserVote] = useState<'sim' | 'nao' | null>(null);
@@ -67,8 +51,15 @@ export function usePlenarioVoting(isActive: boolean): UsePlenarioVotingReturn {
       if (!isMountedRef.current) return;
 
       if (!data) {
-        // Nenhuma sessão ativa encontrada na API — manter idle
-        if (isMountedRef.current) setPhase('idle');
+        // Sem sessão ao vivo — tenta fallback com a última votação dos últimos 7 dias
+        const historica = await fetchSessaoHistorica();
+        if (!isMountedRef.current) return;
+        if (historica) {
+          setSessao(historica);
+          setPhase('historico');
+        } else {
+          setPhase('idle');
+        }
         isFirstLoadRef.current = false;
         return;
       }

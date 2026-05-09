@@ -5,7 +5,7 @@ import { ActionButton } from '../ActionButton';
 import { EPGRail } from '../EPGRail';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
-import { allSchedules, getUpcomingPrograms } from '../../data/schedule';
+import { allSchedules, getUpcomingPrograms, getCurrentProgram } from '../../data/schedule';
 import { CloseIcon } from '../../icons';
 import type { EPGEntry } from '../../data/schedule';
 
@@ -23,6 +23,10 @@ export interface LivePlayerProps {
   initialChannelId?: string;
   singleChannel?: boolean;
   onExit?: () => void;
+  onChannelChange?: (channelId: string) => void;
+  onOpenResources?: () => void;
+  onControlsVisibilityChange?: (visible: boolean) => void;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -30,7 +34,7 @@ const PLACEHOLDER_LOGO = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/
 
 export const LivePlayer = React.memo(
   forwardRef<HTMLDivElement, LivePlayerProps>(
-    ({ channels = [], initialChannelId, singleChannel = false, onExit, className }, ref) => {
+    ({ channels = [], initialChannelId, singleChannel = false, onExit, onChannelChange, onOpenResources, onControlsVisibilityChange, disabled = false, className }, ref) => {
       const [activeChannelId, setActiveChannelId] = useState(
         initialChannelId || channels[0]?.id
       );
@@ -50,13 +54,21 @@ export const LivePlayer = React.memo(
         [channels, activeChannelId]
       );
 
+      const currentProgram = useMemo(() => {
+        const schedule = allSchedules[activeChannelId];
+        if (!schedule) return null;
+        return getCurrentProgram(schedule);
+      }, [activeChannelId]);
+
       const resetTimer = useCallback(() => {
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
         }
         setControlsVisible(true);
+        onControlsVisibilityChange?.(true);
         timeoutRef.current = setTimeout(() => {
           setControlsVisible(false);
+          onControlsVisibilityChange?.(false);
         }, 5000);
       }, []);
 
@@ -72,7 +84,18 @@ export const LivePlayer = React.memo(
         };
       }, [resetTimer]);
 
+      const handleChannelChange = useCallback((id: string) => {
+        setActiveChannelId(id);
+        onChannelChange?.(id);
+      }, [onChannelChange]);
+
       const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (disabled) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+
         resetTimer();
 
         // Prevent navigation keys from leaking to global handler
@@ -94,18 +117,24 @@ export const LivePlayer = React.memo(
 
         // ─── singleChannel: rail unificada [Sair, EPG0, EPG1, ...] ─────────
         if (singleChannel) {
+          // índices: -2 = Recursos (se disponível), -1 = Sair, 0..7 = EPG cards
+          const minIndex = onOpenResources ? -2 : -1;
           switch (e.key) {
             case 'ArrowRight':
               setSingleFocusIndex((i) => Math.min(i + 1, 7));
               break;
 
             case 'ArrowLeft':
-              setSingleFocusIndex((i) => Math.max(i - 1, -1));
+              setSingleFocusIndex((i) => Math.max(i - 1, minIndex));
               break;
 
             case 'Enter':
             case ' ':
-              if (singleFocusIndex === -1) {
+              if (singleFocusIndex === -2 && onOpenResources) {
+                // Recursos
+                e.nativeEvent.stopImmediatePropagation();
+                onOpenResources();
+              } else if (singleFocusIndex === -1) {
                 // Sair
                 e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
@@ -149,13 +178,14 @@ export const LivePlayer = React.memo(
           case 'ArrowRight':
             if (showEPG) {
               e.preventDefault();
-              setEpgFocusedIndex((i) => Math.min(i + 1, 7));
+              const epgMax = onOpenResources ? 8 : 7; // 0..7 = EPG cards, 8 = Recursos
+              setEpgFocusedIndex((i) => Math.min(i + 1, epgMax));
             } else {
               setFocusedIndex((prev) => {
                 const next = Math.min(prev + 1, channels.length);
                 // Troca canal instantaneamente ao navegar (index 0 = Sair)
                 if (next > 0 && channels[next - 1]) {
-                  setActiveChannelId(channels[next - 1].id);
+                  handleChannelChange(channels[next - 1].id);
                 }
                 return next;
               });
@@ -171,7 +201,7 @@ export const LivePlayer = React.memo(
                 const next = Math.max(prev - 1, 0);
                 // Troca canal instantaneamente ao navegar (index 0 = Sair)
                 if (next > 0 && channels[next - 1]) {
-                  setActiveChannelId(channels[next - 1].id);
+                  handleChannelChange(channels[next - 1].id);
                 }
                 return next;
               });
@@ -181,15 +211,20 @@ export const LivePlayer = React.memo(
           case 'Enter':
             if (showEPG) {
               e.preventDefault();
-              const epgEntries = getUpcomingPrograms(allSchedules[activeChannel.id], 8);
-              const entry = epgEntries[epgFocusedIndex];
-              if (entry) setReminderEntry(entry);
+              if (onOpenResources && epgFocusedIndex === 8) {
+                e.nativeEvent.stopImmediatePropagation();
+                onOpenResources();
+              } else {
+                const epgEntries = getUpcomingPrograms(allSchedules[activeChannel.id], 8);
+                const entry = epgEntries[epgFocusedIndex];
+                if (entry) setReminderEntry(entry);
+              }
             } else {
               if (focusedIndex === 0) {
                 e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
               } else if (channels[focusedIndex - 1]) {
-                setActiveChannelId(channels[focusedIndex - 1].id);
+                handleChannelChange(channels[focusedIndex - 1].id);
               }
             }
             break;
@@ -200,7 +235,7 @@ export const LivePlayer = React.memo(
                 e.nativeEvent.stopImmediatePropagation();
                 onExit?.();
               } else if (channels[focusedIndex - 1]) {
-                setActiveChannelId(channels[focusedIndex - 1].id);
+                handleChannelChange(channels[focusedIndex - 1].id);
               }
             }
             break;
@@ -218,7 +253,7 @@ export const LivePlayer = React.memo(
           default:
             break;
         }
-      }, [controlsVisible, showEPG, singleChannel, singleFocusIndex, channels, activeChannel, focusedIndex, epgFocusedIndex, reminderEntry, resetTimer, onExit]);
+      }, [controlsVisible, showEPG, singleChannel, singleFocusIndex, channels, activeChannel, focusedIndex, epgFocusedIndex, reminderEntry, resetTimer, onExit, handleChannelChange, onOpenResources, disabled]);
 
       if (!activeChannel) return null;
 
@@ -380,6 +415,15 @@ export const LivePlayer = React.memo(
             <div style={bottomSectionStyle}>
               <div style={nowWatchingStyle}>
                 Assistindo {activeChannel.name}
+                {currentProgram && (
+                  <div style={{
+                    ...typography.body.medium,
+                    color: colors.text.secondaryInverse,
+                    marginTop: 4,
+                  }}>
+                    {currentProgram.title}
+                  </div>
+                )}
               </div>
 
               <div style={toggleLabelStyle}>
@@ -390,6 +434,17 @@ export const LivePlayer = React.memo(
                 {singleChannel ? (
                   /* ── singleChannel: Sair + EPG lado a lado ── */
                   <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'center', height: '312px' }}>
+                    {onOpenResources && (
+                      <div style={{ flexShrink: 0 }}>
+                        <TileButton
+                          variant="icon-label"
+                          label="Recursos"
+                          icon={<span style={{ fontSize: 28 }}>☰</span>}
+                          isFocused={singleFocusIndex === -2}
+                          onClick={() => onOpenResources?.()}
+                        />
+                      </div>
+                    )}
                     <div style={{ flexShrink: 0 }}>
                       <TileButton
                         variant="icon-label"
@@ -421,7 +476,6 @@ export const LivePlayer = React.memo(
                       isFocused={focusedIndex === 0}
                       onClick={() => onExit?.()}
                     />
-
                     {channels.map((channel, i) => (
                       <div
                         key={channel.id}
@@ -439,7 +493,7 @@ export const LivePlayer = React.memo(
                           label={channel.name}
                           alt={channel.name}
                           isFocused={focusedIndex === i + 1}
-                          onClick={() => setActiveChannelId(channel.id)}
+                          onClick={() => handleChannelChange(channel.id)}
                           imageObjectFit="contain"
                           backgroundColor={channel.backgroundColor}
                         />
@@ -448,16 +502,31 @@ export const LivePlayer = React.memo(
                   </div>
                 ) : (
                   /* ── multiChannel: EPG expandida ── */
-                  <EPGRail
-                    channelId={activeChannel.id}
-                    channelLogo={activeChannel.logo}
-                    channelName={activeChannel.name}
-                    focusedIndex={epgFocusedIndex}
-                    onFocusedIndexChange={setEpgFocusedIndex}
-                    onNavigateUp={() => setShowEPG(false)}
-                    onItemClick={(entry) => setReminderEntry(entry)}
-                    cardBackground={colors.background.baseInverse}
-                  />
+                  <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'center', height: '312px' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <EPGRail
+                        channelId={activeChannel.id}
+                        channelLogo={activeChannel.logo}
+                        channelName={activeChannel.name}
+                        focusedIndex={epgFocusedIndex <= 7 ? epgFocusedIndex : -1}
+                        onFocusedIndexChange={setEpgFocusedIndex}
+                        onNavigateUp={() => setShowEPG(false)}
+                        onItemClick={(entry) => setReminderEntry(entry)}
+                        cardBackground={colors.background.baseInverse}
+                      />
+                    </div>
+                    {onOpenResources && (
+                      <div style={{ flexShrink: 0 }}>
+                        <TileButton
+                          variant="icon-label"
+                          label="Recursos"
+                          icon={<span style={{ fontSize: 28 }}>☰</span>}
+                          isFocused={epgFocusedIndex === 8}
+                          onClick={() => onOpenResources?.()}
+                        />
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

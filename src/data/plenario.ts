@@ -3,6 +3,7 @@
 // TODO: substituir mocks por chamadas à API quando em produção
 
 const API_BASE = 'https://dadosabertos.camara.leg.br/api/v2';
+const FORCE_VOTING = import.meta.env.VITE_FORCE_VOTING === 'true';
 
 // ─────────────────────────────────────────────
 // INTERFACES
@@ -103,6 +104,30 @@ export async function fetchPautaEvento(eventId: number): Promise<PautaItem[]> {
 }
 
 /**
+ * Busca o placar completo de uma votação individual.
+ * O endpoint de listagem (/votacoes) NÃO retorna placar — só o endpoint
+ * individual (/votacoes/{id}) traz `dados.placar` com sim/não/abstenção.
+ */
+async function fetchPlacarVotacao(
+  votacaoId: string
+): Promise<{ sim: number; nao: number; abstencao: number } | null> {
+  try {
+    const res = await fetch(`${API_BASE}/votacoes/${votacaoId}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const placar = json?.dados?.placar;
+    if (!placar) return null;
+    return {
+      sim: placar.votosSim ?? 0,
+      nao: placar.votosNao ?? 0,
+      abstencao: placar.votosAbstencao ?? 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Busca a votação mais recente de um evento.
  * Prioriza votações em andamento (aprovacao === null).
  * Retorna null se não houver votações.
@@ -124,14 +149,103 @@ export async function fetchVotacaoAtiva(eventId: number): Promise<Votacao | null
 
   // Prioriza votação em andamento
   const emAndamento = votacoes.find(v => v.aprovacao === null);
-  return emAndamento ?? votacoes[0];
+  const votacao = emAndamento ?? votacoes[0];
+
+  // Endpoint de listagem não traz placar — buscar individualmente.
+  if (votacao && !votacao.placar) {
+    const placar = await fetchPlacarVotacao(votacao.id);
+    if (placar) votacao.placar = placar;
+  }
+
+  return votacao;
+}
+
+/**
+ * Fallback histórico — busca a última votação dos últimos 7 dias quando não há
+ * sessão ao vivo. Retorna SessaoAtiva com situacao='Histórico' e pauta vazia.
+ * A flag de histórico vive no estado do hook (phase === 'historico').
+ */
+export async function fetchSessaoHistorica(): Promise<SessaoAtiva | null> {
+  const today = new Date();
+  const past = new Date();
+  past.setDate(past.getDate() - 7);
+
+  const dataFim = today.toISOString().split('T')[0];
+  const dataInicio = past.toISOString().split('T')[0];
+
+  const url =
+    `${API_BASE}/votacoes` +
+    `?dataInicio=${dataInicio}` +
+    `&dataFim=${dataFim}` +
+    `&ordem=DESC` +
+    `&ordenarPor=dataHoraRegistro` +
+    `&itens=5`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const votacoes: Votacao[] = json.dados ?? [];
+    if (!votacoes.length) return null;
+
+    const votacao = votacoes[0];
+    if (votacao && !votacao.placar) {
+      const placar = await fetchPlacarVotacao(votacao.id);
+      if (placar) votacao.placar = placar;
+    }
+
+    return {
+      eventId: 0,
+      descricao: votacao.descricao || 'Última votação registrada',
+      situacao: 'Histórico',
+      votacaoAtiva: votacao,
+      pauta: [],
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
  * Orquestra as três chamadas e retorna o estado completo da sessão.
  * Usa Promise.allSettled para resiliência — falha parcial não quebra o overlay.
  */
+const MOCK_SESSAO: SessaoAtiva = {
+  eventId: 999999,
+  descricao: 'Sessão Deliberativa Ordinária — Modo Demo',
+  situacao: 'Iniciado',
+  votacaoAtiva: {
+    id: 'demo-votacao-001',
+    uri: '',
+    data: new Date().toISOString().split('T')[0],
+    dataHoraRegistro: new Date().toISOString(),
+    siglaOrgao: 'PLEN',
+    descricao: 'O Plenário deve aprovar o Projeto de Lei 1234/2024, que regulamenta o uso de inteligência artificial no serviço público brasileiro?',
+    aprovacao: null,
+    placar: { sim: 287, nao: 134, abstencao: 21 },
+  },
+  pauta: [
+    {
+      ordem: 1,
+      regime: 'Ordinária',
+      titulo: 'PL 1234/2024',
+      ementa: 'Regulamenta o uso de inteligência artificial no serviço público brasileiro, estabelecendo diretrizes de transparência, responsabilidade e proteção de dados.',
+      situacaoItem: 'Em votação',
+      proposicao_: { id: 1234, siglaTipo: 'PL', numero: '1234', ano: 2024, uri: null },
+    },
+    {
+      ordem: 2,
+      regime: 'Urgência',
+      titulo: 'PEC 45/2023',
+      ementa: 'Altera a Constituição Federal para incluir o acesso à internet como direito fundamental.',
+      situacaoItem: 'Pendente',
+      proposicao_: { id: 45, siglaTipo: 'PEC', numero: '45', ano: 2023, uri: null },
+    },
+  ],
+};
+
 export async function fetchSessaoCompleta(): Promise<SessaoAtiva | null> {
+    if (FORCE_VOTING) return MOCK_SESSAO;
   const evento = await fetchSessaoAtiva();
   if (!evento) return null;
 
@@ -147,6 +261,69 @@ export async function fetchSessaoCompleta(): Promise<SessaoAtiva | null> {
     pauta: pautaResult.status === 'fulfilled' ? pautaResult.value : [],
     votacaoAtiva: votacaoResult.status === 'fulfilled' ? votacaoResult.value : null,
   };
+}
+
+// ─────────────────────────────────────────────
+// VOTOS DOS DEPUTADOS — endpoint individual
+// ─────────────────────────────────────────────
+
+import type { DeputyVote } from './votingMock';
+
+/**
+ * Busca a lista completa de votos dos deputados de uma votação.
+ * GET /api/v2/votacoes/{votacaoId}/votos
+ * A API pagina em até 100 itens — buscamos páginas adicionais em paralelo
+ * caso a primeira venha cheia.
+ * TODO: validar payload real em produção.
+ */
+export async function fetchVotosDeputados(votacaoId: string): Promise<DeputyVote[]> {
+  const ITENS = 100;
+  const fetchPagina = async (pagina: number): Promise<any[]> => {
+    try {
+      const url = `${API_BASE}/votacoes/${votacaoId}/votos?itens=${ITENS}&pagina=${pagina}`;
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const json = await res.json();
+      return Array.isArray(json?.dados) ? json.dados : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const primeira = await fetchPagina(1);
+  let restantes: any[] = [];
+  if (primeira.length === ITENS) {
+    // Busca até mais 5 páginas em paralelo (cobre os 513 deputados).
+    const paginas = await Promise.all([2, 3, 4, 5, 6].map(fetchPagina));
+    restantes = paginas.flat();
+  }
+  const todos = [...primeira, ...restantes];
+
+  return todos.map((v: any, idx: number): DeputyVote => {
+    const dep = v?.deputado_ ?? {};
+    const tipo = String(v?.tipoVoto ?? '').toLowerCase();
+    let vote: DeputyVote['vote'] = 'abstencao';
+    if (tipo.includes('sim')) vote = 'sim';
+    else if (tipo.includes('não') || tipo.includes('nao')) vote = 'nao';
+    return {
+      id: String(dep.id ?? `${votacaoId}-${idx}`),
+      name: dep.nome ?? 'Deputado(a)',
+      party: dep.siglaPartido ?? '',
+      state: dep.siglaUf ?? '',
+      photo: dep.urlFoto ?? '',
+      vote,
+    };
+  });
+}
+
+/**
+ * Retorna true quando dataHoraRegistro está dentro da janela informada (default 48h).
+ */
+export function isVotacaoRecente(votacao: Votacao | null | undefined, horas = 48): boolean {
+  if (!votacao?.dataHoraRegistro) return false;
+  const ts = new Date(votacao.dataHoraRegistro).getTime();
+  if (Number.isNaN(ts)) return false;
+  return Date.now() - ts <= horas * 60 * 60 * 1000;
 }
 
 // ─────────────────────────────────────────────

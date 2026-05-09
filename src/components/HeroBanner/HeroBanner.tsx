@@ -159,11 +159,12 @@ export const HeroBanner = memo(
 
       const mainContentStyle: React.CSSProperties = {
         position: 'absolute',
-        bottom: '96px',
+        bottom: '72px',
         left: '64px',
-        maxWidth: '580px',
+        maxWidth: '720px',
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'flex-start',
         gap: '32px',
       };
 
@@ -174,9 +175,12 @@ export const HeroBanner = memo(
         fontWeight: 700,
         lineHeight: '110%',
         margin: 0,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        minHeight: '0px',
         overflow: 'hidden',
         display: '-webkit-box',
-        WebkitLineClamp: 2,
+        WebkitLineClamp: 3,
         WebkitBoxOrient: 'vertical',
       };
 
@@ -194,8 +198,8 @@ export const HeroBanner = memo(
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
+        justifyContent: 'center',
         gap: '32px',
-        marginLeft: '-8px',
       };
 
       const paginationStyle: React.CSSProperties = {
@@ -219,6 +223,12 @@ export const HeroBanner = memo(
           aria-label={`Hero banner: ${slide?.title}`}
           role="region"
         >
+          <style>{`
+            @keyframes heroZoomIn {
+              from { transform: scale(1); }
+              to   { transform: scale(1.08); }
+            }
+          `}</style>
           {/* Media layers */}
           {slides.map((s, i) => (
             <div
@@ -227,6 +237,10 @@ export const HeroBanner = memo(
                 ...mediaLayerStyle,
                 opacity: activeIndex === i ? 1 : 0,
                 transition: 'opacity 0.6s ease-in-out',
+                animation: (activeIndex === i && s.mediaType === 'image')
+                  ? 'heroZoomIn 15s ease-out forwards'
+                  : 'none',
+                transform: (activeIndex === i && s.mediaType === 'image') ? undefined : 'scale(1)',
               }}
             >
               {s.mediaType === 'video' ? (
@@ -293,7 +307,7 @@ export const HeroBanner = memo(
                     position: 'absolute',
                     top: 0,
                     left: '64px',
-                    width: '580px',
+                    width: '720px',
                     opacity: isActive ? 1 : 0,
                     transform: isActive ? 'translateY(0)' : 'translateY(16px)',
                     transition: isActive

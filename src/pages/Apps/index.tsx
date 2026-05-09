@@ -53,6 +53,7 @@ export default function Apps({ isActive, isSidebarExpanded, onServiceSelect }: A
         e.preventDefault();
         e.stopPropagation();
         const service = services[focusedIndex];
+        if (!service) return;
         if (!service.available) {
           setToastMessage('Conteúdo indisponível no momento');
         } else {
@@ -159,6 +160,7 @@ export default function Apps({ isActive, isSidebarExpanded, onServiceSelect }: A
             backgroundColor={service.backgroundColor}
             isFocused={focusedIndex === i}
             onClick={() => {
+              if (!service) return;
               if (!service.available) {
                 setToastMessage('Conteúdo indisponível no momento');
               } else {

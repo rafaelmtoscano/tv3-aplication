@@ -16,6 +16,7 @@ export interface SidebarSign {
   icon?: React.ReactNode;
   image?: string;
   alt?: string;
+  name?: string;
 }
 
 export interface SidebarProps {
@@ -65,8 +66,6 @@ export const Sidebar = memo(
   forwardRef<HTMLDivElement, SidebarProps>(
     (
       {
-        logoName,
-        logoSubtitle,
         items,
         sign,
         expanded: externalExpanded,
@@ -122,7 +121,7 @@ export const Sidebar = memo(
       const gradientOverlayStyle: React.CSSProperties = {
         position: 'absolute',
         top: 0,
-        left: isExpanded ? '340px' : '80px', // Animates with sidebar
+        left: isExpanded ? '300px' : '120px', // Animates with sidebar
         height: '100%',
         width: isExpanded ? '50vw' : '0',
         background: 'linear-gradient(270deg, rgba(17, 23, 43, 0) 0%, #11172B 100%)',
@@ -134,7 +133,7 @@ export const Sidebar = memo(
       const sidebarPanelStyle: React.CSSProperties = {
         position: 'relative',
         zIndex: 1,
-        width: isExpanded ? '340px' : '80px',
+        width: isExpanded ? '300px' : '120px',
         height: '100vh',
         background: colors.background.baseInverse,
         display: 'flex',
@@ -149,30 +148,12 @@ export const Sidebar = memo(
       };
 
       const logoAreaStyle: React.CSSProperties = {
-        padding: '0 4px',
         display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
+        justifyContent: 'center',
+        alignItems: 'center',
         width: '100%',
-        paddingLeft: '16px',
+        padding: '0 10px',
         boxSizing: 'border-box',
-      };
-
-      const logoTextStyle: React.CSSProperties = {
-        fontFamily: typography.body.large.fontFamily,
-        fontWeight: 300,
-        fontSize: '24px',
-        lineHeight: '100%',
-        color: colors.text.primaryInverse,
-        whiteSpace: 'nowrap',
-        opacity: isExpanded ? 0.7 : 0,
-        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      };
-
-      const logoSubtitleStyle: React.CSSProperties = {
-        ...logoTextStyle,
-        fontWeight: 700,
-        opacity: isExpanded ? 1 : 0,
       };
 
       const navbarStyle: React.CSSProperties = {
@@ -189,6 +170,20 @@ export const Sidebar = memo(
         padding: '0 4px',
         width: '100%',
         boxSizing: 'border-box',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+      };
+
+      const signNameStyle: React.CSSProperties = {
+        ...typography.body.medium,
+        color: colors.text.primaryInverse,
+        opacity: isExpanded ? 1 : 0,
+        maxWidth: isExpanded ? '180px' : '0',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        transition: 'opacity 0.3s, max-width 0.3s',
       };
 
       return (
@@ -207,8 +202,11 @@ export const Sidebar = memo(
           >
             {/* Logo area */}
             <div style={logoAreaStyle}>
-              <div style={logoTextStyle}>{logoName}</div>
-              {logoSubtitle && <div style={logoSubtitleStyle}>{logoSubtitle}</div>}
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F3eb26be205714b19a4e6a537892c9f18"
+                alt="Logo"
+                style={{ height: '80px', width: isExpanded ? 'auto' : '80px', display: 'block', objectFit: 'contain' }}
+              />
             </div>
 
             {/* Sign area */}
@@ -224,6 +222,7 @@ export const Sidebar = memo(
                   state={activeItemId === 'avatar' ? 'selected' : 'idle'}
                   onClick={() => onItemClick?.('avatar')}
                 />
+                {sign.name && <span style={signNameStyle}>{sign.name}</span>}
               </div>
             )}
 
