@@ -25,14 +25,14 @@ export const services: Service[] = [
   {
     id: 'meu-sus',
     name: 'Meu SUS Digital',
-    image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F1559b2a74c06497f890a54d658b867cd',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F6794bf7239fa451a80b8a5d48fdf4409',
     backgroundColor: '#FFFFFF',
     available: true,
   },
   {
     id: 'bolsa-familia',
     name: 'Programa Bolsa Família',
-    image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F7d75906fca034667bb7c4bc51a15ede1',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F1635d624a0b649199507910ade185e36',
     backgroundColor: '#FFFFFF',
     available: false,
   },
