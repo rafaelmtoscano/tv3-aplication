@@ -7,6 +7,7 @@ import { BRAZILIAN_STATES, DEFAULT_CHANNELS } from '../../data/settings';
 
 interface Props {
   isActive: boolean;
+  onFocusSidebar?: () => void;
 }
 
 type SectionId = 'accessibility' | 'content' | 'privacy';
@@ -38,7 +39,7 @@ const SECTIONS: Array<{ id: SectionId; label: string }> = [
   { id: 'privacy', label: 'Privacidade' },
 ];
 
-export default function Settings({ isActive }: Props) {
+export default function Settings({ isActive, onFocusSidebar }: Props) {
   const { settings, updateSetting } = useSettings();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -62,7 +63,6 @@ export default function Settings({ isActive }: Props) {
         label: 'Texto grande',
         hint: 'Aumenta o texto em 15%',
       },
-      { kind: 'toggle', id: 'highContrast', key: 'highContrast', label: 'Alto contraste' },
       { kind: 'toggle', id: 'ccEnabled', key: 'ccEnabled', label: 'Closed Caption' },
       { kind: 'toggle', id: 'librasEnabled', key: 'librasEnabled', label: 'Libras (VLibras)' },
       {
@@ -166,6 +166,12 @@ export default function Settings({ isActive }: Props) {
 
       const ctrl = controls[controlIndex];
 
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        e.stopPropagation();
+        onFocusSidebar?.();
+        return;
+      }
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         const next = findEnabled(controls, controlIndex + 1, 1);
@@ -213,7 +219,15 @@ export default function Settings({ isActive }: Props) {
 
     window.addEventListener('keydown', handler, { capture: true });
     return () => window.removeEventListener('keydown', handler, { capture: true } as never);
-  }, [isActive, controls, controlIndex, sectionIndex, openSheet, settings, updateSetting, findEnabled, goToSection]);
+  }, [isActive, controls, controlIndex, sectionIndex, openSheet, settings, updateSetting, findEnabled, goToSection, onFocusSidebar]);
+
+  // Reset focus to first control whenever the page becomes active
+  useEffect(() => {
+    if (isActive) {
+      setSectionIndex(0);
+      setControlIndex(0);
+    }
+  }, [isActive]);
 
   // Scroll behavior: when first global item focused, scroll container to top
   useEffect(() => {

@@ -31,6 +31,8 @@ export interface UseFocusNavigationReturn {
   sidebarIndex: number;
   activeHeroSlide: number;
   resetToMain: () => void;
+  focusSidebar: (id?: string) => void;
+  focusMain: () => void;
 }
 
 export const useFocusNavigation = ({
@@ -290,6 +292,24 @@ export const useFocusNavigation = ({
     }));
   }, [activeSidebarId]);
 
+  const focusSidebar = useCallback(
+    (id?: string) => {
+      const targetId = id ?? activeSidebarId;
+      const idx = sidebarItemIds.indexOf(targetId);
+      const targetSidebarIndex = idx !== -1 ? idx + 1 : 1;
+      setFocusState((prev) => ({
+        ...prev,
+        region: 'sidebar',
+        sidebarIndex: targetSidebarIndex,
+      }));
+    },
+    [activeSidebarId, sidebarItemIds],
+  );
+
+  const focusMain = useCallback(() => {
+    setFocusState((prev) => ({ ...prev, region: 'main' }));
+  }, []);
+
   const resetToMain = useCallback(() => {
     setFocusState((prev) => ({
       ...prev,
@@ -310,5 +330,7 @@ export const useFocusNavigation = ({
     sidebarIndex: focusState.sidebarIndex,
     activeHeroSlide: focusState.mainZone === 'hero' ? focusState.mainItemIndex : 0,
     resetToMain,
+    focusSidebar,
+    focusMain,
   };
 };

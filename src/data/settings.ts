@@ -48,7 +48,6 @@ export const DEFAULT_CHANNELS: Array<{ id: string; name: string }> = [
 
 export interface AppSettings {
   largeText: boolean;
-  highContrast: boolean;
   ccEnabled: boolean;
   librasEnabled: boolean;
   audioDescriptionEnabled: boolean;
@@ -59,7 +58,6 @@ export interface AppSettings {
 
 export const DEFAULT_SETTINGS: AppSettings = {
   largeText: false,
-  highContrast: false,
   ccEnabled: false,
   librasEnabled: false,
   audioDescriptionEnabled: false,

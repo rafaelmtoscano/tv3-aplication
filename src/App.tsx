@@ -374,6 +374,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     mainItemIndex,
     sidebarIndex,
     resetToMain,
+    focusSidebar,
   } = useFocusNavigation({
     heroLength,
     storiesLength: currentPage === 'home' && isGovBrConnected ? nationalStories.length : 0,
@@ -648,7 +649,12 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           />
         );
       case 'settings':
-        return <Settings isActive={currentPage === 'settings'} />;
+        return (
+          <Settings
+            isActive={currentPage === 'settings'}
+            onFocusSidebar={() => focusSidebar('settings')}
+          />
+        );
       case 'help':
         return <Help isActive={currentPage === 'help'} />;
       case 'my-channels':

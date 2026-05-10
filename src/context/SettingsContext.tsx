@@ -51,16 +51,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [settings]);
 
-  // High contrast attribute
-  useEffect(() => {
-    const root = document.documentElement;
-    if (settings.highContrast) {
-      root.setAttribute('data-contrast', 'high');
-    } else {
-      root.removeAttribute('data-contrast');
-    }
-  }, [settings.highContrast]);
-
   // VLibras
   useEffect(() => {
     if (settings.librasEnabled) {
