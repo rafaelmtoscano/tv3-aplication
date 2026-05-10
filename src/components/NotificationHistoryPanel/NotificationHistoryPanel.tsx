@@ -15,14 +15,15 @@ export function NotificationHistoryPanel({ items, onClose, onClear }: Notificati
   // focusIndex: 0..items.length-1 = cards, items.length = Clear, items.length+1 = Close
   const clearIndex = items.length;
   const closeIndex = items.length + 1;
-  const maxIndex = closeIndex;
 
-  const [focusIndex, setFocusIndex] = useState(0);
+  const [focusIndex, setFocusIndex] = useState<number>(() => items.length === 0 ? 1 : 0);
 
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const onClearRef = useRef(onClear);
   onClearRef.current = onClear;
+
+  const clearDisabled = items.length === 0;
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -30,21 +31,41 @@ export function NotificationHistoryPanel({ items, onClose, onClear }: Notificati
       onCloseRef.current();
       return;
     }
+    const isOnFooter = focusIndex >= clearIndex;
     if (e.key === 'ArrowDown') {
       e.stopImmediatePropagation();
-      setFocusIndex((i) => Math.min(i + 1, maxIndex));
+      if (isOnFooter) return;
+      setFocusIndex((i) => {
+        const next = i + 1;
+        if (next >= items.length) {
+          return clearDisabled ? closeIndex : clearIndex;
+        }
+        return next;
+      });
       return;
     }
     if (e.key === 'ArrowUp') {
       e.stopImmediatePropagation();
+      if (isOnFooter) {
+        setFocusIndex(Math.max(items.length - 1, 0));
+        return;
+      }
       setFocusIndex((i) => Math.max(i - 1, 0));
+      return;
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      if (!isOnFooter) return;
+      e.stopImmediatePropagation();
+      if (clearDisabled) return;
+      setFocusIndex(focusIndex === clearIndex ? closeIndex : clearIndex);
       return;
     }
     if (e.key === 'Enter') {
       e.stopImmediatePropagation();
       if (focusIndex === clearIndex) {
+        if (clearDisabled) return;
         onClearRef.current();
-        setFocusIndex(0);
+        setFocusIndex(1);
         return;
       }
       if (focusIndex === closeIndex) {
@@ -57,7 +78,7 @@ export function NotificationHistoryPanel({ items, onClose, onClear }: Notificati
       }
       onCloseRef.current();
     }
-  }, [focusIndex, items, clearIndex, closeIndex, maxIndex]);
+  }, [focusIndex, items, clearIndex, closeIndex, clearDisabled]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey, { capture: true });
@@ -67,7 +88,7 @@ export function NotificationHistoryPanel({ items, onClose, onClear }: Notificati
   const panelStyle: React.CSSProperties = {
     position: 'fixed',
     top: 48,
-    left: 120,
+    right: 56,
     zIndex: 300,
     width: 560,
     maxHeight: 'calc(100vh - 96px)',
@@ -135,26 +156,29 @@ export function NotificationHistoryPanel({ items, onClose, onClear }: Notificati
     flexShrink: 0,
   };
 
-  const buttonBaseStyle = (isFocused: boolean): React.CSSProperties => ({
+  const buttonBaseStyle = (isFocused: boolean, disabled: boolean): React.CSSProperties => ({
     height: 64,
     padding: '0 32px',
     borderRadius: 100,
-    border: `2px solid ${isFocused ? 'transparent' : colors.line.dark}`,
-    background: isFocused ? colors.background.primary : 'transparent',
-    color: isFocused ? colors.text.primary : colors.text.primaryInverse,
+    border: `2px solid ${isFocused && !disabled ? 'transparent' : colors.line.dark}`,
+    background: isFocused && !disabled ? colors.background.primary : 'transparent',
+    color: disabled
+      ? colors.text.disabledInverse
+      : isFocused ? colors.text.primary : colors.text.primaryInverse,
     ...typography.body.large,
     fontWeight: 600,
-    cursor: 'pointer',
-    transform: isFocused ? 'scale(1.05)' : 'scale(1)',
-    boxShadow: isFocused ? '0 0 0 3px rgba(255, 255, 255, 0.3)' : 'none',
-    transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.4 : 1,
+    transform: isFocused && !disabled ? 'scale(1.05)' : 'scale(1)',
+    boxShadow: isFocused && !disabled ? '0 0 0 3px rgba(255, 255, 255, 0.3)' : 'none',
+    transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease, opacity 0.2s ease',
   });
 
   return (
     <>
       <style>{`
         @keyframes notifHistorySlideIn {
-          from { opacity: 0; transform: translateX(-32px) scale(0.97); }
+          from { opacity: 0; transform: translateX(32px) scale(0.97); }
           to   { opacity: 1; transform: translateX(0) scale(1); }
         }
       `}</style>
@@ -188,14 +212,14 @@ export function NotificationHistoryPanel({ items, onClose, onClear }: Notificati
 
         <div style={footerStyle}>
           <button
-            style={buttonBaseStyle(focusIndex === clearIndex)}
-            onClick={() => { onClear(); setFocusIndex(0); }}
-            disabled={items.length === 0}
+            style={buttonBaseStyle(focusIndex === clearIndex, clearDisabled)}
+            onClick={() => { onClear(); setFocusIndex(1); }}
+            disabled={clearDisabled}
           >
             Limpar tudo
           </button>
           <button
-            style={buttonBaseStyle(focusIndex === closeIndex)}
+            style={buttonBaseStyle(focusIndex === closeIndex, false)}
             onClick={onClose}
           >
             Fechar
