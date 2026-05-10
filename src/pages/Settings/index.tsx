@@ -7,6 +7,7 @@ import { BRAZILIAN_STATES, DEFAULT_CHANNELS } from '../../data/settings';
 
 interface Props {
   isActive: boolean;
+  hasMainFocus?: boolean;
   onFocusSidebar?: () => void;
 }
 
@@ -39,7 +40,7 @@ const SECTIONS: Array<{ id: SectionId; label: string }> = [
   { id: 'privacy', label: 'Privacidade' },
 ];
 
-export default function Settings({ isActive, onFocusSidebar }: Props) {
+export default function Settings({ isActive, hasMainFocus = true, onFocusSidebar }: Props) {
   const { settings, updateSetting } = useSettings();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -51,7 +52,6 @@ export default function Settings({ isActive, onFocusSidebar }: Props) {
     key: keyof AppSettings;
     options: Array<{ value: string; label: string }>;
     index: number;
-    focus: 'list' | 'confirm' | 'cancel';
   }>(null);
 
   const controlsBySection = useMemo<Record<SectionId, Control[]>>(() => ({
@@ -124,42 +124,25 @@ export default function Settings({ isActive, onFocusSidebar }: Props) {
 
   // Keyboard navigation
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive || !hasMainFocus) return;
 
     const handler = (e: KeyboardEvent) => {
       // Side sheet has full focus
       if (openSheet) {
         e.preventDefault();
         e.stopPropagation();
-        if (openSheet.focus === 'list') {
-          if (e.key === 'ArrowDown') {
-            setOpenSheet((s) =>
-              s && { ...s, index: Math.min(s.index + 1, s.options.length - 1) },
-            );
-          } else if (e.key === 'ArrowUp') {
-            setOpenSheet((s) => s && { ...s, index: Math.max(s.index - 1, 0) });
-          } else if (e.key === 'Enter') {
-            setOpenSheet((s) => s && { ...s, focus: 'confirm' });
-          } else if (e.key === 'Escape' || e.key === 'ArrowLeft' || e.key === 'Backspace') {
-            setOpenSheet(null);
-          }
-        } else {
-          // confirm / cancel buttons
-          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-            setOpenSheet((s) =>
-              s && { ...s, focus: s.focus === 'confirm' ? 'cancel' : 'confirm' },
-            );
-          } else if (e.key === 'ArrowUp') {
-            setOpenSheet((s) => s && { ...s, focus: 'list' });
-          } else if (e.key === 'Enter') {
-            if (openSheet.focus === 'confirm') {
-              const sel = openSheet.options[openSheet.index];
-              if (sel) updateSetting(openSheet.key, sel.value as never);
-            }
-            setOpenSheet(null);
-          } else if (e.key === 'Escape' || e.key === 'Backspace') {
-            setOpenSheet(null);
-          }
+        if (e.key === 'ArrowDown') {
+          setOpenSheet((s) =>
+            s && { ...s, index: Math.min(s.index + 1, s.options.length - 1) },
+          );
+        } else if (e.key === 'ArrowUp') {
+          setOpenSheet((s) => s && { ...s, index: Math.max(s.index - 1, 0) });
+        } else if (e.key === 'Enter') {
+          const sel = openSheet.options[openSheet.index];
+          if (sel) updateSetting(openSheet.key, sel.value as never);
+          setOpenSheet(null);
+        } else if (e.key === 'Escape' || e.key === 'ArrowLeft' || e.key === 'Backspace') {
+          setOpenSheet(null);
         }
         return;
       }
@@ -211,7 +194,6 @@ export default function Settings({ isActive, onFocusSidebar }: Props) {
             key: ctrl.key,
             options: ctrl.options,
             index: idx,
-            focus: 'list',
           });
         }
       }
@@ -219,7 +201,7 @@ export default function Settings({ isActive, onFocusSidebar }: Props) {
 
     window.addEventListener('keydown', handler, { capture: true });
     return () => window.removeEventListener('keydown', handler, { capture: true } as never);
-  }, [isActive, controls, controlIndex, sectionIndex, openSheet, settings, updateSetting, findEnabled, goToSection, onFocusSidebar]);
+  }, [isActive, hasMainFocus, controls, controlIndex, sectionIndex, openSheet, settings, updateSetting, findEnabled, goToSection, onFocusSidebar]);
 
   // Reset focus to first control whenever the page becomes active
   useEffect(() => {
@@ -315,7 +297,6 @@ export default function Settings({ isActive, onFocusSidebar }: Props) {
           title={openSheet.title}
           options={openSheet.options}
           activeIndex={openSheet.index}
-          focus={openSheet.focus}
           currentValue={settings[openSheet.key] as string | null}
           onClose={() => setOpenSheet(null)}
         />
@@ -449,14 +430,12 @@ function SelectSideSheet({
   title,
   options,
   activeIndex,
-  focus,
   currentValue,
   onClose,
 }: {
   title: string;
   options: Array<{ value: string; label: string }>;
   activeIndex: number;
-  focus: 'list' | 'confirm' | 'cancel';
   currentValue: string | null;
   onClose: () => void;
 }) {
@@ -498,37 +477,26 @@ function SelectSideSheet({
     flexDirection: 'column',
     gap: 4,
     padding: '4px 0',
+    scrollbarWidth: 'none',
+    msOverflowStyle: 'none',
   };
 
-  const footerStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: 12,
-    paddingTop: 16,
-    borderTop: `1px solid ${colors.line.dark}`,
-  };
-
-  const buttonStyle = (isFocused: boolean, primary: boolean): React.CSSProperties => ({
-    flex: 1,
-    padding: '12px 16px',
-    borderRadius: 100,
-    border: `2px solid ${isFocused ? colors.text.primaryInverse : 'transparent'}`,
-    background: primary ? colors.background.brandPrimary : 'transparent',
-    color: primary ? colors.text.primary : colors.text.primaryInverse,
+  const hintStyle: React.CSSProperties = {
     ...typography.label.small,
-    fontWeight: 600,
-    cursor: 'pointer',
-    transform: isFocused ? 'scale(1.02)' : 'scale(1)',
-    transition: 'transform 0.15s ease, border-color 0.15s ease',
-  });
+    color: colors.text.secondaryInverse,
+    paddingTop: 12,
+    borderTop: `1px solid ${colors.line.dark}`,
+    textAlign: 'center',
+  };
 
   return (
     <>
       <div style={scrimStyle} onClick={onClose} />
       <div style={sheetStyle}>
         <div style={headerStyle}>{title}</div>
-        <div style={listStyle}>
+        <div style={listStyle} className="settings-sheet-list">
           {options.map((opt, i) => {
-            const isFocused = focus === 'list' && i === activeIndex;
+            const isFocused = i === activeIndex;
             const isCurrent = opt.value === currentValue;
             const itemStyle: React.CSSProperties = {
               padding: '12px 16px',
@@ -558,14 +526,7 @@ function SelectSideSheet({
             );
           })}
         </div>
-        <div style={footerStyle}>
-          <button type="button" style={buttonStyle(focus === 'confirm', true)}>
-            Confirmar
-          </button>
-          <button type="button" style={buttonStyle(focus === 'cancel', false)}>
-            Cancelar
-          </button>
-        </div>
+        <div style={hintStyle}>Pressione Enter para confirmar · Esc para fechar</div>
       </div>
     </>
   );

@@ -652,6 +652,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
         return (
           <Settings
             isActive={currentPage === 'settings'}
+            hasMainFocus={!isSidebarExpanded}
             onFocusSidebar={() => focusSidebar('settings')}
           />
         );
