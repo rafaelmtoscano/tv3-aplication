@@ -7,6 +7,7 @@ import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { allSchedules, getUpcomingPrograms, getCurrentProgram } from '../../data/schedule';
 import { CloseIcon } from '../../icons';
+import { useSettings } from '../../context/SettingsContext';
 import type { EPGEntry } from '../../data/schedule';
 
 export interface LiveChannel {
@@ -35,6 +36,7 @@ const PLACEHOLDER_LOGO = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/
 export const LivePlayer = React.memo(
   forwardRef<HTMLDivElement, LivePlayerProps>(
     ({ channels = [], initialChannelId, singleChannel = false, onExit, onChannelChange, onOpenResources, onControlsVisibilityChange, disabled = false, className }, ref) => {
+      const { settings } = useSettings();
       const [activeChannelId, setActiveChannelId] = useState(
         initialChannelId || channels[0]?.id
       );
@@ -410,6 +412,17 @@ export const LivePlayer = React.memo(
           <div style={controlsLayerStyle}>
             <div style={topRowStyle}>
               <div style={liveTagStyle}>Ao vivo</div>
+              {settings.ccEnabled && (
+                <span style={{
+                  ...typography.label.small,
+                  color: colors.text.primaryInverse,
+                  background: colors.background.brandPrimary,
+                  padding: '2px 6px',
+                  borderRadius: 4,
+                  fontWeight: 600,
+                  marginLeft: 12,
+                }}>CC</span>
+              )}
             </div>
 
             <div style={bottomSectionStyle}>

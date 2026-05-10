@@ -32,3 +32,16 @@ body {
 :focus:not(:focus-visible) {
   outline: none;
 }
+
+:root[data-contrast="high"] body {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
+:root[data-contrast="high"] {
+  --color-text-primary-inverse: #FFFFFF;
+  --color-text-secondary-inverse: #FFFFFF;
+  --color-line-dark: rgba(255, 255, 255, 0.40);
+  --color-background-base-inverse: #000000;
+  --color-background-brand-primary: #FFD700;
+}

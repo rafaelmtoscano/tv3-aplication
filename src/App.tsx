@@ -40,6 +40,7 @@ import { typography } from './styles/typography';
 import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon, BellIcon } from './icons';
 import { useNotificationHistory } from './hooks/useNotificationHistory';
 import { NotificationHistoryPanel } from './components/NotificationHistoryPanel';
+import { SettingsProvider, useSettings } from './context/SettingsContext';
 
 function BellIconWithDot({ unreadCount }: { unreadCount: number }) {
   return (
@@ -81,6 +82,7 @@ interface AppContentProps {
 
 function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, isMobileRequesting, updateChannel, updateVoting }: AppContentProps) {
   const { connectGovBrMock, govBrUser, isGovBrConnected, activeProfileId, switchProfile } = useAuth();
+  const { fontScaleValue } = useSettings();
   const [showGovBrNotif, setShowGovBrNotif] = useState(false);
   const prevGovBrUserRef = useRef<typeof govBrUser>(null);
 
@@ -674,7 +676,14 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
         <div style={sidebarSpacerStyle} />
 
         <div style={mainWrapperStyle}>
-          {renderPage()}
+          <div style={{
+            width: `${100 / fontScaleValue}%`,
+            height: `${100 / fontScaleValue}vh`,
+            transform: `scale(${fontScaleValue})`,
+            transformOrigin: 'top left',
+          }}>
+            {renderPage()}
+          </div>
         </div>
       </div>
 
@@ -834,14 +843,16 @@ export default function App() {
 
   return (
     <AuthProvider sessionCode={sessionCode}>
-      <AppContent
-        isMobileGovBrConnected={isMobileGovBrConnected}
-        sessionCode={sessionCode}
-        isMobileConnected={isMobileConnected}
-        isMobileRequesting={isMobileRequesting}
-        updateChannel={updateChannel}
-        updateVoting={updateVoting}
-      />
+      <SettingsProvider>
+        <AppContent
+          isMobileGovBrConnected={isMobileGovBrConnected}
+          sessionCode={sessionCode}
+          isMobileConnected={isMobileConnected}
+          isMobileRequesting={isMobileRequesting}
+          updateChannel={updateChannel}
+          updateVoting={updateVoting}
+        />
+      </SettingsProvider>
     </AuthProvider>
   );
 }

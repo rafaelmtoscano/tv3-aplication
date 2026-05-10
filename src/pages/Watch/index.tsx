@@ -4,6 +4,7 @@ import type { YouTubeEvent, YouTubePlayer } from 'react-youtube';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { ChevronLeftIcon } from '../../icons';
+import { useSettings } from '../../context/SettingsContext';
 
 interface WatchPageProps {
   videoUrl: string;
@@ -36,6 +37,7 @@ function formatTime(seconds: number): string {
 }
 
 export default function WatchPage({ videoUrl, title, logo, channelName, onExit }: WatchPageProps) {
+  const { settings } = useSettings();
   const videoId = extractYouTubeId(videoUrl);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -214,6 +216,9 @@ export default function WatchPage({ videoUrl, title, logo, channelName, onExit }
       fs: 0 as const,
       iv_load_policy: 3 as const,
       enablejsapi: 1 as const,
+      cc_load_policy: settings.ccEnabled ? 1 : 0,
+      cc_lang_pref: 'pt',
+      hl: 'pt-BR',
     },
   };
 
