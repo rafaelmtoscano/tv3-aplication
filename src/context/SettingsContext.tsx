@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { AppSettings } from '../data/settings';
-import { DEFAULT_SETTINGS, FONT_SCALES, SETTINGS_STORAGE_KEY } from '../data/settings';
+import { DEFAULT_SETTINGS, FONT_SCALE_LARGE, SETTINGS_STORAGE_KEY } from '../data/settings';
 
 declare global {
   interface Window {
@@ -64,6 +64,18 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   // VLibras
   useEffect(() => {
     if (settings.librasEnabled) {
+      // Inject canonical container required by VLibras Widget
+      if (!document.querySelector('[vw]')) {
+        const container = document.createElement('div');
+        container.setAttribute('vw', '');
+        container.className = 'enabled';
+        container.innerHTML =
+          '<div vw-access-button class="active"></div>' +
+          '<div vw-plugin-wrapper>' +
+          '<div class="vw-plugin-top-wrapper"></div>' +
+          '</div>';
+        document.body.appendChild(container);
+      }
       if (document.querySelector(`script[src*="vlibras-plugin"]`)) return;
       const script = document.createElement('script');
       script.src = VLIBRAS_SCRIPT_SRC;
@@ -85,8 +97,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, [settings.librasEnabled]);
 
   const fontScaleValue = useMemo(
-    () => FONT_SCALES[settings.fontScale].value,
-    [settings.fontScale],
+    () => (settings.largeText ? FONT_SCALE_LARGE : 1),
+    [settings.largeText],
   );
 
   const value = useMemo<SettingsContextValue>(

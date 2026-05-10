@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { useSettings } from '../../context/SettingsContext';
-import type { AppSettings, FontScale } from '../../data/settings';
-import { BRAZILIAN_STATES, DEFAULT_CHANNELS, FONT_SCALES } from '../../data/settings';
+import type { AppSettings } from '../../data/settings';
+import { BRAZILIAN_STATES, DEFAULT_CHANNELS } from '../../data/settings';
 
 interface Props {
   isActive: boolean;
@@ -23,12 +23,6 @@ interface ToggleControl extends ControlBase {
   key: keyof AppSettings;
 }
 
-interface RadioControl extends ControlBase {
-  kind: 'radio';
-  key: keyof AppSettings;
-  options: Array<{ value: string; label: string }>;
-}
-
 interface SelectControl extends ControlBase {
   kind: 'select';
   key: keyof AppSettings;
@@ -36,7 +30,7 @@ interface SelectControl extends ControlBase {
   placeholder: string;
 }
 
-type Control = ToggleControl | RadioControl | SelectControl;
+type Control = ToggleControl | SelectControl;
 
 const SECTIONS: Array<{ id: SectionId; label: string }> = [
   { id: 'accessibility', label: 'Acessibilidade' },
@@ -47,26 +41,26 @@ const SECTIONS: Array<{ id: SectionId; label: string }> = [
 export default function Settings({ isActive }: Props) {
   const { settings, updateSetting } = useSettings();
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const [sectionIndex, setSectionIndex] = useState(0);
-  const [column, setColumn] = useState<'sections' | 'controls'>('sections');
   const [controlIndex, setControlIndex] = useState(0);
-  const [openSelect, setOpenSelect] = useState<null | {
+  const [openSheet, setOpenSheet] = useState<null | {
+    title: string;
     key: keyof AppSettings;
     options: Array<{ value: string; label: string }>;
     index: number;
+    focus: 'list' | 'confirm' | 'cancel';
   }>(null);
 
   const controlsBySection = useMemo<Record<SectionId, Control[]>>(() => ({
     accessibility: [
       {
-        kind: 'radio',
-        id: 'fontScale',
-        key: 'fontScale',
-        label: 'Tamanho do texto',
-        options: (Object.keys(FONT_SCALES) as FontScale[]).map((k) => ({
-          value: k,
-          label: FONT_SCALES[k].label,
-        })),
+        kind: 'toggle',
+        id: 'largeText',
+        key: 'largeText',
+        label: 'Texto grande',
+        hint: 'Aumenta o texto em 15%',
       },
       { kind: 'toggle', id: 'highContrast', key: 'highContrast', label: 'Alto contraste' },
       { kind: 'toggle', id: 'ccEnabled', key: 'ccEnabled', label: 'Closed Caption' },
@@ -106,114 +100,131 @@ export default function Settings({ isActive }: Props) {
   const activeSection = SECTIONS[sectionIndex].id;
   const controls = controlsBySection[activeSection];
 
-  // Reset control index when changing section
-  useEffect(() => {
-    setControlIndex(0);
-  }, [sectionIndex]);
+  const findEnabled = useCallback(
+    (list: Control[], start: number, dir: 1 | -1): number => {
+      let i = start;
+      while (i >= 0 && i < list.length && list[i].disabled) i += dir;
+      if (i < 0 || i >= list.length) return -1;
+      return i;
+    },
+    [],
+  );
 
-  const moveControlIndex = useCallback((delta: 1 | -1) => {
-    setControlIndex((prev) => {
-      let next = prev + delta;
-      while (next >= 0 && next < controls.length && controls[next].disabled) {
-        next += delta;
-      }
-      if (next < 0 || next >= controls.length) return prev;
-      return next;
-    });
-  }, [controls]);
+  const goToSection = useCallback(
+    (newSectionIdx: number, fromTop: boolean) => {
+      const list = controlsBySection[SECTIONS[newSectionIdx].id];
+      const idx = fromTop
+        ? findEnabled(list, 0, 1)
+        : findEnabled(list, list.length - 1, -1);
+      setSectionIndex(newSectionIdx);
+      setControlIndex(idx >= 0 ? idx : 0);
+    },
+    [controlsBySection, findEnabled],
+  );
 
   // Keyboard navigation
   useEffect(() => {
     if (!isActive) return;
 
     const handler = (e: KeyboardEvent) => {
-      // Drawer takes precedence
-      if (openSelect) {
+      // Side sheet has full focus
+      if (openSheet) {
         e.preventDefault();
         e.stopPropagation();
-        if (e.key === 'ArrowDown') {
-          setOpenSelect((s) => s && {
-            ...s,
-            index: Math.min(s.index + 1, s.options.length - 1),
-          });
-        } else if (e.key === 'ArrowUp') {
-          setOpenSelect((s) => s && { ...s, index: Math.max(s.index - 1, 0) });
-        } else if (e.key === 'Enter') {
-          const sel = openSelect.options[openSelect.index];
-          if (sel) {
-            updateSetting(openSelect.key, sel.value as never);
+        if (openSheet.focus === 'list') {
+          if (e.key === 'ArrowDown') {
+            setOpenSheet((s) =>
+              s && { ...s, index: Math.min(s.index + 1, s.options.length - 1) },
+            );
+          } else if (e.key === 'ArrowUp') {
+            setOpenSheet((s) => s && { ...s, index: Math.max(s.index - 1, 0) });
+          } else if (e.key === 'Enter') {
+            setOpenSheet((s) => s && { ...s, focus: 'confirm' });
+          } else if (e.key === 'Escape' || e.key === 'ArrowLeft' || e.key === 'Backspace') {
+            setOpenSheet(null);
           }
-          setOpenSelect(null);
-        } else if (e.key === 'Escape' || e.key === 'Backspace') {
-          setOpenSelect(null);
+        } else {
+          // confirm / cancel buttons
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            setOpenSheet((s) =>
+              s && { ...s, focus: s.focus === 'confirm' ? 'cancel' : 'confirm' },
+            );
+          } else if (e.key === 'ArrowUp') {
+            setOpenSheet((s) => s && { ...s, focus: 'list' });
+          } else if (e.key === 'Enter') {
+            if (openSheet.focus === 'confirm') {
+              const sel = openSheet.options[openSheet.index];
+              if (sel) updateSetting(openSheet.key, sel.value as never);
+            }
+            setOpenSheet(null);
+          } else if (e.key === 'Escape' || e.key === 'Backspace') {
+            setOpenSheet(null);
+          }
         }
-        return;
-      }
-
-      if (column === 'sections') {
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          setSectionIndex((i) => Math.min(i + 1, SECTIONS.length - 1));
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          setSectionIndex((i) => Math.max(i - 1, 0));
-        } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
-          e.preventDefault();
-          setColumn('controls');
-        }
-        return;
-      }
-
-      // column === 'controls'
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        setColumn('sections');
-        return;
-      }
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        moveControlIndex(1);
-        return;
-      }
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        moveControlIndex(-1);
         return;
       }
 
       const ctrl = controls[controlIndex];
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = findEnabled(controls, controlIndex + 1, 1);
+        if (next >= 0) {
+          setControlIndex(next);
+        } else if (sectionIndex < SECTIONS.length - 1) {
+          goToSection(sectionIndex + 1, true);
+        }
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = findEnabled(controls, controlIndex - 1, -1);
+        if (prev >= 0) {
+          setControlIndex(prev);
+        } else if (sectionIndex > 0) {
+          goToSection(sectionIndex - 1, false);
+        }
+        return;
+      }
+
       if (!ctrl || ctrl.disabled) return;
 
-      if (ctrl.kind === 'radio') {
-        if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          const currentValue = settings[ctrl.key] as string;
-          const idx = ctrl.options.findIndex((o) => o.value === currentValue);
-          const next = ctrl.options[Math.min(idx + 1, ctrl.options.length - 1)];
-          if (next) updateSetting(ctrl.key, next.value as never);
-        }
-      } else if (ctrl.kind === 'toggle') {
+      if (ctrl.kind === 'toggle') {
         if (e.key === 'Enter') {
           e.preventDefault();
           const cur = settings[ctrl.key] as boolean;
           updateSetting(ctrl.key, !cur as never);
         }
       } else if (ctrl.kind === 'select') {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || e.key === 'ArrowRight') {
           e.preventDefault();
           const currentValue = settings[ctrl.key] as string | null;
           const idx = Math.max(0, ctrl.options.findIndex((o) => o.value === currentValue));
-          setOpenSelect({ key: ctrl.key, options: ctrl.options, index: idx });
+          setOpenSheet({
+            title: ctrl.label,
+            key: ctrl.key,
+            options: ctrl.options,
+            index: idx,
+            focus: 'list',
+          });
         }
       }
     };
 
     window.addEventListener('keydown', handler, { capture: true });
-    return () => window.removeEventListener('keydown', handler, { capture: true });
-  }, [isActive, column, controls, controlIndex, openSelect, settings, updateSetting, moveControlIndex]);
+    return () => window.removeEventListener('keydown', handler, { capture: true } as never);
+  }, [isActive, controls, controlIndex, sectionIndex, openSheet, settings, updateSetting, findEnabled, goToSection]);
+
+  // Scroll behavior: when first global item focused, scroll container to top
+  useEffect(() => {
+    if (sectionIndex === 0 && controlIndex === 0) {
+      containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [sectionIndex, controlIndex]);
 
   const containerStyle: React.CSSProperties = {
-    minHeight: '100vh',
+    height: '100vh',
+    overflowY: 'auto',
     background: colors.background.baseInverse,
     padding: '64px 80px',
     display: 'flex',
@@ -237,17 +248,19 @@ export default function Settings({ isActive }: Props) {
     flexDirection: 'column',
     gap: 12,
     width: 280,
+    position: 'sticky',
+    top: 0,
+    alignSelf: 'flex-start',
   };
 
-  const sectionItemStyle = (focused: boolean, active: boolean): React.CSSProperties => ({
+  const sectionItemStyle = (active: boolean): React.CSSProperties => ({
     padding: '16px 20px',
     borderRadius: 16,
     background: active ? colors.surface.overlayMuted : 'transparent',
-    border: `2px solid ${focused ? colors.text.primaryInverse : 'transparent'}`,
     color: colors.text.primaryInverse,
     ...typography.body.large,
-    transform: focused ? 'scale(1.02)' : 'scale(1)',
-    transition: 'transform 0.15s ease, border-color 0.15s ease',
+    opacity: active ? 1 : 0.6,
+    transition: 'opacity 0.15s ease, background 0.15s ease',
   });
 
   const controlsColumnStyle: React.CSSProperties = {
@@ -258,16 +271,13 @@ export default function Settings({ isActive }: Props) {
   };
 
   return (
-    <div style={containerStyle}>
+    <div ref={containerRef} style={containerStyle}>
       <h1 style={titleStyle}>Configurações</h1>
 
       <div style={layoutStyle}>
         <div style={sectionsColumnStyle}>
           {SECTIONS.map((s, i) => (
-            <div
-              key={s.id}
-              style={sectionItemStyle(column === 'sections' && sectionIndex === i, sectionIndex === i)}
-            >
+            <div key={s.id} style={sectionItemStyle(sectionIndex === i)}>
               {s.label}
             </div>
           ))}
@@ -278,18 +288,22 @@ export default function Settings({ isActive }: Props) {
             <ControlRow
               key={ctrl.id}
               control={ctrl}
-              focused={column === 'controls' && controlIndex === i}
+              focused={controlIndex === i}
+              isFirstOverall={sectionIndex === 0 && i === 0}
               settings={settings}
             />
           ))}
         </div>
       </div>
 
-      {openSelect && (
-        <SelectDrawer
-          options={openSelect.options}
-          activeIndex={openSelect.index}
-          onClose={() => setOpenSelect(null)}
+      {openSheet && (
+        <SelectSideSheet
+          title={openSheet.title}
+          options={openSheet.options}
+          activeIndex={openSheet.index}
+          focus={openSheet.focus}
+          currentValue={settings[openSheet.key] as string | null}
+          onClose={() => setOpenSheet(null)}
         />
       )}
     </div>
@@ -301,12 +315,22 @@ export default function Settings({ isActive }: Props) {
 function ControlRow({
   control,
   focused,
+  isFirstOverall,
   settings,
 }: {
   control: Control;
   focused: boolean;
+  isFirstOverall: boolean;
   settings: AppSettings;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!focused || !ref.current) return;
+    if (isFirstOverall) return; // container scroll-to-top handles this
+    ref.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [focused, isFirstOverall]);
+
   const rowStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
@@ -335,7 +359,7 @@ function ControlRow({
   };
 
   return (
-    <div style={rowStyle}>
+    <div ref={ref} style={rowStyle} data-focused={focused ? 'true' : undefined}>
       <div style={labelStyle}>
         <span>{control.label}</span>
         {control.hint && <span style={hintStyle}>{control.hint}</span>}
@@ -358,10 +382,6 @@ function ControlWidget({
     const value = settings[control.key] as boolean;
     return <Toggle value={value} focused={focused} />;
   }
-  if (control.kind === 'radio') {
-    const value = settings[control.key] as string;
-    return <RadioGroup options={control.options} value={value} focused={focused} />;
-  }
   // select
   const value = settings[control.key] as string | null;
   const selected = control.options.find((o) => o.value === value);
@@ -375,7 +395,7 @@ function ControlWidget({
       minWidth: 220,
       textAlign: 'right',
     }}>
-      {selected ? selected.label : control.placeholder} ▼
+      {selected ? selected.label : control.placeholder} ▸
     </div>
   );
 }
@@ -409,104 +429,130 @@ function Toggle({ value, focused }: { value: boolean; focused: boolean }) {
   );
 }
 
-// ── RadioGroup ──────────────────────────────────────────────────────────────
+// ── Side sheet ──────────────────────────────────────────────────────────────
 
-function RadioGroup({
-  options,
-  value,
-  focused,
-}: {
-  options: Array<{ value: string; label: string }>;
-  value: string;
-  focused: boolean;
-}) {
-  const wrapperStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: 8,
-    padding: 4,
-    borderRadius: 100,
-    background: colors.surface.overlayMuted,
-    border: `2px solid ${focused ? colors.text.primaryInverse : 'transparent'}`,
-  };
-  return (
-    <div style={wrapperStyle}>
-      {options.map((opt) => {
-        const selected = opt.value === value;
-        const chipStyle: React.CSSProperties = {
-          padding: '8px 16px',
-          borderRadius: 100,
-          background: selected ? colors.background.brandPrimary : 'transparent',
-          color: selected ? colors.text.primary : colors.text.primaryInverse,
-          ...typography.label.small,
-          fontWeight: 600,
-        };
-        return (
-          <span key={opt.value} style={chipStyle}>
-            {opt.label}
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── Select drawer ───────────────────────────────────────────────────────────
-
-function SelectDrawer({
+function SelectSideSheet({
+  title,
   options,
   activeIndex,
+  focus,
+  currentValue,
   onClose,
 }: {
+  title: string;
   options: Array<{ value: string; label: string }>;
   activeIndex: number;
+  focus: 'list' | 'confirm' | 'cancel';
+  currentValue: string | null;
   onClose: () => void;
 }) {
-  const overlayStyle: React.CSSProperties = {
+  const scrimStyle: React.CSSProperties = {
     position: 'fixed',
     inset: 0,
-    background: 'rgba(0, 0, 0, 0.6)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 400,
+    background: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 399,
+    animation: 'fadeIn 0.2s ease',
   };
-  const panelStyle: React.CSSProperties = {
-    background: '#11172B',
-    border: `4px solid rgba(255, 255, 255, 0.08)`,
-    borderRadius: 24,
+
+  const sheetStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: 0,
+    right: 0,
     width: 480,
-    maxHeight: '70vh',
+    height: '100vh',
+    background: '#11172B',
+    borderLeft: '4px solid rgba(255, 255, 255, 0.08)',
+    padding: '32px 24px',
+    zIndex: 400,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+    animation: 'slideInRight 0.25s ease',
+  };
+
+  const headerStyle: React.CSSProperties = {
+    ...typography.headline.medium,
+    color: colors.text.primaryInverse,
+    paddingBottom: 12,
+    borderBottom: `1px solid ${colors.line.dark}`,
+  };
+
+  const listStyle: React.CSSProperties = {
+    flex: 1,
     overflowY: 'auto',
-    padding: 16,
     display: 'flex',
     flexDirection: 'column',
     gap: 4,
+    padding: '4px 0',
   };
+
+  const footerStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: 12,
+    paddingTop: 16,
+    borderTop: `1px solid ${colors.line.dark}`,
+  };
+
+  const buttonStyle = (isFocused: boolean, primary: boolean): React.CSSProperties => ({
+    flex: 1,
+    padding: '12px 16px',
+    borderRadius: 100,
+    border: `2px solid ${isFocused ? colors.text.primaryInverse : 'transparent'}`,
+    background: primary ? colors.background.brandPrimary : 'transparent',
+    color: primary ? colors.text.primary : colors.text.primaryInverse,
+    ...typography.label.small,
+    fontWeight: 600,
+    cursor: 'pointer',
+    transform: isFocused ? 'scale(1.02)' : 'scale(1)',
+    transition: 'transform 0.15s ease, border-color 0.15s ease',
+  });
+
   return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div style={panelStyle} onClick={(e) => e.stopPropagation()}>
-        {options.map((opt, i) => {
-          const focused = i === activeIndex;
-          const itemStyle: React.CSSProperties = {
-            padding: '12px 16px',
-            borderRadius: 12,
-            background: focused ? colors.background.brandPrimary : 'transparent',
-            color: focused ? colors.text.primary : colors.text.primaryInverse,
-            ...typography.body.medium,
-          };
-          return (
-            <div
-              key={opt.value}
-              style={itemStyle}
-              ref={(el) => {
-                if (focused && el) el.scrollIntoView({ block: 'nearest' });
-              }}
-            >
-              {opt.label}
-            </div>
-          );
-        })}
+    <>
+      <div style={scrimStyle} onClick={onClose} />
+      <div style={sheetStyle}>
+        <div style={headerStyle}>{title}</div>
+        <div style={listStyle}>
+          {options.map((opt, i) => {
+            const isFocused = focus === 'list' && i === activeIndex;
+            const isCurrent = opt.value === currentValue;
+            const itemStyle: React.CSSProperties = {
+              padding: '12px 16px',
+              borderRadius: 12,
+              background: isFocused
+                ? colors.background.brandPrimary
+                : isCurrent
+                ? colors.surface.overlayMuted
+                : 'transparent',
+              color: isFocused ? colors.text.primary : colors.text.primaryInverse,
+              ...typography.body.medium,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            };
+            return (
+              <div
+                key={opt.value}
+                style={itemStyle}
+                ref={(el) => {
+                  if (isFocused && el) el.scrollIntoView({ block: 'nearest' });
+                }}
+              >
+                <span>{opt.label}</span>
+                {isCurrent && <span>●</span>}
+              </div>
+            );
+          })}
+        </div>
+        <div style={footerStyle}>
+          <button type="button" style={buttonStyle(focus === 'confirm', true)}>
+            Confirmar
+          </button>
+          <button type="button" style={buttonStyle(focus === 'cancel', false)}>
+            Cancelar
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

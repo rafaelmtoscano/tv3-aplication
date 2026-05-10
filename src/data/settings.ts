@@ -1,12 +1,6 @@
 // TODO: substituir por persistência via API de perfil quando disponível
 
-export type FontScale = 'normal' | 'large' | 'xlarge';
-
-export const FONT_SCALES: Record<FontScale, { label: string; value: number }> = {
-  normal: { label: 'Normal', value: 1.0 },
-  large: { label: 'Grande', value: 1.15 },
-  xlarge: { label: 'Muito grande', value: 1.3 },
-};
+export const FONT_SCALE_LARGE = 1.15;
 
 export interface Region {
   uf: string;
@@ -53,7 +47,7 @@ export const DEFAULT_CHANNELS: Array<{ id: string; name: string }> = [
 ];
 
 export interface AppSettings {
-  fontScale: FontScale;
+  largeText: boolean;
   highContrast: boolean;
   ccEnabled: boolean;
   librasEnabled: boolean;
@@ -64,7 +58,7 @@ export interface AppSettings {
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  fontScale: 'normal',
+  largeText: false,
   highContrast: false,
   ccEnabled: false,
   librasEnabled: false,
