@@ -156,7 +156,7 @@ export const TileButton = React.memo(
       const imageStyle: React.CSSProperties = {
         width: '100%',
         height: '100%',
-        objectFit: 'fill',
+        objectFit: imageObjectFit,
         position: 'absolute',
         top: 0,
         left: 0,
