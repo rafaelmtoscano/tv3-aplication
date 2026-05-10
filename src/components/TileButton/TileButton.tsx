@@ -156,10 +156,12 @@ export const TileButton = React.memo(
       const imageStyle: React.CSSProperties = {
         width: '100%',
         height: '100%',
-        objectFit: imageObjectFit,
+        objectFit: 'fill',
         position: 'absolute',
         top: 0,
         left: 0,
+        border: '1px solid #242a3c',
+        borderRadius: '16px',
       };
 
       const finalAriaLabel = ariaLabel || label || alt;

@@ -156,7 +156,6 @@ export async function syncChannelsFromSupabase(): Promise<void> {
       if (row.stream_url != null) local.streamUrl      = row.stream_url;
     });
 
-    console.log('[Supabase TV] channels sincronizados:', data.length);
   } catch (err) {
     console.warn('[Supabase TV] erro ao sincronizar channels');
   }

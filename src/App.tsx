@@ -37,7 +37,34 @@ import { mockPharmacies } from './data/pharmacies';
 import { channels, syncChannelsFromSupabase } from './data/channels';
 import { colors } from './styles/colors';
 import { typography } from './styles/typography';
-import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon } from './icons';
+import { SearchIcon, HomeIcon, LiveIcon, GridIcon, AppsIcon, SettingsIcon, HelpIcon, PersonIcon, BellIcon } from './icons';
+import { useNotificationHistory } from './hooks/useNotificationHistory';
+import { NotificationHistoryPanel } from './components/NotificationHistoryPanel';
+import { SettingsProvider, useSettings } from './context/SettingsContext';
+
+function BellIconWithDot({ unreadCount }: { unreadCount: number }) {
+  return (
+    <div style={{
+      position: 'relative',
+      display: 'inline-flex',
+      width: '28px',
+      height: '28px',
+    }}>
+      <BellIcon size={24} />
+      {unreadCount > 0 && (
+        <span style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          background: colors.background.brandPrimary,
+        }} />
+      )}
+    </div>
+  );
+}
 
 type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'pharmacies' | 'settings' | 'help' | 'apps-camara' | 'apps-senado' | 'my-channels' | 'account';
 
@@ -55,6 +82,7 @@ interface AppContentProps {
 
 function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, isMobileRequesting, updateChannel, updateVoting }: AppContentProps) {
   const { connectGovBrMock, govBrUser, isGovBrConnected, activeProfileId, switchProfile } = useAuth();
+  const { fontScaleValue } = useSettings();
   const [showGovBrNotif, setShowGovBrNotif] = useState(false);
   const prevGovBrUserRef = useRef<typeof govBrUser>(null);
 
@@ -76,22 +104,89 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
   const [showConnectionNotif, setShowConnectionNotif] = useState(false);
   const [showRequestNotif, setShowRequestNotif] = useState(false);
   const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
+  const [showNotificationHistory, setShowNotificationHistory] = useState(false);
+  const { history, addNotification, clearHistory, unreadCount, markAsRead } =
+    useNotificationHistory({
+      onNavigate: (page) => setCurrentPage(page as PageId),
+      onCloseHistory: () => setShowNotificationHistory(false),
+    });
   const { deputiesList: deputies, loading: deputiesLoading } = useCamaraAPI();
   const { senatorsList: senators, loading: senatorsLoading } = useSenadoAPI();
+
+  const govBrNotifItems = useMemo<NotificationItem[]>(() => govBrUser ? [
+    {
+      id: 'govbr-connected',
+      icon: (
+        <span className="material-symbols-rounded" style={{ fontSize: 28, color: '#1ea7fd' }}>
+          verified_user
+        </span>
+      ),
+      title: 'gov.br conectado',
+      description: `Bem-vindo, ${govBrUser.name}. Recursos personalizados desbloqueados.`,
+      timestamp: 'agora',
+      onEnter: () => {
+        setShowGovBrNotif(false);
+        setCurrentPage('pharmacies');
+      },
+    },
+  ] : [], [govBrUser]);
+
+  const connectionNotifItems = useMemo<NotificationItem[]>(() => [
+    {
+      id: 'device-connected',
+      icon: <span style={{ fontSize: 28 }}>📱</span>,
+      title: 'Dispositivo conectado',
+      description: `Um dispositivo quer se conectar. Código: ${sessionCode}`,
+      timestamp: 'agora',
+      onEnter: () => {
+        setShowConnectionNotif(false);
+        setCurrentPage('account');
+      },
+    },
+  ], [sessionCode]);
+
+  const requestNotifItems = useMemo<NotificationItem[]>(() => [
+    {
+      id: 'device-requesting',
+      icon: <span style={{ fontSize: 28 }}>📱</span>,
+      title: 'Dispositivo quer se conectar',
+      description: (
+        <>
+          Um dispositivo próximo quer se emparelhar com esta TV. Digite o código{' '}
+          <span style={{
+            fontWeight: 700,
+            fontSize: '1.4em',
+            letterSpacing: '0.15em',
+            color: colors.background.brandPrimary,
+          }}>
+            {sessionCode}
+          </span>
+          {' '}no app para confirmar.
+        </>
+      ),
+      timestamp: 'agora',
+      onEnter: () => {
+        setShowRequestNotif(false);
+        setCurrentPage('account');
+      },
+    },
+  ], [sessionCode]);
 
   // Detecta quando mobile conecta e exibe notificação
   useEffect(() => {
     if (isMobileConnected) {
+      addNotification(connectionNotifItems[0]);
       setShowConnectionNotif(true);
     }
-  }, [isMobileConnected]);
+  }, [isMobileConnected, connectionNotifItems, addNotification]);
 
   // Detecta quando mobile está pedindo conexão
   useEffect(() => {
-    if (isMobileRequesting) {
+    if (isMobileRequesting && !isMobileConnected) {
+      addNotification(requestNotifItems[0]);
       setShowRequestNotif(true);
     }
-  }, [isMobileRequesting]);
+  }, [isMobileRequesting, isMobileConnected, requestNotifItems, addNotification]);
 
   // Fecha notificação de pedido quando conexão é confirmada
   useEffect(() => {
@@ -103,10 +198,26 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
   // Exibe notificação quando gov.br conecta (transição null → usuário)
   useEffect(() => {
     if (govBrUser && !prevGovBrUserRef.current) {
+      addNotification(govBrNotifItems[0]);
+      addNotification({
+        id: 'medication-available',
+        icon: (
+          <span className="material-symbols-rounded" style={{ fontSize: 28, color: '#34D399' }}>
+            medication
+          </span>
+        ),
+        title: 'Medicamento disponível',
+        description: 'Seu medicamento está disponível na Farmácia Popular mais próxima.',
+        timestamp: 'agora',
+        onEnter: () => {
+          setShowNotificationHistory(false);
+          setCurrentPage('pharmacies');
+        },
+      });
       setShowGovBrNotif(true);
     }
     prevGovBrUserRef.current = govBrUser;
-  }, [govBrUser]);
+  }, [govBrUser, govBrNotifItems, addNotification]);
 
   // Sincroniza canais com o Supabase na inicialização
   useEffect(() => {
@@ -144,13 +255,14 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
 
   const sidebarItems: SidebarItem[] = useMemo(() => [
     { id: 'search', icon: <SearchIcon />, label: 'Busca' },
+    { id: 'notifications', icon: <BellIconWithDot unreadCount={unreadCount} />, label: 'Notificações' },
     { id: 'home', icon: <HomeIcon />, label: 'Início' },
     { id: 'live', icon: <LiveIcon />, label: 'Ao vivo' },
     { id: 'schedule', icon: <GridIcon />, label: 'Programação' },
     { id: 'apps', icon: <AppsIcon />, label: 'Serviços' },
     { id: 'settings', icon: <SettingsIcon />, label: 'Configurações' },
     { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
-  ], []);
+  ], [unreadCount]);
 
   const heroLength = currentPage === 'apps-camara' || currentPage === 'apps-senado' ? 1 : currentPage === 'pharmacies' ? 0 : homeData.hero.length;
   const railLengths = useMemo(() => {
@@ -173,6 +285,11 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
   currentPageRef.current = currentPage;
 
   const handleSidebarSelect = useCallback((id: string) => {
+    if (id === 'notifications') {
+      setShowNotificationHistory(true);
+      markAsRead();
+      return;
+    }
     if (id === 'avatar') {
       if (isGovBrConnected) {
         setShowProfileSwitcher(true);
@@ -187,7 +304,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
       return;
     }
     setCurrentPage(id as PageId);
-  }, [isGovBrConnected]);
+  }, [isGovBrConnected, markAsRead]);
 
   const handleDeputySelect = useCallback(async (deputy: import('./data/deputies').Deputy) => {
     setShowDeputiesGrid(false);
@@ -257,6 +374,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     mainItemIndex,
     sidebarIndex,
     resetToMain,
+    focusSidebar,
   } = useFocusNavigation({
     heroLength,
     storiesLength: currentPage === 'home' && isGovBrConnected ? nationalStories.length : 0,
@@ -314,6 +432,15 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
         }
       }
       if (currentPage === 'home') {
+        if (state.mainZone === 'stories') {
+          const story = nationalStories[state.mainItemIndex];
+          if (story?.videoUrl) {
+            setWatchPage({
+              videoUrl: `https://www.youtube.com/watch?v=${story.videoUrl}`,
+              title: story.title,
+            });
+          }
+        }
         if (state.mainZone === 'hero') {
           const slide = homeData.hero[state.mainItemIndex];
           if (slide?.channelId === 'segunda-tela') {
@@ -431,65 +558,6 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
 
   const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || watchPage || livePage || showProfileSwitcher);
 
-  const govBrNotifItems: NotificationItem[] = govBrUser ? [
-    {
-      id: 'govbr-connected',
-      icon: (
-        <span className="material-symbols-rounded" style={{ fontSize: 28, color: '#1ea7fd' }}>
-          verified_user
-        </span>
-      ),
-      title: 'gov.br conectado',
-      description: `Bem-vindo, ${govBrUser.name}. Recursos personalizados desbloqueados.`,
-      timestamp: 'agora',
-      onEnter: () => {
-        setShowGovBrNotif(false);
-        setCurrentPage('pharmacies');
-      },
-    },
-  ] : [];
-
-  const connectionNotifItems: NotificationItem[] = [
-    {
-      id: 'device-connected',
-      icon: <span style={{ fontSize: 28 }}>📱</span>,
-      title: 'Dispositivo conectado',
-      description: `Um dispositivo quer se conectar. Código: ${sessionCode}`,
-      timestamp: 'agora',
-      onEnter: () => {
-        setShowConnectionNotif(false);
-        setCurrentPage('account');
-      },
-    },
-  ];
-
-  const requestNotifItems: NotificationItem[] = [
-    {
-      id: 'device-requesting',
-      icon: <span style={{ fontSize: 28 }}>📱</span>,
-      title: 'Dispositivo quer se conectar',
-      description: (
-        <>
-          Um dispositivo próximo quer se emparelhar com esta TV. Digite o código{' '}
-          <span style={{
-            fontWeight: 700,
-            fontSize: '1.4em',
-            letterSpacing: '0.15em',
-            color: colors.background.brandPrimary,
-          }}>
-            {sessionCode}
-          </span>
-          {' '}no app para confirmar.
-        </>
-      ),
-      timestamp: 'agora',
-      onEnter: () => {
-        setShowRequestNotif(false);
-        setCurrentPage('account');
-      },
-    },
-  ];
-
   const rootStyle: React.CSSProperties = {
     position: 'fixed',
     inset: 0,
@@ -581,7 +649,13 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           />
         );
       case 'settings':
-        return <Settings isActive={currentPage === 'settings'} />;
+        return (
+          <Settings
+            isActive={currentPage === 'settings'}
+            hasMainFocus={!isSidebarExpanded}
+            onFocusSidebar={() => focusSidebar('settings')}
+          />
+        );
       case 'help':
         return <Help isActive={currentPage === 'help'} />;
       case 'my-channels':
@@ -609,7 +683,14 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
         <div style={sidebarSpacerStyle} />
 
         <div style={mainWrapperStyle}>
-          {renderPage()}
+          <div style={{
+            width: `${100 / fontScaleValue}%`,
+            height: `${100 / fontScaleValue}vh`,
+            transform: `scale(${fontScaleValue})`,
+            transformOrigin: 'top left',
+          }}>
+            {renderPage()}
+          </div>
         </div>
       </div>
 
@@ -687,7 +768,6 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           isConnected={isMobileConnected}
           isAuthenticated={isAuthenticated}
           onBack={() => setCurrentPage('home')}
-          onSimulateConnection={() => setShowConnectionNotif(true)}
         />
       )}
 
@@ -715,6 +795,14 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           showHeader={false}
           onClose={() => setShowGovBrNotif(false)}
           autoHide={7000}
+        />
+      )}
+
+      {showNotificationHistory && (
+        <NotificationHistoryPanel
+          items={history}
+          onClose={() => setShowNotificationHistory(false)}
+          onClear={clearHistory}
         />
       )}
 
@@ -762,14 +850,16 @@ export default function App() {
 
   return (
     <AuthProvider sessionCode={sessionCode}>
-      <AppContent
-        isMobileGovBrConnected={isMobileGovBrConnected}
-        sessionCode={sessionCode}
-        isMobileConnected={isMobileConnected}
-        isMobileRequesting={isMobileRequesting}
-        updateChannel={updateChannel}
-        updateVoting={updateVoting}
-      />
+      <SettingsProvider>
+        <AppContent
+          isMobileGovBrConnected={isMobileGovBrConnected}
+          sessionCode={sessionCode}
+          isMobileConnected={isMobileConnected}
+          isMobileRequesting={isMobileRequesting}
+          updateChannel={updateChannel}
+          updateVoting={updateVoting}
+        />
+      </SettingsProvider>
     </AuthProvider>
   );
 }

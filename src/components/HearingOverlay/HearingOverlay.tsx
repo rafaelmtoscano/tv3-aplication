@@ -199,9 +199,15 @@ export function HearingOverlay({ title, comments, isAuthenticated, onClose, onBa
             </p>
           </div>
           <button onClick={onGovAuth} style={{
-            width: '100%', padding: '14px', borderRadius: 100, border: 'none',
-            background: colors.background.primary, color: colors.text.primary,
-            ...typography.body.large, fontWeight: 600, cursor: 'pointer',
+            width: '100%',
+            padding: '14px',
+            borderRadius: 100,
+            border: focusIndex === 0 ? 'none' : `2px solid ${colors.line.dark}`,
+            background: focusIndex === 0 ? colors.background.primary : 'transparent',
+            color: focusIndex === 0 ? colors.text.primary : colors.text.primaryInverse,
+            ...typography.body.large,
+            fontWeight: 600,
+            cursor: 'pointer',
             transform: focusIndex === 0 ? 'scale(1.02)' : 'scale(1)',
             boxShadow: focusIndex === 0 ? '0 0 0 3px rgba(255,255,255,0.3)' : 'none',
             transition: 'transform 0.15s ease, box-shadow 0.15s ease',
