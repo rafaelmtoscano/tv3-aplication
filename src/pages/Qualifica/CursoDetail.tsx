@@ -19,11 +19,15 @@ export default function CursoDetail({
   onBack,
   onSendToMobile,
 }: CursoDetailProps) {
-  const [focusIndex, setFocusIndex] = useState<FocusIndex>(1);
+  const [focusIndex, setFocusIndex] = useState<FocusIndex>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const backButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (isActive) containerRef.current?.focus();
+    if (isActive) {
+      setFocusIndex(0);
+      backButtonRef.current?.focus();
+    }
   }, [isActive]);
 
   const handleKeyDown = useCallback(
@@ -64,6 +68,7 @@ export default function CursoDetail({
     >
       <div className="curso-detail-content">
         <button
+          ref={backButtonRef}
           className="curso-detail-back"
           style={{
             color: colors.text.primaryInverse,

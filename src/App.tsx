@@ -590,7 +590,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     const categoriaMudou =
       currentPage === 'qualifica' &&
       prevCategoriaRef.current !== qualificaCategoria;
-    if (enteredQualifica || categoriaMudou) {
+    if (enteredQualifica || (categoriaMudou && mainZone !== 'rail-0')) {
       resetToMain();
     }
     prevPageRef.current = currentPage;
