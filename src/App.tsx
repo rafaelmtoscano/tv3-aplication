@@ -17,6 +17,10 @@ import { NotificationPanel } from './components/NotificationPanel';
 import type { NotificationItem } from './components/NotificationPanel';
 import Camara from './pages/Camara/index';
 import Senado from './pages/Senado/index';
+import Qualifica from './pages/Qualifica/index';
+import CursoDetail from './pages/Qualifica/CursoDetail';
+import { qualificaCategorias, filtrarCursos } from './data/qualifica';
+import type { QualificaCurso } from './data/qualifica';
 import DeputiesGrid from './pages/Camara/DeputiesGrid';
 import SenatorsGrid from './pages/Senado/SenatorsGrid';
 import DeputyDetail from './pages/Camara/DeputyDetail';
@@ -66,7 +70,7 @@ function BellIconWithDot({ unreadCount }: { unreadCount: number }) {
   );
 }
 
-type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'pharmacies' | 'settings' | 'help' | 'apps-camara' | 'apps-senado' | 'my-channels' | 'account';
+type PageId = 'home' | 'search' | 'live' | 'schedule' | 'apps' | 'pharmacies' | 'settings' | 'help' | 'apps-camara' | 'apps-senado' | 'qualifica' | 'my-channels' | 'account';
 
 // ── AppContent ─────────────────────────────────────────────────────────────
 // Contains all app logic. Mounted inside AuthProvider so it can call useAuth().
@@ -100,6 +104,8 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
   const [showSenatorsGrid, setShowSenatorsGrid] = useState(false);
   const [selectedDeputy, setSelectedDeputy] = useState<import('./data/deputies').Deputy | null>(null);
   const [deputyLoading, setDeputyLoading] = useState(false);
+  const [qualificaCategoria, setQualificaCategoria] = useState('todos');
+  const [selectedCurso, setSelectedCurso] = useState<QualificaCurso | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showConnectionNotif, setShowConnectionNotif] = useState(false);
   const [showRequestNotif, setShowRequestNotif] = useState(false);
@@ -264,7 +270,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     { id: 'help', icon: <HelpIcon />, label: 'Ajuda' },
   ], [unreadCount]);
 
-  const heroLength = currentPage === 'apps-camara' || currentPage === 'apps-senado' ? 1 : currentPage === 'pharmacies' ? 0 : homeData.hero.length;
+  const heroLength = currentPage === 'apps-camara' || currentPage === 'apps-senado' ? 1 : currentPage === 'pharmacies' || currentPage === 'qualifica' ? 0 : homeData.hero.length;
   const railLengths = useMemo(() => {
     if (currentPage === 'apps-camara') {
       return [deputies.length + 1, 10]; // +1 for "Ver todos"
@@ -276,8 +282,11 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     if (currentPage === 'pharmacies') {
       return [mockPharmacies.length];
     }
+    if (currentPage === 'qualifica') {
+      return [qualificaCategorias.length, filtrarCursos(qualificaCategoria).length];
+    }
     return [services.length, ...homeData.rails.map((r) => r.cards.length), isGovBrConnected ? 0 : 1];
-  }, [currentPage, deputies.length, senators.length, isGovBrConnected]);
+  }, [currentPage, deputies.length, senators.length, isGovBrConnected, qualificaCategoria]);
 
   const sidebarItemIds = useMemo(() => sidebarItems.map((i) => i.id), [sidebarItems]);
 
@@ -362,6 +371,9 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     if (service.id === 'meu-sus') {
       setCurrentPage('pharmacies');
     }
+    if (service.id === 'qualifica-pro') {
+      setCurrentPage('qualifica');
+    }
   }, []);
 
   const handlePharmaciesEscape = useCallback(() => {
@@ -381,10 +393,18 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     railLengths,
     sidebarItemIds,
     sidebarLength: sidebarItems.length + 1,
-    activeSidebarId: currentPage === 'pharmacies' ? 'apps' : currentPage,
+    activeSidebarId: currentPage === 'pharmacies' || currentPage === 'qualifica' ? 'apps' : currentPage,
     onEnter: useCallback((state: FocusState) => {
       const currentPage = currentPageRef.current;
       if (currentPage === 'pharmacies') {
+        return;
+      }
+      if (currentPage === 'qualifica') {
+        if (state.mainZone === 'rail-1') {
+          const cursos = filtrarCursos(qualificaCategoria);
+          const curso = cursos[state.mainItemIndex];
+          if (curso) setSelectedCurso(curso);
+        }
         return;
       }
       if (currentPage === 'apps-camara') {
@@ -528,9 +548,9 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           setCurrentPage('account');
         }
       }
-    }, [deputies, handleDeputySelect, handleSenatorSelect, handleServiceSelect, senators, updateChannel, isGovBrConnected]),
+    }, [deputies, handleDeputySelect, handleSenatorSelect, handleServiceSelect, senators, updateChannel, isGovBrConnected, qualificaCategoria]),
     onSidebarSelect: handleSidebarSelect,
-    onEscape: currentPage === 'pharmacies' ? handlePharmaciesEscape : undefined,
+    onEscape: currentPage === 'pharmacies' || currentPage === 'qualifica' ? () => setCurrentPage('apps') : undefined,
     verticalNavigation: currentPage === 'pharmacies',
   });
 
@@ -556,7 +576,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     };
   }, [isGovBrConnected, activeProfile]);
 
-  const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || watchPage || livePage || showProfileSwitcher);
+  const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || selectedCurso || watchPage || livePage || showProfileSwitcher);
 
   const rootStyle: React.CSSProperties = {
     position: 'fixed',
@@ -637,6 +657,16 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
             onDeputySelect={handleDeputySelect}
           />
         );
+      case 'qualifica':
+        return (
+          <Qualifica
+            mainZone={mainZone}
+            mainItemIndex={mainItemIndex}
+            isActive={currentPage === 'qualifica'}
+            categoriaAtiva={qualificaCategoria}
+            onCategoriaChange={setQualificaCategoria}
+          />
+        );
       case 'apps-senado':
         return (
           <Senado
@@ -674,7 +704,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           items={sidebarItems}
           sign={sidebarSign}
           expanded={isSidebarExpanded}
-          activeItemId={currentPage === 'pharmacies' ? 'apps' : currentPage}
+          activeItemId={currentPage === 'pharmacies' || currentPage === 'qualifica' ? 'apps' : currentPage}
           focusedItemId={isSidebarExpanded ? (sidebarIndex === 0 ? 'avatar' : sidebarItems[sidebarIndex - 1]?.id) : undefined}
           onItemClick={handleSidebarSelect}
         />
@@ -711,6 +741,19 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           loading={senatorsLoading}
           onBack={() => { setShowSenatorsGrid(false); }}
           onSenatorSelect={handleSenatorSelect}
+        />
+      )}
+
+      {selectedCurso && (
+        <CursoDetail
+          curso={selectedCurso}
+          isActive={true}
+          onBack={() => setSelectedCurso(null)}
+          onSendToMobile={(curso) => {
+            console.log('[Qualifica] gatilho mobile:', curso.qualificaUrl);
+            setToastMessage('Enviado para o celular');
+            setSelectedCurso(null);
+          }}
         />
       )}
 

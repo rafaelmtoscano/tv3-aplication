@@ -36,4 +36,11 @@ export const services: Service[] = [
     backgroundColor: '#FFFFFF',
     available: false,
   },
+  {
+    id: 'qualifica-pro',
+    name: 'QualificaPro',
+    image: 'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F7b4ca1dd20c549f2ab8adfb7e0300393',
+    backgroundColor: '#1351B4',
+    available: true,
+  },
 ];
