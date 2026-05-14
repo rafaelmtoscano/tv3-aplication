@@ -13,6 +13,8 @@ import { typography } from '../../styles/typography';
 import { TileButton } from '../../components/TileButton';
 import { services } from '../../data/services';
 
+const visibleServices = services.filter((s) => !s.hidden);
+
 // ─── Login Card styles (gov.br section) ──────────────────────────────────────
 const loginCardStyles = `
   .govbr-login-section {
@@ -260,7 +262,7 @@ export default function Home({ mainZone, mainItemIndex, isActive, isGovBrConnect
               scrollBehavior: 'smooth',
               boxSizing: 'border-box',
             }}>
-              {services.map((service, i) => (
+              {visibleServices.map((service, i) => (
                 <div key={service.id} style={{ flexShrink: 0 }}>
                   <TileButton
                     variant="image"

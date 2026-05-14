@@ -46,6 +46,8 @@ import { useNotificationHistory } from './hooks/useNotificationHistory';
 import { NotificationHistoryPanel } from './components/NotificationHistoryPanel';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
 
+const visibleServices = services.filter((s) => !s.hidden);
+
 function BellIconWithDot({ unreadCount }: { unreadCount: number }) {
   return (
     <div style={{
@@ -292,7 +294,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
       }
       return [qualificaCategorias.length, filtrarCursos(qualificaCategoria).length];
     }
-    return [services.length, ...homeData.rails.map((r) => r.cards.length), isGovBrConnected ? 0 : 1];
+    return [visibleServices.length, ...homeData.rails.map((r) => r.cards.length), isGovBrConnected ? 0 : 1];
   }, [currentPage, deputies.length, senators.length, isGovBrConnected, qualificaCategoria]);
 
   const sidebarItemIds = useMemo(() => sidebarItems.map((i) => i.id), [sidebarItems]);
@@ -521,7 +523,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
         }
         // rail-0 = Serviços (new)
         if (state.mainZone === 'rail-0') {
-          const service = services[state.mainItemIndex];
+          const service = visibleServices[state.mainItemIndex];
           if (service) {
             handleServiceSelect(service.id);
           }
