@@ -131,7 +131,7 @@ export default function Qualifica({
               className="qualifica-hero-title"
               style={typography.display.large}
             >
-              {totalCursos} Cursos gratuitos e remotos para você
+              Cursos gratuitos e remotos para você
             </h1>
             <span
               className="qualifica-hero-tagline"
