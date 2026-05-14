@@ -72,7 +72,7 @@ export default function Qualifica({
     if (!isActive) return;
     let y = 0;
     if (mainZone === 'rail-0') {
-      y = HERO_HEIGHT - SCROLL_OFFSET;
+      y = 0;
     } else {
       const m = mainZone.match(/^rail-(\d+)$/);
       if (m) {
