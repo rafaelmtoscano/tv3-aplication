@@ -4,6 +4,8 @@ import { typography } from '../../styles/typography';
 import { TileButton } from '../../components/TileButton/TileButton';
 import { services } from '../../data/services';
 
+const visibleServices = services.filter((s) => !s.hidden);
+
 interface AppsProps {
   isActive: boolean;
   isSidebarExpanded?: boolean;
@@ -43,7 +45,7 @@ export default function Apps({ isActive, isSidebarExpanded, onServiceSelect }: A
         // Let it bubble to sidebar if focusedIndex is 0
         break;
       case 'ArrowRight':
-        if (focusedIndex < services.length - 1) {
+        if (focusedIndex < visibleServices.length - 1) {
           e.preventDefault();
           e.stopPropagation();
           setFocusedIndex((i) => i + 1);
@@ -52,7 +54,7 @@ export default function Apps({ isActive, isSidebarExpanded, onServiceSelect }: A
       case 'Enter':
         e.preventDefault();
         e.stopPropagation();
-        const service = services[focusedIndex];
+        const service = visibleServices[focusedIndex];
         if (!service) return;
         if (!service.available) {
           setToastMessage('Conteúdo indisponível no momento');
@@ -151,7 +153,7 @@ export default function Apps({ isActive, isSidebarExpanded, onServiceSelect }: A
       </div>
 
       <div style={railStyle}>
-        {services.map((service, i) => (
+        {visibleServices.map((service, i) => (
           <TileButton
             key={service.id}
             variant="image"

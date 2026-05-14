@@ -283,6 +283,13 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
       return [mockPharmacies.length];
     }
     if (currentPage === 'qualifica') {
+      if (qualificaCategoria === 'todos') {
+        const cats = qualificaCategorias.filter((c) => c.id !== 'todos');
+        return [
+          qualificaCategorias.length,
+          ...cats.map((c) => filtrarCursos(c.id).length),
+        ];
+      }
       return [qualificaCategorias.length, filtrarCursos(qualificaCategoria).length];
     }
     return [services.length, ...homeData.rails.map((r) => r.cards.length), isGovBrConnected ? 0 : 1];
@@ -380,6 +387,14 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     setCurrentPage('apps');
   }, []);
 
+  // Reset Qualifica state on entry: categoria 'todos'
+  useEffect(() => {
+    if (currentPage === 'qualifica') {
+      setQualificaCategoria('todos');
+    }
+  }, [currentPage]);
+
+
   const {
     isSidebarExpanded,
     mainZone,
@@ -400,9 +415,18 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
         return;
       }
       if (currentPage === 'qualifica') {
-        if (state.mainZone === 'rail-1') {
-          const cursos = filtrarCursos(qualificaCategoria);
-          const curso = cursos[state.mainItemIndex];
+        const m = state.mainZone.match(/^rail-(\d+)$/);
+        if (m) {
+          const railIdx = parseInt(m[1]);
+          if (railIdx === 0) return; // chips: filtro já aplicado ao navegar
+          let curso: QualificaCurso | undefined;
+          if (qualificaCategoria === 'todos') {
+            const cats = qualificaCategorias.filter((c) => c.id !== 'todos');
+            const cat = cats[railIdx - 1];
+            if (cat) curso = filtrarCursos(cat.id)[state.mainItemIndex];
+          } else {
+            curso = filtrarCursos(qualificaCategoria)[state.mainItemIndex];
+          }
           if (curso) setSelectedCurso(curso);
         }
         return;
@@ -553,6 +577,23 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     onEscape: currentPage === 'pharmacies' || currentPage === 'qualifica' ? () => setCurrentPage('apps') : undefined,
     verticalNavigation: currentPage === 'pharmacies',
   });
+
+  // Reset focus quando entra em Qualifica ou quando muda a categoria
+  // (evita ficar focado em rail-N inexistente após trocar de chip).
+  const prevPageRef = useRef(currentPage);
+  const prevCategoriaRef = useRef(qualificaCategoria);
+  useEffect(() => {
+    const enteredQualifica =
+      currentPage === 'qualifica' && prevPageRef.current !== 'qualifica';
+    const categoriaMudou =
+      currentPage === 'qualifica' &&
+      prevCategoriaRef.current !== qualificaCategoria;
+    if (enteredQualifica || categoriaMudou) {
+      resetToMain();
+    }
+    prevPageRef.current = currentPage;
+    prevCategoriaRef.current = qualificaCategoria;
+  }, [currentPage, qualificaCategoria, resetToMain]);
 
   const isAuthenticated = isGovBrConnected;
 

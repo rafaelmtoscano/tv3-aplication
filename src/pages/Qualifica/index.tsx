@@ -15,7 +15,7 @@ const CHIPS_HEIGHT = 120;
 const RAIL_HEIGHT = 408;
 const SCROLL_OFFSET = 160;
 
-// rail-0 = chips, rail-1 = cursos
+// rail-0 = chips, rail-1..N = rails de cursos
 const HERO_BG =
   'https://cdn.builder.io/api/v1/image/assets%2F8decac7d217b4e02a090384b68b42488%2F23a546d531574df3b5ed68a926341c55';
 const QUALIFICA_LOGO =
@@ -38,7 +38,8 @@ export default function Qualifica({
 }: QualificaProps) {
   const [scrollY, setScrollY] = useState(0);
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const cursoRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // refs por rail-N (N>=1): cursoRefs.current[N] = array de cards
+  const cursoRefs = useRef<Record<number, (HTMLDivElement | null)[]>>({});
 
   // Sincroniza chip ↔ filtro: navegar entre chips muda a categoria imediatamente
   useEffect(() => {
@@ -47,22 +48,40 @@ export default function Qualifica({
     }
   }, [mainZone, mainItemIndex, onCategoriaChange]);
 
-  const cursosFiltrados = useMemo(
-    () => filtrarCursos(categoriaAtiva),
-    [categoriaAtiva],
+  // Categorias renderizadas como rails (excluindo "todos" quando agrupando)
+  const railCategorias = useMemo(
+    () => qualificaCategorias.filter((c) => c.id !== 'todos'),
+    [],
   );
 
-  const categoriaAtual = useMemo(
-    () => qualificaCategorias.find((c) => c.id === categoriaAtiva),
-    [categoriaAtiva],
-  );
+  // Lista de rails a renderizar: no modo "todos", uma por categoria; senão, só a selecionada
+  const rails = useMemo(() => {
+    if (categoriaAtiva === 'todos') {
+      return railCategorias.map((cat) => ({
+        cat,
+        cursos: filtrarCursos(cat.id),
+      }));
+    }
+    const cat = qualificaCategorias.find((c) => c.id === categoriaAtiva);
+    if (!cat) return [];
+    return [{ cat, cursos: filtrarCursos(cat.id) }];
+  }, [categoriaAtiva, railCategorias]);
 
-  // Scroll virtual — mesma fórmula da Home
+  // Scroll virtual
   useEffect(() => {
     if (!isActive) return;
     let y = 0;
-    if (mainZone === 'rail-0') y = HERO_HEIGHT - SCROLL_OFFSET;
-    else if (mainZone === 'rail-1') y = HERO_HEIGHT + CHIPS_HEIGHT - SCROLL_OFFSET;
+    if (mainZone === 'rail-0') {
+      y = HERO_HEIGHT - SCROLL_OFFSET;
+    } else {
+      const m = mainZone.match(/^rail-(\d+)$/);
+      if (m) {
+        const railIdx = parseInt(m[1]);
+        if (railIdx >= 1) {
+          y = HERO_HEIGHT + CHIPS_HEIGHT + (railIdx - 1) * RAIL_HEIGHT - SCROLL_OFFSET;
+        }
+      }
+    }
     setScrollY(y);
   }, [mainZone, isActive]);
 
@@ -74,13 +93,20 @@ export default function Qualifica({
         block: 'nearest',
         inline: 'center',
       });
+      return;
     }
-    if (mainZone === 'rail-1' && cursoRefs.current[mainItemIndex]) {
-      cursoRefs.current[mainItemIndex]?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center',
-      });
+    const m = mainZone.match(/^rail-(\d+)$/);
+    if (m) {
+      const railIdx = parseInt(m[1]);
+      if (railIdx >= 1) {
+        const arr = cursoRefs.current[railIdx];
+        const el = arr && arr[mainItemIndex];
+        el?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        });
+      }
     }
   }, [mainZone, mainItemIndex]);
 
@@ -154,44 +180,54 @@ export default function Qualifica({
           </div>
         </nav>
 
-        {/* ── Rail de cursos (rail-1) ── */}
-        <section className="qualifica-cursos-section">
-          <h2
-            className="qualifica-cursos-title"
-            style={{
-              ...typography.display.small,
-              color: colors.text.primaryInverse,
-            }}
-          >
-            {categoriaAtual?.nome ?? 'Cursos'}
-          </h2>
-          <div className="qualifica-cursos-rail-outer">
-            <div className="qualifica-cursos-rail">
-              {cursosFiltrados.map((curso, i) => {
-                const isFocused =
-                  mainZone === 'rail-1' && mainItemIndex === i;
-                return (
-                  <div
-                    key={curso.id}
-                    ref={(el) => {
-                      cursoRefs.current[i] = el;
-                    }}
-                    className="qualifica-curso-item"
-                  >
-                    <ContentCard
-                      variant="image-text"
-                      image={curso.thumbnail}
-                      label={curso.instituicao}
-                      title={curso.titulo}
-                      timestamp={`${curso.modalidade} · ${curso.cargaHoraria}h`}
-                      isFocused={isFocused}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+        {/* ── Rails de cursos (rail-1 .. rail-N) ── */}
+        {rails.map((rail, idx) => {
+          const railIdx = idx + 1; // rail-1, rail-2, ...
+          // garante array para refs
+          if (!cursoRefs.current[railIdx]) cursoRefs.current[railIdx] = [];
+          return (
+            <section key={rail.cat.id} className="qualifica-cursos-section">
+              <h2
+                className="qualifica-cursos-title"
+                style={{
+                  ...typography.display.small,
+                  color: colors.text.primaryInverse,
+                }}
+              >
+                {rail.cat.nome}
+              </h2>
+              <div className="qualifica-cursos-rail-outer">
+                <div className="qualifica-cursos-rail">
+                  {rail.cursos.map((curso, i) => {
+                    const isFocused =
+                      mainZone === `rail-${railIdx}` && mainItemIndex === i;
+                    return (
+                      <div
+                        key={curso.id}
+                        ref={(el) => {
+                          if (!cursoRefs.current[railIdx]) {
+                            cursoRefs.current[railIdx] = [];
+                          }
+                          cursoRefs.current[railIdx][i] = el;
+                        }}
+                        className="qualifica-curso-item"
+                      >
+                        <ContentCard
+                          variant="image-text"
+                          image={curso.thumbnail}
+                          label={curso.instituicao}
+                          title={curso.titulo}
+                          timestamp={`${curso.modalidade} · ${curso.cargaHoraria}h`}
+                          isFocused={isFocused}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          );
+        })}
 
         <div className="qualifica-bottom-spacer" />
       </div>

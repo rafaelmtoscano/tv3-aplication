@@ -28,14 +28,14 @@ export default function CursoDetail({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const navKeys = ['ArrowLeft', 'ArrowRight', 'Enter', 'Escape', 'Backspace'];
+      const navKeys = ['ArrowUp', 'ArrowDown', 'Enter', 'Escape', 'Backspace'];
       if (navKeys.includes(e.key)) e.preventDefault();
 
       switch (e.key) {
-        case 'ArrowLeft':
+        case 'ArrowUp':
           setFocusIndex(0);
           break;
-        case 'ArrowRight':
+        case 'ArrowDown':
           setFocusIndex(1);
           break;
         case 'Enter':
