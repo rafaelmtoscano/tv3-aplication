@@ -107,7 +107,11 @@ export default function CursoDetail({
   const empregabilidadeLabel = EMPREGABILIDADE_LABEL[empregabilidade];
   const empregabilidadeColor = EMPREGABILIDADE_ICON_COLOR[empregabilidade];
   const salario = curso.salarioMedio
-    ? curso.salarioMedio.toLocaleString('pt-BR')
+    ? curso.salarioMedio.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        maximumFractionDigits: 0,
+      })
     : '—';
 
   return (
