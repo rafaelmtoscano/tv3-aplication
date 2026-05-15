@@ -388,10 +388,6 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     }
   }, []);
 
-  const handlePharmaciesEscape = useCallback(() => {
-    setCurrentPage('apps');
-  }, []);
-
   // Reset Qualifica state on entry: categoria 'todos'
   useEffect(() => {
     if (currentPage === 'qualifica') {

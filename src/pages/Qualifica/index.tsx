@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { ContentCard } from '../../components/ContentCard/ContentCard';
