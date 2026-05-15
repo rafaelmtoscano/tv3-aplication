@@ -54,19 +54,34 @@ export default function CursoDetail({
   onSendToMobile,
 }: CursoDetailProps) {
   const [focusIndex, setFocusIndex] = useState<FocusIndex>(1);
+  const [isClosing, setIsClosing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isActive) {
       setFocusIndex(1);
+      setIsClosing(false);
       containerRef.current?.focus();
     }
   }, [isActive]);
 
+  const close = useCallback(
+    (after: () => void) => {
+      if (isClosing) return;
+      setIsClosing(true);
+      window.setTimeout(after, 200);
+    },
+    [isClosing],
+  );
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const navKeys = ['ArrowUp', 'ArrowDown', 'Enter', 'Escape', 'Backspace'];
-      if (navKeys.includes(e.key)) e.preventDefault();
+      const navKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape', 'Backspace'];
+      if (navKeys.includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.nativeEvent.stopImmediatePropagation();
+      }
 
       switch (e.key) {
         case 'ArrowUp':
@@ -76,16 +91,16 @@ export default function CursoDetail({
           setFocusIndex(1);
           break;
         case 'Enter':
-          if (focusIndex === 0) onSendToMobile(curso);
-          else onBack();
+          if (focusIndex === 0) close(() => onSendToMobile(curso));
+          else close(onBack);
           break;
         case 'Escape':
         case 'Backspace':
-          onBack();
+          close(onBack);
           break;
       }
     },
-    [focusIndex, onBack, onSendToMobile, curso],
+    [focusIndex, onBack, onSendToMobile, curso, close],
   );
 
   const empregabilidade = curso.empregabilidade ?? 'media';
@@ -99,17 +114,12 @@ export default function CursoDetail({
     <div
       ref={containerRef}
       tabIndex={0}
-      className="curso-detail-overlay"
+      className={`curso-detail-overlay${isClosing ? ' is-closing' : ''}`}
       onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
     >
-      <div
-        className="curso-detail-modal"
-        style={{ backgroundImage: `url(${curso.thumbnail})` }}
-      >
-        <div className="curso-detail-modal-tint" />
-
+      <div className="curso-detail-modal">
         <section className="curso-detail-card-top">
           <header className="curso-detail-header">
             <img
@@ -152,13 +162,13 @@ export default function CursoDetail({
         <section className="curso-detail-card-bottom">
           <button
             className={`curso-detail-btn curso-detail-btn-ghost ${focusIndex === 0 ? 'is-focused' : ''}`}
-            onClick={() => onSendToMobile(curso)}
+            onClick={() => close(() => onSendToMobile(curso))}
           >
             Inscrever pelo celular
           </button>
           <button
             className={`curso-detail-btn curso-detail-btn-primary ${focusIndex === 1 ? 'is-focused' : ''}`}
-            onClick={onBack}
+            onClick={() => close(onBack)}
           >
             Fechar
           </button>
@@ -176,6 +186,10 @@ export default function CursoDetail({
           justify-content: center;
           outline: none;
           z-index: 220;
+          animation: curso-detail-overlay-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .curso-detail-overlay.is-closing {
+          animation: curso-detail-overlay-out 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
         }
         .curso-detail-modal {
           position: relative;
@@ -188,18 +202,28 @@ export default function CursoDetail({
           gap: 32px;
           border-radius: 24px;
           background-color: ${colors.background.baseInverse};
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
           box-shadow: 0 4px 37.5px 45px rgba(0, 0, 0, 0.25);
+          will-change: opacity, transform;
+          animation: curso-detail-modal-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .curso-detail-modal-tint {
-          position: absolute;
-          inset: 0;
-          background: ${colors.background.baseInverse};
-          opacity: 0.94;
-          pointer-events: none;
-          border-radius: 24px;
+        .curso-detail-overlay.is-closing .curso-detail-modal {
+          animation: curso-detail-modal-out 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+        @keyframes curso-detail-overlay-in {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes curso-detail-overlay-out {
+          from { opacity: 1; }
+          to   { opacity: 0; }
+        }
+        @keyframes curso-detail-modal-in {
+          from { opacity: 0; transform: translateY(8px) scale(0.96); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes curso-detail-modal-out {
+          from { opacity: 1; transform: translateY(0) scale(1); }
+          to   { opacity: 0; transform: translateY(8px) scale(0.97); }
         }
         .curso-detail-card-top {
           position: relative;

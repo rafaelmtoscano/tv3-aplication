@@ -29,8 +29,12 @@ export default function RegionSuggestionBanner({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const navKeys = ['ArrowLeft', 'ArrowRight', 'Enter', 'Escape', 'Backspace'];
-      if (navKeys.includes(e.key)) e.preventDefault();
+      const navKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Escape', 'Backspace'];
+      if (navKeys.includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.nativeEvent.stopImmediatePropagation();
+      }
       switch (e.key) {
         case 'ArrowLeft':
           setFocusIndex(0);
@@ -64,7 +68,13 @@ export default function RegionSuggestionBanner({
       role="dialog"
       aria-label={`Detectamos que você está em ${ufNome}`}
     >
-      <div className="region-suggestion-icon" aria-hidden="true">📍</div>
+      <span
+        className="material-symbols-rounded region-suggestion-icon"
+        style={{ fontVariationSettings: '"FILL" 1' }}
+        aria-hidden="true"
+      >
+        location_on
+      </span>
       <h3 className="region-suggestion-title">Detectamos que você está em {ufNome}</h3>
       <p className="region-suggestion-desc">
         Quer ver primeiro os cursos disponíveis no seu estado?
@@ -103,6 +113,8 @@ export default function RegionSuggestionBanner({
         }
         .region-suggestion-icon {
           font-size: 28px;
+          color: ${colors.text.primaryInverse};
+          line-height: 1;
         }
         .region-suggestion-title {
           margin: 0;

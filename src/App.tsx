@@ -628,7 +628,18 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
     !settings.regionSuggestionDismissed &&
     userLocation.status === 'success';
 
-  const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || selectedCurso || watchPage || livePage || showProfileSwitcher);
+  const [regionBannerReady, setRegionBannerReady] = useState(false);
+  useEffect(() => {
+    if (!showRegionSuggestion) {
+      setRegionBannerReady(false);
+      return;
+    }
+    const timer = setTimeout(() => setRegionBannerReady(true), 4000);
+    return () => clearTimeout(timer);
+  }, [showRegionSuggestion]);
+
+  // CursoDetail e RegionSuggestionBanner abrem sobre a página (sem esconder o root)
+  const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || watchPage || livePage || showProfileSwitcher);
 
   const rootStyle: React.CSSProperties = {
     position: 'fixed',
@@ -797,7 +808,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
         />
       )}
 
-      {showRegionSuggestion && userLocation.status === 'success' && (
+      {showRegionSuggestion && regionBannerReady && userLocation.status === 'success' && (
         <RegionSuggestionBanner
           ufNome={userLocation.nome}
           // Banner só é renderizado em currentPage='qualifica'; o único overlay

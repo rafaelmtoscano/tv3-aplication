@@ -142,7 +142,14 @@ export default function Qualifica({
             </h1>
             {ufNome && (
               <span className="qualifica-uf-chip" style={typography.body.medium}>
-                📍 Mostrando cursos de {ufNome}
+                <span
+                  className="material-symbols-rounded qualifica-uf-chip-icon"
+                  style={{ fontVariationSettings: '"FILL" 1' }}
+                  aria-hidden="true"
+                >
+                  location_on
+                </span>
+                Mostrando cursos de {ufNome}
               </span>
             )}
             <span
@@ -304,6 +311,13 @@ export default function Qualifica({
         }
         .qualifica-uf-chip {
           color: ${colors.text.secondaryInverse};
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .qualifica-uf-chip-icon {
+          font-size: 22px;
+          line-height: 1;
         }
         .qualifica-chips-rail {
           height: ${CHIPS_HEIGHT}px;
