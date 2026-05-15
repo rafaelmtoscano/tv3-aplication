@@ -5,8 +5,8 @@ import { ContentCard } from '../../components/ContentCard/ContentCard';
 import {
   qualificaCategorias,
   filtrarCursos,
-  totalCursos,
 } from '../../data/qualifica';
+import { BRAZILIAN_STATES } from '../../data/settings';
 import type { MainZone } from '../../hooks/useFocusNavigation';
 
 // Layout constants — mesma fórmula da Home
@@ -27,6 +27,7 @@ export interface QualificaProps {
   isActive: boolean;
   categoriaAtiva: string;
   onCategoriaChange: (id: string) => void;
+  ufFiltro?: string | null;
 }
 
 export default function Qualifica({
@@ -35,6 +36,7 @@ export default function Qualifica({
   isActive,
   categoriaAtiva,
   onCategoriaChange,
+  ufFiltro,
 }: QualificaProps) {
   const [scrollY, setScrollY] = useState(0);
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -59,13 +61,18 @@ export default function Qualifica({
     if (categoriaAtiva === 'todos') {
       return railCategorias.map((cat) => ({
         cat,
-        cursos: filtrarCursos(cat.id),
+        cursos: filtrarCursos(cat.id, ufFiltro),
       }));
     }
     const cat = qualificaCategorias.find((c) => c.id === categoriaAtiva);
     if (!cat) return [];
-    return [{ cat, cursos: filtrarCursos(cat.id) }];
-  }, [categoriaAtiva, railCategorias]);
+    return [{ cat, cursos: filtrarCursos(cat.id, ufFiltro) }];
+  }, [categoriaAtiva, railCategorias, ufFiltro]);
+
+  const ufNome = useMemo(
+    () => (ufFiltro ? BRAZILIAN_STATES.find((s) => s.uf === ufFiltro)?.name : null),
+    [ufFiltro],
+  );
 
   // Scroll virtual
   useEffect(() => {
@@ -133,6 +140,11 @@ export default function Qualifica({
             >
               Cursos gratuitos e remotos para você
             </h1>
+            {ufNome && (
+              <span className="qualifica-uf-chip" style={typography.body.medium}>
+                📍 Mostrando cursos de {ufNome}
+              </span>
+            )}
             <span
               className="qualifica-hero-tagline"
               style={typography.body.large}
@@ -289,6 +301,9 @@ export default function Qualifica({
           color: ${colors.text.secondaryInverse};
           letter-spacing: 0.08em;
           text-transform: uppercase;
+        }
+        .qualifica-uf-chip {
+          color: ${colors.text.secondaryInverse};
         }
         .qualifica-chips-rail {
           height: ${CHIPS_HEIGHT}px;

@@ -11,10 +11,14 @@ export interface QualificaCategoria {
   icone?: string; // nome do ícone no src/icons/index.tsx (opcional)
 }
 
+export type Empregabilidade = 'alta' | 'media' | 'baixa';
+
 export interface QualificaCurso {
   id: string;
   titulo: string;
   instituicao: string;
+  instituicaoFull?: string; // nome completo expandido (ex: "SERVIÇO NACIONAL DE APRENDIZAGEM INDUSTRIAL")
+  logoInstituicao?: string; // URL da logo (placeholder por enquanto)
   categoriaId: string;
   modalidade: QualificaModalidade;
   cargaHoraria: number; // em horas
@@ -24,6 +28,12 @@ export interface QualificaCurso {
   // Dados de mercado (CAGED/eSocial) — opcional, vem do QualificaPro
   vagasMercado?: number;
   salarioMedio?: number;
+  empregabilidade?: Empregabilidade;
+  // Catálogo Brasileiro de Ocupações
+  cbo?: string;
+  cboDescricao?: string;
+  // UFs onde o curso é ofertado; ausente = nacional (sempre visível)
+  ufs?: string[];
   // Hero/destaque
   destaque?: boolean;
 }
@@ -52,11 +62,201 @@ const UNSPLASH_PARAMS = 'w=896&h=496&fit=crop&q=80&auto=format';
 const photo = (id: string) => `https://images.unsplash.com/photo-${id}?${UNSPLASH_PARAMS}`;
 
 // ────────────────────────────────────────────────────────────────────────────
+// METADADOS COMPLEMENTARES — derivados/curados pós-array para evitar repetição
+// ────────────────────────────────────────────────────────────────────────────
+
+// Nome completo das instituições (expansão do acrônimo).
+const INSTITUICAO_FULL: Record<string, string> = {
+  SENAI: 'Serviço Nacional de Aprendizagem Industrial',
+  SENAC: 'Serviço Nacional de Aprendizagem Comercial',
+  SEBRAE: 'Serviço Brasileiro de Apoio às Micro e Pequenas Empresas',
+  'SEST SENAT': 'Serviço Social do Transporte / Serviço Nacional de Aprendizagem do Transporte',
+  'Escola do Trabalhador 4.0': 'Escola do Trabalhador 4.0 — MTE',
+};
+
+// Logo placeholder circular (data URI cinza neutro). TODO: substituir por logos oficiais.
+const LOGO_PLACEHOLDER =
+  'https://api.builder.io/api/v1/image/assets/TEMP/8b84b39ecfd5a78839f66bc4de1242c5cface13b?width=240';
+
+// Mapeamento CBO por id de curso. Ocupações do catálogo público do MTE.
+// Marcado com TODO quando o mapeamento é aproximado.
+const CBO_MAP: Record<string, { cbo: string; descricao: string }> = {
+  'qp-tec-01': {
+    cbo: 'Programador de sistemas de informação',
+    descricao:
+      'Desenvolve, implanta e mantém sistemas e aplicações usando linguagens de programação. Realiza testes, documentação e correções de software.',
+  },
+  'qp-tec-02': {
+    cbo: 'Analista de inteligência artificial',
+    descricao:
+      'Aplica técnicas de machine learning e IA para resolver problemas, treina modelos e avalia resultados em diferentes contextos de negócio.',
+  },
+  'qp-tec-03': {
+    cbo: 'Desenvolvedor web',
+    descricao:
+      'Cria interfaces e funcionalidades de páginas e aplicações web. Implementa layouts responsivos e integra com APIs.',
+  },
+  'qp-tec-04': {
+    cbo: 'Analista de segurança da informação',
+    descricao:
+      'Identifica riscos, implementa controles e monitora ameaças em sistemas e redes. Promove boas práticas de segurança digital.',
+  },
+  'qp-tec-05': {
+    cbo: 'Analista de dados',
+    descricao:
+      'Coleta, organiza e analisa dados para gerar relatórios e apoiar decisões. Utiliza planilhas avançadas e ferramentas de BI.',
+  },
+  'qp-ind-01': {
+    cbo: 'Eletricista industrial',
+    descricao:
+      'Instala e mantém sistemas elétricos industriais, identifica falhas e realiza reparos seguindo normas técnicas (NR-10).',
+  },
+  'qp-ind-02': {
+    cbo: 'Soldador (MIG/MAG)',
+    descricao:
+      'Une peças metálicas por processo MIG/MAG. Lê desenhos técnicos, prepara equipamentos e segue requisitos de qualidade e segurança.',
+  },
+  'qp-ind-03': {
+    cbo: 'Mecânico de manutenção industrial',
+    descricao:
+      'Executa manutenção preventiva e corretiva em máquinas e equipamentos industriais. Realiza diagnósticos e troca de componentes.',
+  },
+  'qp-ind-04': {
+    cbo: 'Operador de empilhadeira',
+    descricao:
+      'Opera empilhadeiras conforme NR-11 para movimentação e armazenagem de cargas. Realiza inspeção diária do equipamento.',
+  },
+  'qp-ind-05': {
+    cbo: 'Operador de máquina-ferramenta CNC',
+    descricao:
+      'Programa e opera máquinas com Comando Numérico Computadorizado para usinagem de peças. Interpreta desenhos e controla qualidade dimensional.',
+  },
+  'qp-com-01': {
+    cbo: 'Auxiliar de logística',
+    descricao:
+      'Apoia operações de recebimento, armazenagem, separação e expedição. Controla estoque e organiza áreas de armazém.',
+  },
+  'qp-com-02': {
+    cbo: 'Atendente comercial',
+    descricao:
+      'Atende clientes presencial ou remotamente, esclarece dúvidas, resolve solicitações e encaminha demandas internas.',
+  },
+  'qp-com-03': {
+    cbo: 'Vendedor do comércio varejista',
+    descricao:
+      'Atende e orienta clientes na escolha de produtos. Realiza vendas, organiza vitrine e mantém o estoque do setor.',
+  },
+  'qp-com-04': {
+    cbo: 'Recepcionista',
+    descricao:
+      'Recebe visitantes, presta informações, opera central telefônica e gerencia a agenda da recepção.',
+  },
+  'qp-com-05': {
+    cbo: 'Motorista de transporte por aplicativo',
+    descricao:
+      'Conduz veículos para transporte individual de passageiros via plataformas digitais. Cuida da manutenção do veículo e do atendimento ao usuário.',
+  },
+  'qp-sau-01': {
+    cbo: 'Cuidador de idosos',
+    descricao:
+      'Acompanha e auxilia idosos nas atividades diárias: higiene, alimentação, medicação supervisionada e mobilidade.',
+  },
+  'qp-sau-02': {
+    cbo: 'Auxiliar em saúde bucal',
+    descricao:
+      'Auxilia o cirurgião-dentista em procedimentos clínicos, realiza esterilização de instrumentos e organiza o consultório.',
+  },
+  'qp-sau-03': {
+    cbo: 'Cuidador infantil',
+    descricao:
+      'Cuida de crianças nas atividades diárias, estimula desenvolvimento e aplica primeiros socorros básicos quando necessário.',
+  },
+  'qp-sau-04': {
+    cbo: 'Massoterapeuta',
+    descricao:
+      'Aplica técnicas de massagem terapêutica e relaxante para promover bem-estar, alívio de dores e recuperação muscular.',
+  },
+  'qp-sau-05': {
+    cbo: 'Auxiliar de farmácia',
+    descricao:
+      'Apoia rotinas de farmácia, organiza medicamentos, atende clientes e segue legislação sanitária aplicável.',
+  },
+  'qp-ges-01': {
+    cbo: 'Assistente administrativo',
+    descricao:
+      'Executa rotinas administrativas: atendimento, organização documental, redação oficial e apoio a setores diversos.',
+  },
+  'qp-ges-02': {
+    cbo: 'Analista de departamento pessoal',
+    descricao:
+      'Processa folha de pagamento, admissões, demissões, férias e obrigações legais (FGTS, INSS) conforme a CLT.',
+  },
+  'qp-ges-03': {
+    cbo: 'Analista financeiro',
+    descricao:
+      'Controla fluxo de caixa, contas a pagar/receber, formação de preço e indicadores financeiros de pequenos negócios.',
+  },
+  'qp-ges-04': {
+    cbo: 'Analista de marketing digital',
+    descricao:
+      'Planeja e executa campanhas em redes sociais e mídias pagas. Acompanha métricas e otimiza desempenho.',
+  },
+  'qp-ges-05': {
+    cbo: 'Líder de equipe',
+    descricao:
+      'Coordena equipes, define metas, dá feedback contínuo e gerencia conflitos para sustentar alta performance.',
+  },
+  'qp-emp-01': {
+    cbo: 'Microempreendedor individual',
+    descricao:
+      'Atua como MEI realizando atividades próprias, cumprindo obrigações fiscais simplificadas e mantendo escrituração mínima.',
+  },
+  'qp-emp-02': {
+    cbo: 'Empreendedor / proprietário de negócio',
+    descricao:
+      'Estrutura e conduz seu próprio negócio: pesquisa de mercado, plano operacional, gestão financeira e comercial.',
+  },
+  'qp-emp-03': {
+    cbo: 'Vendedor (pequeno empreendedor)',
+    descricao:
+      'Realiza prospecção, abordagem, fechamento e pós-venda em pequenas operações comerciais.',
+  },
+  'qp-emp-04': {
+    cbo: 'Empreendedor / proprietário de negócio',
+    descricao:
+      'Aplica princípios de educação financeira na gestão do próprio negócio: separação de finanças, fluxo de caixa e investimento.',
+  },
+  'qp-emp-05': {
+    cbo: 'Empreendedor digital',
+    descricao:
+      'Cria e comercializa produtos digitais, opera lojas online e divulga via marketing digital.',
+  },
+};
+
+// UFs específicas para cursos presenciais regionais. Ausente = nacional (sempre visível).
+const UFS_MAP: Record<string, string[]> = {
+  'qp-ind-01': ['SP', 'MG', 'RS', 'PR', 'SC'],
+  'qp-ind-02': ['SP', 'MG', 'RS', 'PR'],
+  'qp-ind-03': ['SP', 'MG', 'BA', 'PE'],
+  'qp-ind-05': ['SP', 'MG', 'RS', 'SC'],
+  'qp-sau-01': ['SP', 'RJ', 'MG', 'PB', 'PE', 'BA', 'CE'],
+  'qp-sau-02': ['SP', 'RJ', 'MG', 'RS', 'PR'],
+  'qp-sau-04': ['SP', 'RJ', 'MG', 'BA', 'PE'],
+};
+
+function empregabilidadeFromVagas(vagas?: number): Empregabilidade {
+  if (!vagas) return 'media';
+  if (vagas >= 10000) return 'alta';
+  if (vagas >= 3000) return 'media';
+  return 'baixa';
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // CURSOS — 30 cursos distribuídos entre as 6 categorias
 // Curadoria baseada em ofertas reais do QualificaPro (Senai, Senac, Sebrae,
 // SEST SENAT, Institutos Federais, Escola do Trabalhador 4.0).
 // ────────────────────────────────────────────────────────────────────────────
-export const qualificaCursos: QualificaCurso[] = [
+const qualificaCursosBase: QualificaCurso[] = [
   // ── TECNOLOGIA ──────────────────────────────────────────────────────────
   {
     id: 'qp-tec-01',
@@ -462,6 +662,20 @@ export const qualificaCursos: QualificaCurso[] = [
   },
 ];
 
+// Aplica metadados complementares (CBO, instituição completa, empregabilidade derivada, UFs, logo).
+export const qualificaCursos: QualificaCurso[] = qualificaCursosBase.map((c) => {
+  const cboInfo = CBO_MAP[c.id];
+  return {
+    ...c,
+    instituicaoFull: INSTITUICAO_FULL[c.instituicao],
+    logoInstituicao: LOGO_PLACEHOLDER, // TODO: substituir por logos oficiais
+    empregabilidade: c.empregabilidade ?? empregabilidadeFromVagas(c.vagasMercado),
+    cbo: c.cbo ?? cboInfo?.cbo,
+    cboDescricao: c.cboDescricao ?? cboInfo?.descricao,
+    ufs: c.ufs ?? UFS_MAP[c.id],
+  };
+});
+
 // ────────────────────────────────────────────────────────────────────────────
 // HELPERS — usados pela página Qualifica
 // ────────────────────────────────────────────────────────────────────────────
@@ -469,10 +683,19 @@ export const qualificaCursos: QualificaCurso[] = [
 /** Cursos em destaque (usados no hero rotativo ou em rail "Para você") */
 export const qualificaDestaques = qualificaCursos.filter((c) => c.destaque);
 
-/** Filtra cursos por categoria (ou retorna todos se 'todos') */
-export function filtrarCursos(categoriaId: string): QualificaCurso[] {
-  if (categoriaId === 'todos') return qualificaCursos;
-  return qualificaCursos.filter((c) => c.categoriaId === categoriaId);
+/**
+ * Filtra cursos por categoria e (opcionalmente) por UF.
+ * Cursos sem `ufs` definido são considerados nacionais e sempre aparecem.
+ */
+export function filtrarCursos(categoriaId: string, uf?: string | null): QualificaCurso[] {
+  let cursos =
+    categoriaId === 'todos'
+      ? qualificaCursos
+      : qualificaCursos.filter((c) => c.categoriaId === categoriaId);
+  if (uf) {
+    cursos = cursos.filter((c) => !c.ufs || c.ufs.includes(uf));
+  }
+  return cursos;
 }
 
 /** Conta total de cursos disponíveis — usado no título do hero */

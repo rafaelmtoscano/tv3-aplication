@@ -19,8 +19,10 @@ import Camara from './pages/Camara/index';
 import Senado from './pages/Senado/index';
 import Qualifica from './pages/Qualifica/index';
 import CursoDetail from './pages/Qualifica/CursoDetail';
+import RegionSuggestionBanner from './pages/Qualifica/RegionSuggestionBanner';
 import { qualificaCategorias, filtrarCursos } from './data/qualifica';
 import type { QualificaCurso } from './data/qualifica';
+import { useUserLocation } from './hooks/useUserLocation';
 import DeputiesGrid from './pages/Camara/DeputiesGrid';
 import SenatorsGrid from './pages/Senado/SenatorsGrid';
 import DeputyDetail from './pages/Camara/DeputyDetail';
@@ -88,7 +90,8 @@ interface AppContentProps {
 
 function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, isMobileRequesting, updateChannel, updateVoting }: AppContentProps) {
   const { connectGovBrMock, govBrUser, isGovBrConnected, activeProfileId, switchProfile } = useAuth();
-  const { fontScaleValue } = useSettings();
+  const { settings, updateSetting, fontScaleValue } = useSettings();
+  const userLocation = useUserLocation();
   const [showGovBrNotif, setShowGovBrNotif] = useState(false);
   const prevGovBrUserRef = useRef<typeof govBrUser>(null);
 
@@ -289,13 +292,13 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
         const cats = qualificaCategorias.filter((c) => c.id !== 'todos');
         return [
           qualificaCategorias.length,
-          ...cats.map((c) => filtrarCursos(c.id).length),
+          ...cats.map((c) => filtrarCursos(c.id, settings.region).length),
         ];
       }
-      return [qualificaCategorias.length, filtrarCursos(qualificaCategoria).length];
+      return [qualificaCategorias.length, filtrarCursos(qualificaCategoria, settings.region).length];
     }
     return [visibleServices.length, ...homeData.rails.map((r) => r.cards.length), isGovBrConnected ? 0 : 1];
-  }, [currentPage, deputies.length, senators.length, isGovBrConnected, qualificaCategoria]);
+  }, [currentPage, deputies.length, senators.length, isGovBrConnected, qualificaCategoria, settings.region]);
 
   const sidebarItemIds = useMemo(() => sidebarItems.map((i) => i.id), [sidebarItems]);
 
@@ -425,9 +428,9 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           if (qualificaCategoria === 'todos') {
             const cats = qualificaCategorias.filter((c) => c.id !== 'todos');
             const cat = cats[railIdx - 1];
-            if (cat) curso = filtrarCursos(cat.id)[state.mainItemIndex];
+            if (cat) curso = filtrarCursos(cat.id, settings.region)[state.mainItemIndex];
           } else {
-            curso = filtrarCursos(qualificaCategoria)[state.mainItemIndex];
+            curso = filtrarCursos(qualificaCategoria, settings.region)[state.mainItemIndex];
           }
           if (curso) setSelectedCurso(curso);
         }
@@ -574,7 +577,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           setCurrentPage('account');
         }
       }
-    }, [deputies, handleDeputySelect, handleSenatorSelect, handleServiceSelect, senators, updateChannel, isGovBrConnected, qualificaCategoria]),
+    }, [deputies, handleDeputySelect, handleSenatorSelect, handleServiceSelect, senators, updateChannel, isGovBrConnected, qualificaCategoria, settings.region]),
     onSidebarSelect: handleSidebarSelect,
     onEscape: currentPage === 'pharmacies' || currentPage === 'qualifica' ? () => setCurrentPage('apps') : undefined,
     verticalNavigation: currentPage === 'pharmacies',
@@ -618,6 +621,12 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
       icon: <PersonIcon size={28} />,
     };
   }, [isGovBrConnected, activeProfile]);
+
+  const showRegionSuggestion =
+    currentPage === 'qualifica' &&
+    !settings.region &&
+    !settings.regionSuggestionDismissed &&
+    userLocation.status === 'success';
 
   const hasOverlay = !!(showDeputiesGrid || showSenatorsGrid || selectedDeputy || selectedCurso || watchPage || livePage || showProfileSwitcher);
 
@@ -708,6 +717,7 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
             isActive={currentPage === 'qualifica'}
             categoriaAtiva={qualificaCategoria}
             onCategoriaChange={setQualificaCategoria}
+            ufFiltro={settings.region}
           />
         );
       case 'apps-senado':
@@ -784,6 +794,21 @@ function AppContent({ isMobileGovBrConnected, sessionCode, isMobileConnected, is
           loading={senatorsLoading}
           onBack={() => { setShowSenatorsGrid(false); }}
           onSenatorSelect={handleSenatorSelect}
+        />
+      )}
+
+      {showRegionSuggestion && userLocation.status === 'success' && (
+        <RegionSuggestionBanner
+          ufNome={userLocation.nome}
+          // Banner só é renderizado em currentPage='qualifica'; o único overlay
+          // competidor possível é selectedCurso → isActive=false esconde o banner
+          // e o useEffect refoca quando o modal fecha.
+          isActive={!selectedCurso}
+          onAccept={() => {
+            updateSetting('region', userLocation.uf);
+            updateSetting('regionSuggestionDismissed', true);
+          }}
+          onDismiss={() => updateSetting('regionSuggestionDismissed', true)}
         />
       )}
 
