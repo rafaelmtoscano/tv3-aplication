@@ -10,5 +10,8 @@ const firebaseConfig = {
   appId: "1:1023358751181:web:60606cef64c822e669b484"
 };
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+// Mantém o singleton existente. Adiciona export do app
+// para outros módulos que precisem instanciar serviços do Firebase
+// (ex: getAuth no DemoAuthGate).
+export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+export const db = getFirestore(firebaseApp);
