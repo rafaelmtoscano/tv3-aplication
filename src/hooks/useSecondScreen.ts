@@ -35,6 +35,7 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
   const [isMobileGovBrConnected, setIsMobileGovBrConnected] = useState(false);
   const [isMobileRequesting, setIsMobileRequesting] = useState(false);
   const unsubRef = useRef<(() => void) | null>(null);
+  const unsubRequestRef = useRef<(() => void) | null>(null);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -118,13 +119,18 @@ export function useSecondScreen(tvName = 'TV Sala'): UseSecondScreenReturn {
       }
     );
 
+    unsubRequestRef.current = unsubRequest;
+
     return () => {
       // Mark component as unmounted first to prevent state updates
       isMountedRef.current = false;
 
       // Unsubscribe from both listeners immediately
       try {
-        unsubRequest();
+        if (unsubRequestRef.current) {
+          unsubRequestRef.current();
+          unsubRequestRef.current = null;
+        }
       } catch (e) {
         // Ignore errors during unsubscription
       }

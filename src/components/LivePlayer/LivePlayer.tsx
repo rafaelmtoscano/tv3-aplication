@@ -180,7 +180,7 @@ export const LivePlayer = React.memo(
           case 'ArrowRight':
             if (showEPG) {
               e.preventDefault();
-              const epgMax = onOpenResources ? 8 : 7; // 0..7 = EPG cards, 8 = Recursos
+              const epgMax = onOpenResources ? 8 : 7; // 0 = Recursos, 1..8 = EPG cards (ou 0..7 sem Recursos)
               setEpgFocusedIndex((i) => Math.min(i + 1, epgMax));
             } else {
               setFocusedIndex((prev) => {
@@ -213,12 +213,13 @@ export const LivePlayer = React.memo(
           case 'Enter':
             if (showEPG) {
               e.preventDefault();
-              if (onOpenResources && epgFocusedIndex === 8) {
+              if (onOpenResources && epgFocusedIndex === 0) {
                 e.nativeEvent.stopImmediatePropagation();
                 onOpenResources();
               } else {
                 const epgEntries = getUpcomingPrograms(allSchedules[activeChannel.id], 8);
-                const entry = epgEntries[epgFocusedIndex];
+                const entryIndex = onOpenResources ? epgFocusedIndex - 1 : epgFocusedIndex;
+                const entry = epgEntries[entryIndex];
                 if (entry) setReminderEntry(entry);
               }
             } else {
@@ -516,29 +517,29 @@ export const LivePlayer = React.memo(
                 ) : (
                   /* ── multiChannel: EPG expandida ── */
                   <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'center', height: '312px' }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <EPGRail
-                        channelId={activeChannel.id}
-                        channelLogo={activeChannel.logo}
-                        channelName={activeChannel.name}
-                        focusedIndex={epgFocusedIndex <= 7 ? epgFocusedIndex : -1}
-                        onFocusedIndexChange={setEpgFocusedIndex}
-                        onNavigateUp={() => setShowEPG(false)}
-                        onItemClick={(entry) => setReminderEntry(entry)}
-                        cardBackground={colors.background.baseInverse}
-                      />
-                    </div>
                     {onOpenResources && (
                       <div style={{ flexShrink: 0 }}>
                         <TileButton
                           variant="icon-label"
                           label="Recursos"
                           icon={<span style={{ fontSize: 28 }}>☰</span>}
-                          isFocused={epgFocusedIndex === 8}
+                          isFocused={epgFocusedIndex === 0}
                           onClick={() => onOpenResources?.()}
                         />
                       </div>
                     )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <EPGRail
+                        channelId={activeChannel.id}
+                        channelLogo={activeChannel.logo}
+                        channelName={activeChannel.name}
+                        focusedIndex={onOpenResources ? (epgFocusedIndex >= 1 && epgFocusedIndex <= 8 ? epgFocusedIndex - 1 : -1) : (epgFocusedIndex <= 7 ? epgFocusedIndex : -1)}
+                        onFocusedIndexChange={(index) => setEpgFocusedIndex(onOpenResources ? index + 1 : index)}
+                        onNavigateUp={() => setShowEPG(false)}
+                        onItemClick={(entry) => setReminderEntry(entry)}
+                        cardBackground={colors.background.baseInverse}
+                      />
+                    </div>
                   </div>
                 )}
               </div>

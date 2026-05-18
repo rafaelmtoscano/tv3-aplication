@@ -53,6 +53,7 @@ export interface AppSettings {
   audioDescriptionEnabled: boolean;
   analyticsEnabled: boolean;
   region: string | null;
+  regionSuggestionDismissed: boolean;
   defaultChannelId: string | null;
 }
 
@@ -63,6 +64,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   audioDescriptionEnabled: false,
   analyticsEnabled: true,
   region: null,
+  regionSuggestionDismissed: false,
   defaultChannelId: null,
 };
 
